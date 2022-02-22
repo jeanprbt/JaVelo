@@ -1,7 +1,7 @@
 package ch.epfl.javelo.projection;
 
 /**
- * Classe permettant de convertir entre les cordonnées WGS 84 et les cordonnées suisses
+ * Classe permettant de convertir des cordonnées WGS 84 en coordonnées suisses et inversement
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)
  */
@@ -20,7 +20,7 @@ public final class Ch1903 {
      * @return la coordonnée E (est) dans le systèùe CH1903 du point de latitude lat et
      * de longitude lon dans le système de coordonnées WGS84
      */
-    private static double e(double lon, double lat) {
+    public static double e(double lon, double lat) {
         double lonDegrees = Math.toDegrees(lon);
         double latDegrees = Math.toDegrees(lat);
         double lon1 = 1e-4 * (3600 * lonDegrees - 26_782.5);
@@ -35,7 +35,7 @@ public final class Ch1903 {
      * @return la coordonnée N (nord) dans le système CH1903 du point de latitude lat et
      * de longitude lon dans le système de coordonnées WGS84
      */
-    private static double n(double lon, double lat) {
+    public static double n(double lon, double lat) {
         double lonDegrees = Math.toDegrees(lon);
         double latDegrees = Math.toDegrees(lat);
         double lon1 = 1e-4 * (3600 * lonDegrees - 26_782.5);
@@ -47,9 +47,9 @@ public final class Ch1903 {
      * @param e la coordonnée E du point à convertir
      * @param n la coordonnée N du point à convertir
      * @return la longitude dans le système WGS84 du point de coordonnée E (est) e et
-     * de coordonnée N (nord) n dans le système de coordonnées CH1903
+     * de coordonnée N (nord) n dans le système de coordonnées CH1903, en radians
      */
-    private static double lon(double e, double n) {
+    public static double lon(double e, double n) {
         double x = 1e-6 * (e - 2_600_000);
         double y = 1e-6 * (n - 1_200_000);
         double lon0 = 2.6779094 + 4.728982*x + 0.791484*x*y + 0.1306*x*Math.pow(y, 2) - 0.0436*Math.pow(x, 3);
@@ -60,9 +60,9 @@ public final class Ch1903 {
      * @param e la coordonnée E du point à convertir
      * @param n la coordonnée N du point à convertir
      * @return la latitude dans le système WGS84 du point de coordonnée E (est) e et
-     * de coordonnée N (nord) n dans le système de coordonnées CH1903
+     * de coordonnée N (nord) n dans le système de coordonnées CH1903, en radians
      */
-    private static double lat(double e, double n) {
+    public static double lat(double e, double n) {
         double x = 1e-6 * (e - 2_600_000);
         double y = 1e-6 * (n - 1_200_000);
         double lat0 = 16.9023892 + 3.238272 * y - 0.270978 * Math.pow(x, 2) - 0.002528 * Math.pow(y, 2) - 0.0447 * Math.pow(x, 2) * y - 0.0140 * Math.pow(y, 3);

@@ -15,7 +15,6 @@ public final class Math2 {
     private Math2() {}
 
     /**
-     *
      * @param x l'abscisse d'un point
      * @param y l'ordonnée d'un point
      * @return le plus petit entier supérieur ou égal à x / y
