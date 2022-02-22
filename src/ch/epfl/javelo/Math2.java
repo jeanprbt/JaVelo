@@ -20,6 +20,7 @@ public final class Math2 {
      * @return le plus petit entier supérieur ou égal à x / y
      */
     public static int ceilDiv(int x, int y){
+        Preconditions.checkArgument(x >= 0 && y > 0);
         return (x + y - 1) / y;
     }
 
@@ -42,7 +43,7 @@ public final class Math2 {
      * @return la valeur limitée dans l'intervalle
      */
     public static int clamp(int min, int v, int max){
-        if(min > max) throw new IllegalArgumentException();
+        Preconditions.checkArgument(min <= max);
         if(v < min) return min ;
         else if (v > max) return max ;
         else return v ;
