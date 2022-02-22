@@ -16,7 +16,7 @@ public final class Preconditions {
     /**
      * Méthode vérifiant si la condition passée en argument est vraie ou fausse.
      * @throws IllegalArgumentException si la condition est fausse
-     * @param shouldBeTrue : la condition à tester
+     * @param shouldBeTrue la condition à tester
      */
     public static void checkArgument(boolean shouldBeTrue) {
         if (!shouldBeTrue) throw new IllegalArgumentException();
