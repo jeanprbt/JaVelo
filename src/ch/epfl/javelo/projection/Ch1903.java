@@ -7,12 +7,7 @@ package ch.epfl.javelo.projection;
  */
 public final class Ch1903 {
 
-    /**
-     * Constructeur privé visant à éviter la
-     * création d'instances de cette classe
-     */
-    private Ch1903() {
-    }
+    private Ch1903() {}
 
     /**
      * @param lon la longitude du point à convertir, en radians

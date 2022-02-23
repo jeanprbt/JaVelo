@@ -8,10 +8,6 @@ package ch.epfl.javelo;
  */
 public final class Math2 {
 
-    /**
-     * Constructeur privé visant à éviter la
-     * création d'instances de cette classe
-     */
     private Math2() {}
 
     /**

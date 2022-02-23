@@ -13,10 +13,6 @@ public class SwissBounds {
     public static final double WIDTH = MAX_E - MIN_E ; // Largeur de la Suisse en mètres
     public static final double HEIGHT = MAX_N - MIN_N ; // Hauteur de la Suisse en mètres
 
-    /**
-     * Constructeur privé visant à éviter la
-     * création d'instances de cette classe
-     */
     private SwissBounds() {}
 
     /**

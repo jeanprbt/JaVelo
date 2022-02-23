@@ -7,10 +7,6 @@ package ch.epfl.javelo;
  */
 public final class Preconditions {
 
-    /**
-     * Constructeur privé visant à éviter la
-     * création d'instances de cette classe
-     */
     private Preconditions() {}
 
     /**
