@@ -1,7 +1,8 @@
 package ch.epfl.javelo.projection;
 
 /**
- * Classe permettant de convertir des cordonnées WGS 84 en coordonnées suisses et inversement
+ * Classe permettant de convertir des cordonnées WGS 84 en coordonnées suisses et inversement.
+ *
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)
  */
@@ -10,9 +11,12 @@ public final class Ch1903 {
     private Ch1903() {}
 
     /**
+     * Fonction qui retourne la coordonnée E (est) dans le système Ch1903 du point de latitude lat
+     * et de longitude lon dans le système de coordonnées WGS84.
+     *
      * @param lon la longitude du point à convertir, en radians
      * @param lat la latitude du point à convertir, en radians
-     * @return la coordonnée E (est) dans le systèùe CH1903 du point de latitude lat et
+     * @return la coordonnée E (est) dans le système CH1903 du point de latitude lat et
      * de longitude lon dans le système de coordonnées WGS84
      */
     public static double e(double lon, double lat) {
@@ -25,8 +29,11 @@ public final class Ch1903 {
     }
 
     /**
+     * Fonction qui retourne la coordonnée N (nord) dans le système Ch1903 du point de latitude lat
+     * et de longitude lon dans le système de coordonnées WGS84.
+     *
      * @param lon la longitude du point à convertir, en radians
-     * @param lat la latidude du point à convertir, en radians
+     * @param lat la latitude du point à convertir, en radians
      * @return la coordonnée N (nord) dans le système CH1903 du point de latitude lat et
      * de longitude lon dans le système de coordonnées WGS84
      */
@@ -39,10 +46,13 @@ public final class Ch1903 {
     }
 
     /**
+     * Fonction qui retourne la longitude dans le système WGS84 du point de coordonnée e (est) et
+     * de coordonnée n (nord) dans le système de coordonnées CHh1903, en radians.
+     *
      * @param e la coordonnée E du point à convertir
      * @param n la coordonnée N du point à convertir
-     * @return la longitude dans le système WGS84 du point de coordonnée E (est) e et
-     * de coordonnée N (nord) n dans le système de coordonnées CH1903, en radians
+     * @return la longitude dans le système WGS84 du point de coordonnée e (est) et
+     * de coordonnée n (nord) dans le système CH1903
      */
     public static double lon(double e, double n) {
         double x = 1e-6 * (e - 2_600_000);
@@ -52,10 +62,13 @@ public final class Ch1903 {
     }
 
     /**
+     * Fonction qui retourne la latitude dans le système WGS84 du point de coordonnée e (est) et
+     * de coordonnée n (nord) dans le système de coordonnées Ch1903, en radians.
+     *
      * @param e la coordonnée E du point à convertir
      * @param n la coordonnée N du point à convertir
-     * @return la latitude dans le système WGS84 du point de coordonnée E (est) e et
-     * de coordonnée N (nord) n dans le système de coordonnées CH1903, en radians
+     * @return la latitude dans le système WGS84 du point de coordonnée e (est) et
+     * de coordonnée n (nord) dans le système CH1903
      */
     public static double lat(double e, double n) {
         double x = 1e-6 * (e - 2_600_000);

@@ -1,7 +1,8 @@
 package ch.epfl.javelo.projection;
 
 /**
- * Classe donnant les constantes et méthodes liées aux limites de la Suisse
+ * Classe donnant les constantes et méthodes liées aux limites de la Suisse.
+ *
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)
  */
@@ -16,7 +17,8 @@ public class SwissBounds {
     private SwissBounds() {}
 
     /**
-     * Méthode pour tester qu'un point se situe dans les limites ci-dessus
+     * Méthode pour tester qu'un point se situe dans les limites ci-dessus.
+     *
      * @param e la coordonnée est d'un point
      * @param n coordonnée nord d'un point
      * @return true si le point est situé dans les limites de la Suisse et false sinon
