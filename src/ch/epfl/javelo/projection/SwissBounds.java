@@ -6,7 +6,7 @@ package ch.epfl.javelo.projection;
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)
  */
-public class SwissBounds {
+public final class SwissBounds {
     public static final double MIN_E = 2485000 ; // Plus petite coordonnée EST en Suisse
     public static final double MAX_E = 2834000 ; // Plus grande coordonnée EST en Suisse
     public static final double MIN_N = 1075000 ; // Plus petite coordonnée NORD en Suisse

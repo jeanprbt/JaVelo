@@ -50,8 +50,7 @@ public final class Math2 {
     public static int clamp(int min, int v, int max){
         Preconditions.checkArgument(min <= max);
         if(v < min) return min ;
-        else if (v > max) return max ;
-        else return v ;
+        else return Math.min(v, max);
     }
 
     /**
@@ -61,8 +60,7 @@ public final class Math2 {
     public static double clamp(double min, double v, double max){
         Preconditions.checkArgument(min <= max);
         if(v < min) return min ;
-        else if (v > max) return max ;
-        else return v ;
+        else return Math.min(v, max);
     }
 
 
@@ -83,7 +81,7 @@ public final class Math2 {
      * @param uX composante x du vecteur u
      * @param uY composante y du vecteur u
      * @param vX composante x du vecteur v
-     * @param uY composante y du vecteur v
+     * @param vY composante y du vecteur v
      * @return le produit scalaire des vecteurs u(uX, uY) et v(vX, vY)
      */
     public static double dotProduct(double uX, double uY, double vX, double vY){
