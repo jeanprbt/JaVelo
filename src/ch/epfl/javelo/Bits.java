@@ -23,10 +23,7 @@ public final class Bits {
      */
     public static int extractSigned(int value, int start, int length){
         Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= 32);
-        int temp = value << 32 - start - length ; // Décalage à gauche
-        temp = temp >> 32 - length ; //Décalage à droite
-        String tempString = "" + temp ;
-        return Integer.parseInt(tempString, 2);
+        return (value << 32 - start - length) >> 32 - length ; //Décalage à droite
     }
 
     /**
@@ -42,6 +39,6 @@ public final class Bits {
      */
     public static int extractUnsigned(int value, int start, int length){
         Preconditions.checkArgument(start >= 0 && length >= 0 && start + length < 32);
-        return 0 ;
+        return (value << 32 - start - length) >>> 32 - length ;
     }
 }
