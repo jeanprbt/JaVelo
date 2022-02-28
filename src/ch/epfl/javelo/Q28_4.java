@@ -29,7 +29,7 @@ public final class Q28_4 {
      * @return le double correspondant au paramètre
      */
     public static double asDouble(int q28_4){
-
+        return Math.scalb(q28_4, -4);
     }
 
     /**
@@ -39,7 +39,7 @@ public final class Q28_4 {
      * @return le float correspondant au paramètre
      */
     public static float asFloat(int q28_4){
-        return q28_4 >> 4 ;
+        return Math.scalb(q28_4, -4);
     }
 
 }
