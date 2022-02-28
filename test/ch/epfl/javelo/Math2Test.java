@@ -12,7 +12,7 @@ import static ch.epfl.test.TestRandomizer.newRandom;
 import static org.junit.jupiter.api.Assertions.*;
 
 class Math2Test {
-    private static final double DELTA = 1e-7;
+    public static final double DELTA = 1e-7;
 
 
     @Test

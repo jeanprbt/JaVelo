@@ -20,7 +20,7 @@ public final class WebMercator {
      * @return la coordonnée x du point de longitude lon en Web Mercator
      */
     public static double x(double lon){
-        return (1.0 / 2*Math.PI) * (lon + Math.PI);
+        return (1.0 / (2*Math.PI)) * (lon + Math.PI);
     }
 
     /**
