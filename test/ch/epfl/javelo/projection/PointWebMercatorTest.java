@@ -2,6 +2,8 @@ package ch.epfl.javelo.projection;
 
 import org.junit.jupiter.api.Test;
 
+import java.awt.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class PointWebMercatorTest {
@@ -21,13 +23,13 @@ class PointWebMercatorTest {
         assertThrows(IllegalArgumentException.class, () -> {
             new PointWebMercator(1, 2);
         });
-
     }
 
     @Test
     void ofWorksOnNonTrivialValues(){
-        PointWebMercator expected = new PointWebMercator(0.518275214444, 0.353664894749);
-        assertEquals(expected, PointWebMercator.of(19, 69561722, 47468099 ));
+        PointWebMercator test = PointWebMercator.of(19, 69561722, 47468099);
+        assertEquals(0.518275214444, test.x(), DELTA);
+        assertEquals(0.353664894749, test.y(), DELTA);
     }
 
     @Test
@@ -55,6 +57,12 @@ class PointWebMercatorTest {
         assertEquals(new PointCh(Ch1903.e(test.lon(), test.lat()), Ch1903.n(test.lon(), test.lat())), test.toPointCh());
     }
 
-
-
+    @Test
+    void toPointChThrowsWhenNotInSwissBounds(){
+        PointCh test2 = null ;
+        PointWebMercator test = new PointWebMercator(0,0);
+        assertEquals(test2, test.toPointCh());
+        PointWebMercator test3 = new PointWebMercator(0.8,0.8);
+        assertEquals(test2, test3.toPointCh());
+    }
 }

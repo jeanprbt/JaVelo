@@ -21,7 +21,7 @@ public record PointWebMercator(double x, double y) {
      * @throws IllegalArgumentException si le point n'est pas dans l'intervalle [0 ; 1]
      */
     public PointWebMercator {
-        if(x < 0 || y < 0 || x > 1 || y > 1) throw new IllegalArgumentException();
+        Preconditions.checkArgument(x >= 0 && y >= 0 && x <= 1 && y <= 1);
     }
 
     /**
