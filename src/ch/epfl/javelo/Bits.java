@@ -38,7 +38,7 @@ public final class Bits {
      * @throws IllegalArgumentException si la plage est invalide ou si length vaut 32
      */
     public static int extractUnsigned(int value, int start, int length){
-        Preconditions.checkArgument(start >= 0 && length >= 0 && start + length < 32);
+        Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= 32 && length < 32);
         return (value << 32 - start - length) >>> 32 - length ; //Décalage à gauche puis à droite (logique)
     }
 }
