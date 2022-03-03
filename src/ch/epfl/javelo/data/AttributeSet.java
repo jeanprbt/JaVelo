@@ -1,8 +1,6 @@
 package ch.epfl.javelo.data;
 
 import ch.epfl.javelo.Preconditions;
-import ch.epfl.javelo.projection.SwissBounds;
-
 import java.util.StringJoiner;
 
 /**
@@ -62,10 +60,8 @@ public record AttributeSet(long bits) {
      * @return true si l'intersection est non vide et false sinon
      */
     public boolean intersects(AttributeSet that){
-        if ((that.bits & this.bits) != 0 ) return true ;
-        else return false ;
+        return (that.bits & this.bits) != 0;
     }
-
 
     @Override
     public String toString() {

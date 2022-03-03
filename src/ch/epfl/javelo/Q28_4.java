@@ -1,7 +1,5 @@
 package ch.epfl.javelo;
 
-import java.util.function.ToDoubleBiFunction;
-
 /**
  * Classe permettant de convertir des nombres entre la
  * représentation Q28.4 et d'autres représentations.

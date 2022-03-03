@@ -3,6 +3,7 @@ package ch.epfl.javelo.projection;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
+import java.io.PipedOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +31,13 @@ class PointWebMercatorTest {
         PointWebMercator test = PointWebMercator.of(19, 69561722, 47468099);
         assertEquals(0.518275214444, test.x(), DELTA);
         assertEquals(0.353664894749, test.y(), DELTA);
+    }
+
+    @Test
+    void ofPointChWorksOnNonTrivialValues(){
+        PointWebMercator test = new PointWebMercator(0.5182, 0.3536);
+        PointCh test2 = new PointCh(Ch1903.e(test.lon(), test.lat()), Ch1903.n(test.lon(), test.lat()));
+        assertEquals(test.lon(), PointWebMercator.ofPointCh(test2).lon(), DELTA);
     }
 
     @Test

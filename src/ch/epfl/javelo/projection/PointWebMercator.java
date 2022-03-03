@@ -2,7 +2,6 @@ package ch.epfl.javelo.projection;
 
 import ch.epfl.javelo.Preconditions;
 
-import java.awt.*;
 
 /**
  * Enregistrement représentant un point dans le système de coordonnées Web Mercator.
@@ -44,7 +43,7 @@ public record PointWebMercator(double x, double y) {
      *
      * @param pointCh le point exprimé en système de coordonnées suisse.
      * @return le point en système Web Mercator dont les coordonnées
-     * sont x et y au niveau de zoom zoomlevel
+     * sont x et y
      */
     public static PointWebMercator ofPointCh(PointCh pointCh){
         return new PointWebMercator(WebMercator.x(pointCh.lon()), WebMercator.y(pointCh.lat()));
