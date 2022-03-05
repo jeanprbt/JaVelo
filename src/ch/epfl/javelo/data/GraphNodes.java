@@ -56,7 +56,6 @@ public record GraphNodes(IntBuffer buffer) {
      */
     public int outDegree(int nodeId){
         int toExtract = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
-        System.out.println(Integer.toBinaryString(toExtract));
         return Bits.extractUnsigned(toExtract, 28, 4);
     }
     /**
@@ -69,6 +68,7 @@ public record GraphNodes(IntBuffer buffer) {
      * arête sortant du nœud d'identité nodeId.
      */
     public int edgeId(int nodeId, int edgeIndex){
+        assert 0 <= edgeIndex && edgeIndex < outDegree(nodeId);
         int toExtract = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
         return Bits.extractUnsigned(toExtract, 0, 28) + edgeIndex ;
     }

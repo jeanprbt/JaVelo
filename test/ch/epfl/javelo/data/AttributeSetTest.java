@@ -1,7 +1,6 @@
 package ch.epfl.javelo.data;
 
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Attr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,6 +10,9 @@ class AttributeSetTest {
     void constructorThrowsWhenInvalidBits(){
         assertThrows(IllegalArgumentException.class, () ->  {
             new AttributeSet(0b0110_0100_1110_0000_0000_0000_0000_1110_1111_0011_0000_0000_0000_0000_0000_0000L);
+        });
+        assertThrows(IllegalArgumentException.class, () ->  {
+            new AttributeSet(0b1010_0100_1110_0000_0000_0000_0000_1110_1111_0011_0000_0000_0000_0000_0000_0000L);
         });
     }
 
