@@ -20,7 +20,7 @@ public record AttributeSet(long bits) {
      * @throws IllegalArgumentException si un bit est à 1 et ne correspond pas à un attribut valide
      */
     public AttributeSet {
-        Preconditions.checkArgument(bits < Math.scalb(1, Attribute.COUNT));
+        Preconditions.checkArgument(bits < Math.scalb(1, Attribute.COUNT) && bits >= 0);
     }
 
     /**
