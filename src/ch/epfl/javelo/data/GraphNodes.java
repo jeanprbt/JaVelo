@@ -66,6 +66,7 @@ public record GraphNodes(IntBuffer buffer) {
      * @param edgeIndex l'index de la edgeIndex-ième arête sortant du nœud
      * @return l'identité de la edgeIndex-ième
      * arête sortant du nœud d'identité nodeId.
+     * @throws AssertionError quand le edgeIndex est plus élevé que le nombre de branches sortantes
      */
     public int edgeId(int nodeId, int edgeIndex){
         assert 0 <= edgeIndex && edgeIndex < outDegree(nodeId);

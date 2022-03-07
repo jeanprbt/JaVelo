@@ -53,7 +53,7 @@ public final class Functions {
             else {
                 double spacing = xMax / (samples.length - 1) ;
                 double proportion = (operand % spacing) / spacing ;
-                int minBorn = (int)Math.floor(operand / spacing);
+                int minBorn = (int)(operand / spacing);
                 return Math2.interpolate(samples[minBorn], samples[minBorn+1], proportion);
             }
         }
