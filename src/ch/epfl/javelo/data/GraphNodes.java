@@ -6,7 +6,7 @@ import ch.epfl.javelo.Q28_4;
 import java.nio.IntBuffer;
 
 /**
- * Enregistrement représentant le tableau de tous les noeuds du graphe JavVelo
+ * Enregistrement représentant le tableau de tous les noeuds du graphe JaVelo
  * sous la forme de son seul attribut : la mémoire tampon buffer.
  *
  * @author Jean Perbet (341418)
@@ -14,7 +14,7 @@ import java.nio.IntBuffer;
  */
 public record GraphNodes(IntBuffer buffer) {
 
-    private static final int OFFSET_E = 0;
+    private static final int OFFSET_E = 0 ;
     private static final int OFFSET_N = OFFSET_E + 1;
     private static final int OFFSET_OUT_EDGES = OFFSET_N + 1;
     private static final int NODE_INTS = OFFSET_OUT_EDGES + 1;
@@ -42,7 +42,7 @@ public record GraphNodes(IntBuffer buffer) {
      * Fonction qui retourne la coordonnée N du noeud d'identité donnée.
      *
      * @param nodeId l'identité du noeud dans le graphe JaVelo
-     * @return la coordonnée N du noeud d'identité nodeId
+     * @return la coordonnée N du nœud d'identité nodeId
      */
     public double nodeN(int nodeId){
         return Q28_4.asDouble(buffer.get(nodeId * NODE_INTS + OFFSET_N));
@@ -52,7 +52,7 @@ public record GraphNodes(IntBuffer buffer) {
      * Fonction qui retourne le nombre d'arêtes sortant du noeud d'identité donnée.
      *
      * @param nodeId l'identité du noeud dans le graphe JaVelo
-     * @return le nombre d'arêtes du noeud d'identité nodeId
+     * @return le nombre d'arêtes du nœud d'identité nodeId
      */
     public int outDegree(int nodeId){
         int toExtract = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
