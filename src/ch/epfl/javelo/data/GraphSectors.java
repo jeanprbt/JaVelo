@@ -32,10 +32,11 @@ public record GraphSectors(ByteBuffer buffer) {
      */
     public List<Sector> sectorsInArea(PointCh center, double distance){
         List<Sector> sectorsList = new ArrayList<>();
-        int xMin = (int)((center.e() - distance - SwissBounds.MIN_E) / (SwissBounds.WIDTH / 128.0));
-        int xMax = (int)((center.e() + distance - SwissBounds.MIN_E) / (SwissBounds.WIDTH / 128.0));
-        int yMin = (int)((center.n() - distance - SwissBounds.MIN_N) / (SwissBounds.HEIGHT / 128.0));
-        int yMax = (int)((center.n() + distance - SwissBounds.MIN_N) / (SwissBounds.HEIGHT / 128.0));
+        //Le "- 1e-10" dans les calculs de xMax et yMax est dû au cas dans lequel xMax ou yMax vaudrait 128, ce qui est possible uniquement si le carré atteint le bord est ou nord du territoire suisse, et ce qui n'est pas possible : xMax ou yMax ne peut valoir qu'au maximum 127.
+        int xMin = (int)(Math2.clamp(0, (center.e() - distance - SwissBounds.MIN_E), SwissBounds.WIDTH) / (SwissBounds.WIDTH / 128.0));
+        int xMax = (int)(Math2.clamp(0, (center.e() + distance - SwissBounds.MIN_E), SwissBounds.WIDTH - 1e-10) / (SwissBounds.WIDTH / 128.0));
+        int yMin = (int)(Math2.clamp(0, (center.n() - distance - SwissBounds.MIN_N), SwissBounds.HEIGHT) / (SwissBounds.HEIGHT / 128.0));
+        int yMax = (int)(Math2.clamp(0,(center.n() + distance - SwissBounds.MIN_N), SwissBounds.HEIGHT - 1e-10) / (SwissBounds.HEIGHT / 128.0));
         for (int i = yMin; i <= yMax ; i++) {
             for (int j = xMin; j <= xMax ; j++) {
                 int sectorIndex = 128 * i + j;
