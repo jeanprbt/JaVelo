@@ -32,7 +32,7 @@ class GraphSectorsTest {
     }
 
     @Test
-    void sectorsInAreaWorksOnNonTrivialSectorsWithFixedNodes(){
+    void sectorsInAreaWorksOnNonTrivialSectors(){
         ByteBuffer sectorBuffer = ByteBuffer.allocate(6*16384);
         int lastNode = 0 ;
         List<GraphSectors.Sector> sectorsList = new ArrayList<>();
