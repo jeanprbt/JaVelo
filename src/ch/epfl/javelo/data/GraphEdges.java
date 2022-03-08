@@ -25,6 +25,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
     private static final int EDGE_INTS = OFFSET_ATTRIBUTE_SET_ID + Short.BYTES ;
 
 
+
     /**
      * Fonction qui retourne vrai si et seulement si l'arête d'identité donnée
      * va dans le sens inverse de la voie OSM dont elle provient.
@@ -82,14 +83,41 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * l'arête d'identité donnée, qui est vide si l'arête ne possède pas de profil.
      *
      * @param edgeId l'arête dont on veut savoir si elle possède un profil
-     * @return
+     * @return le tableau de tous les échantillons du profil en long de l'arête d'identité donnée
      */
-    public float[] profileSamples(int edgeId) {
-        if (!hasProfile(edgeId)) return new float[]{};
-        float[] profileSamples = new float[1 + Math2.ceilDiv(length(edgeId), Q28_4.ofInt(2))];
+    public float[] profileSamples(int edgeId){
+        int profileType =  Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
+        if(profileType == 0) return new float[]{};
+
+        int firstSample = Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
+        int nbSamples = 1 + Math2.ceilDiv(Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_LENGTH)), ofInt(2));
+        float[] profileSamples = new float[nbSamples];
+
+        for (int i = 0; i < profileSamples.length; i++) {
+            if(profileType == 1){
+                if(isInverted(edgeId)) profileSamples[i] = Q28_4.asFloat(elevations.get(firstSample + i));
+                else profileSamples[profileSamples.length - 1 - i] = Q28_4.asFloat(elevations.get(firstSample + i));
+            } else {
+                profileSamples[0] = Q28_4.asFloat(elevations.get(firstSample));
+                short toExtract = elevations.get(firstSample + i);
+                profileType = (profileType == 2) ? 2 : 4 ;
+                for(int j = 0; j < profileType; j++) {
+                    if(isInverted(edgeId))  profileSamples[i + j] = Q28_4.asFloat(Bits.extractSigned(toExtract, (16 / profileType) * j, 16 / profileType));
+                    else profileSamples[profileSamples.length - 1 - i - j] = Q28_4.asFloat(Bits.extractSigned(toExtract, 16 / profileType * j, 16 / profileType));
+                }
+            }
+        }
+        return profileSamples ;
     }
 
-    public int attributesIndex(int edgeId){
-       return Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
+    /**
+     * Fonction qui retourne l'identité de l'ensemble d'attributs attaché
+     * à l'arête d'identité donnée.
+     *
+     * @param edgeId l'identité de l'arête donnée
+     * @return l'identité de l'ensemble d'attributs attaché à l'arête d'identité donnée.
+     */
+    public int attributesIndex(int edgeId) {
+        return Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_ATTRIBUTE_SET_ID));
     }
 }
