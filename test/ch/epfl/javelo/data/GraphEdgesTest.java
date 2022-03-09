@@ -12,6 +12,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GraphEdgesTest {
     @Test
+    void isInvertedWorksProperly(){
+        ByteBuffer edgesBuffer = ByteBuffer.allocate(1000);
+        IntBuffer profileIds = IntBuffer.allocate(1000);
+        ShortBuffer elevations = ShortBuffer.allocate(3000);
+        GraphEdges graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
+        edgesBuffer.putInt(-34);
+        assertEquals(true, graphEdges.isInverted(0));
+    }
+
+    @Test
     void profileSamplesWorksWithNonCompressedProfiles(){
         ByteBuffer edgesBuffer = ByteBuffer.allocate(10000);
         IntBuffer profileIds = IntBuffer.allocate(1000);
@@ -26,6 +36,20 @@ class GraphEdgesTest {
                 elevations.put((short)(200 + i%16 + j));
             }
         }
+        GraphEdges graph = new GraphEdges(edgesBuffer, profileIds, elevations);
+        float[] expectedProfiles = new float[]{12.5f, 12.5625f , 12.625f};
+        assertArrayEquals(expectedProfiles, graph.profileSamples(160));
+
+        ByteBuffer edgesBufferInverted = ByteBuffer.allocate(10000);
+        GraphEdges graphInverted = new GraphEdges(edgesBufferInverted, profileIds, elevations);
+        for (int i = 0; i < 1000; i++) {
+            edgesBufferInverted.putInt(-i);
+            edgesBufferInverted.putShort((short)(3 << 4));
+            edgesBufferInverted.putShort((short)(3 << 4));
+            edgesBufferInverted.putShort((short)(i << 4));
+        }
+        float[] expectedProfilesInverted = new float[]{12.625f, 12.5625f, 12.5f};
+        assertArrayEquals(expectedProfilesInverted, graphInverted.profileSamples(160));
 
     }
 
