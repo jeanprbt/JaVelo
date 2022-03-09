@@ -7,6 +7,7 @@ import ch.epfl.javelo.Q28_4;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 
 import static ch.epfl.javelo.Q28_4.ofInt;
 
@@ -85,29 +86,33 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @param edgeId l'arête dont on veut savoir si elle possède un profil
      * @return le tableau de tous les échantillons du profil en long de l'arête d'identité donnée
      */
-    public float[] profileSamples(int edgeId){
-        int profileType =  Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
-        if(profileType == 0) return new float[]{};
+    public float[] profileSamples(int edgeId) {
+        if (!hasProfile(edgeId)) return new float[]{};
 
-        int firstSample = Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
-        int nbSamples = 1 + Math2.ceilDiv(Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_LENGTH)), ofInt(2));
-        float[] profileSamples = new float[nbSamples];
+        int profileType = Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
+        int firstSampleIndex = Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
+        float[] profileSamples = new float[1 + Math2.ceilDiv(Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_LENGTH)), ofInt(2))];
+        profileSamples[0] =  Q28_4.asFloat(elevations.get(firstSampleIndex));;
 
-        for (int i = 0; i < profileSamples.length; i++) {
-            if(profileType == 1){
-                if(isInverted(edgeId)) profileSamples[i] = Q28_4.asFloat(elevations.get(firstSample + i));
-                else profileSamples[profileSamples.length - 1 - i] = Q28_4.asFloat(elevations.get(firstSample + i));
-            } else {
-                profileSamples[0] = Q28_4.asFloat(elevations.get(firstSample));
-                short toExtract = elevations.get(firstSample + i);
-                profileType = (profileType == 2) ? 2 : 4 ;
-                for(int j = 0; j < profileType; j++) {
-                    if(isInverted(edgeId))  profileSamples[i + j] = Q28_4.asFloat(Bits.extractSigned(toExtract, (16 / profileType) * j, 16 / profileType));
-                    else profileSamples[profileSamples.length - 1 - i - j] = Q28_4.asFloat(Bits.extractSigned(toExtract, 16 / profileType * j, 16 / profileType));
+        if(profileType == 1) {
+            for (int i = 1; i < profileSamples.length; i++)
+                profileSamples[i] = Q28_4.asFloat(elevations.get(firstSampleIndex + i));
+        } else {
+            float currentSample = profileSamples[0];
+            int arrayIndex = 1 ;
+            int samplesPerShort = profileType == 2 ? 2 : 4 ;
+            for (int i = 0; i < Math2.ceilDiv(profileSamples.length - 1, samplesPerShort); i++) {
+                short toExtract = elevations.get(firstSampleIndex + i + 1);
+                for (int j = samplesPerShort - 1; j >= 0 && arrayIndex < profileSamples.length; j--) {
+                    currentSample += Q28_4.asFloat(Bits.extractSigned(toExtract, (16/samplesPerShort) * j, samplesPerShort));
+                    profileSamples[arrayIndex] = currentSample;
+                    arrayIndex++ ;
                 }
             }
         }
-        return profileSamples ;
+
+        if(isInverted(edgeId)) return invertArray(profileSamples) ;
+        else return profileSamples ;
     }
 
     /**
@@ -119,5 +124,20 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      */
     public int attributesIndex(int edgeId) {
         return Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_ATTRIBUTE_SET_ID));
+    }
+
+    /**
+     * Fonction privée permettant d'inverser un tableau d'échantillons dans le cas
+     * où ce dernier correspond à une voie dans le sens inverse du sens OSM.
+     *
+     * @param array le tableau que l'on veut inverser
+     * @return le tableau inversé
+     */
+    private float[] invertArray(float[] array){
+        float[] invertedArray = new float[array.length];
+        for (int i = 0; i < array.length; i++) {
+            invertedArray[i] = array[array.length-1-i];
+        }
+        return invertedArray;
     }
 }

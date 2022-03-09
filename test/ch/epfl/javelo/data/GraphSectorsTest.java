@@ -93,7 +93,6 @@ class GraphSectorsTest {
         sectorsList3.add(new GraphSectors.Sector(16383,16384));
         PointCh point3 = new PointCh((SwissBounds.MAX_E), SwissBounds.MAX_N);
 
-
         assertEquals(sectorsList1, graph.sectorsInArea(point1, 300));
         assertEquals(sectorsList2, graph.sectorsInArea(point2, 350));
         assertEquals(sectorsList3, graph.sectorsInArea(point3, 2900));

@@ -20,6 +20,8 @@ public record GraphSectors(ByteBuffer buffer) {
     private static final int OFFSET_NODE_ID = 0;
     private static final int OFFSET_NODE_NUMBER = OFFSET_NODE_ID + Integer.BYTES ;
     private static final int SECTOR_INTS =  OFFSET_NODE_NUMBER + Short.BYTES ;
+    private static final double SECTOR_WIDTH = SwissBounds.WIDTH / 128.0 ;
+    private static final double SECTOR_HEIGHT = SwissBounds.HEIGHT / 128.0 ;
 
     /**
      * Fonction qui retourne la liste de tous les secteurs ayant une intersection avec
@@ -32,10 +34,10 @@ public record GraphSectors(ByteBuffer buffer) {
      */
     public List<Sector> sectorsInArea(PointCh center, double distance){
         List<Sector> sectorsList = new ArrayList<>();
-        int xMin = (int)(Math2.clamp(0, (center.e() - distance - SwissBounds.MIN_E), SwissBounds.WIDTH) / (SwissBounds.WIDTH / 128.0));
-        int xMax = (int)(Math2.clamp(0, (center.e() + distance - SwissBounds.MIN_E), SwissBounds.WIDTH - 1e-10) / (SwissBounds.WIDTH / 128.0));
-        int yMin = (int)(Math2.clamp(0, (center.n() - distance - SwissBounds.MIN_N), SwissBounds.HEIGHT) / (SwissBounds.HEIGHT / 128.0));
-        int yMax = (int)(Math2.clamp(0,(center.n() + distance - SwissBounds.MIN_N), SwissBounds.HEIGHT - 1e-10) / (SwissBounds.HEIGHT / 128.0));
+        int xMin = (int)(Math2.clamp(0, (center.e() - distance - SwissBounds.MIN_E) / SECTOR_WIDTH, 127));
+        int xMax = (int)(Math2.clamp(0, (center.e() + distance - SwissBounds.MIN_E)  / SECTOR_WIDTH, 127));
+        int yMin = (int)(Math2.clamp(0, (center.n() - distance - SwissBounds.MIN_N) / SECTOR_HEIGHT,127));
+        int yMax = (int)(Math2.clamp(0,(center.n() + distance - SwissBounds.MIN_N) / SECTOR_HEIGHT, 127));
         for (int i = yMin; i <= yMax ; i++) {
             for (int j = xMin; j <= xMax ; j++) {
                 int sectorIndex = 128 * i + j;
