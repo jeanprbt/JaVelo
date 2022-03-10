@@ -7,7 +7,6 @@ import ch.epfl.javelo.Q28_4;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.Arrays;
 
 import static ch.epfl.javelo.Q28_4.ofInt;
 
@@ -24,8 +23,6 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
     private static final int OFFSET_ELEVATION = OFFSET_LENGTH + Short.BYTES ;
     private static final int OFFSET_ATTRIBUTE_SET_ID = OFFSET_ELEVATION + Short.BYTES ;
     private static final int EDGE_INTS = OFFSET_ATTRIBUTE_SET_ID + Short.BYTES ;
-
-
 
     /**
      * Fonction qui retourne vrai si et seulement si l'arête d'identité donnée
@@ -89,28 +86,24 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
     public float[] profileSamples(int edgeId) {
         if (!hasProfile(edgeId)) return new float[]{};
 
-        int profileType = Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
-        int firstSampleIndex = Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
         float[] profileSamples = new float[1 + Math2.ceilDiv(Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_LENGTH)), ofInt(2))];
-        profileSamples[0] =  Q28_4.asFloat(elevations.get(firstSampleIndex));;
+        int firstSampleId = Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
+        profileSamples[0] =  Q28_4.asFloat(elevations.get(firstSampleId));
+        int profileType = Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
 
         if(profileType == 1) {
-            for (int i = 1; i < profileSamples.length; i++)
-                profileSamples[i] = Q28_4.asFloat(elevations.get(firstSampleIndex + i));
+            for (int i = 1; i < profileSamples.length; i++) profileSamples[i] = Q28_4.asFloat(elevations.get(firstSampleId + i));
         } else {
             float currentSample = profileSamples[0];
-            int arrayIndex = 1 ;
-            int samplesPerShort = profileType == 2 ? 2 : 4 ;
-            for (int i = 0; i < Math2.ceilDiv(profileSamples.length - 1, samplesPerShort); i++) {
-                short toExtract = elevations.get(firstSampleIndex + i + 1);
+            int samplesPerShort = profileType == 2 ? 2 : 4, arrayIndex = 1 ; //2 ou 4 échantillons par short selon le profil
+            for (int i = 1; i <= Math2.ceilDiv(profileSamples.length - 1, samplesPerShort); i++) {
+                short toExtract = elevations.get(firstSampleId + i);
                 for (int j = samplesPerShort - 1; j >= 0 && arrayIndex < profileSamples.length; j--) {
-                    currentSample += Q28_4.asFloat(Bits.extractSigned(toExtract, (16/samplesPerShort) * j, samplesPerShort));
-                    profileSamples[arrayIndex] = currentSample;
-                    arrayIndex++ ;
+                    currentSample += Q28_4.asFloat(Bits.extractSigned(toExtract, (16/samplesPerShort) * j, (16/samplesPerShort))); //8 ou 4 selon le profil
+                    profileSamples[arrayIndex++] = currentSample;
                 }
             }
         }
-
         if(isInverted(edgeId)) return invertArray(profileSamples) ;
         else return profileSamples ;
     }
@@ -135,9 +128,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      */
     private float[] invertArray(float[] array){
         float[] invertedArray = new float[array.length];
-        for (int i = 0; i < array.length; i++) {
-            invertedArray[i] = array[array.length-1-i];
-        }
+        for (int i = 0; i < array.length; i++) invertedArray[i] = array[array.length-1-i];
         return invertedArray;
     }
 }

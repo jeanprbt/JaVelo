@@ -1,12 +1,10 @@
 package ch.epfl.javelo.data;
 
-import ch.epfl.javelo.Q28_4;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -124,8 +122,8 @@ class GraphEdgesTest {
 
         ShortBuffer elevations = ShortBuffer.wrap(new short[]{
                 (short) 0x180C,
-                (short) 0x0F0E, (short) 0x0F0E,
-                (short) 0x0F0F, (short) 0x0E0E
+                (short) 0x0102, (short) 0x48EC,
+                (short) 0xFF7E, (short) 0x80C0
         });
 
         GraphEdges edges =
@@ -137,8 +135,8 @@ class GraphEdgesTest {
         assertEquals(16.0, edges.elevationGain(0));
         assertEquals(2022, edges.attributesIndex(0));
         float[] expectedSamples = new float[]{
-                384.75f, 384.6875f, 384.5625f, 384.5f, 384.375f,
-                384.3125f, 384.25f, 384.125f, 384f
+                384.75f, 384.8125f, 384.9375f, 389.4375f , 388.1875f,
+                388.125f, 396f, 388f, 384f
         };
         assertArrayEquals(expectedSamples, edges.profileSamples(0));
     }
