@@ -31,7 +31,7 @@ public final class Functions {
      *                régulièrement entre 0 et xMax
      * @param xMax l'abscisse maximale de la plage
      * @return la fonction obtenue par interpolation linéaire des échantillons samples entre 0 et xMaxs
-     * @throws IllegalArgumentException lorsque samples a moins de deux éléments ou lorsque xMax est négatif ou ,ul
+     * @throws IllegalArgumentException lorsque samples a moins de deux éléments ou lorsque xMax est négatif ou nul
      */
     public static DoubleUnaryOperator sampled(float[] samples, double xMax) {
         Preconditions.checkArgument(samples.length >= 2 && xMax > 0);
