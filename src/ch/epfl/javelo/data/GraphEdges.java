@@ -43,7 +43,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      */
     public int targetNodeId(int edgeId){
         int nodeId = EDGE_INTS * edgeId + OFFSET_EDGE_DIRECTION_AND_ID ;
-        return edgesBuffer.getInt(nodeId) < 0 ? ~edgesBuffer.getInt(nodeId) : edgesBuffer.getInt(nodeId);
+        return isInverted(edgeId) ? ~edgesBuffer.getInt(nodeId) : edgesBuffer.getInt(nodeId);
     }
 
     /**
