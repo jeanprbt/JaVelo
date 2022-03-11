@@ -7,6 +7,7 @@ import ch.epfl.javelo.Q28_4;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Objects;
 
 import static ch.epfl.javelo.Q28_4.ofInt;
 
@@ -84,13 +85,22 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return le tableau de tous les échantillons du profil en long de l'arête d'identité donnée
      */
     public float[] profileSamples(int edgeId) {
+        //Retourne un tableau vide dans le cas d'une absence de profil.
         if (!hasProfile(edgeId)) return new float[]{};
 
+        //Récupération des différentes données propres à l'arête d'identité edgeId : nb d'échantillons, type de profil et index du premier échantillon.
         float[] profileSamples = new float[1 + Math2.ceilDiv(Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_LENGTH)), ofInt(2))];
+        int profileType = Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
         int firstSampleId = Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
         profileSamples[0] =  Q28_4.asFloat(elevations.get(firstSampleId));
-        int profileType = Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
 
+        /* Séparation des cas :
+        - si le profil est de type 1 on retourne seulement les différentes altitudes, données au format 12.4, suivant le premier échantillon de l'arête.
+        - si le profil est de type 2 ou 3, on cherche le nombre de différences d'altitudes (donc d'échantillons) empaquetées dans chaque short, et on parcourt
+          le nombre de shorts correspondant au nombre d'échantillons (nb d'échantillons / 2 pour le profil n°2 et nb d'échantillons / 4 pour le profil n°3).
+          À chaque itération on boucle sur le short étudié pour le diviser en 2 (type 2) ou en 4 (type 3) afin de récupérer la différence d'altitude et
+          d'ajouter un nouvel échantillon au tableau jusqu'à ce que celui-ci soit rempli, ce que l'on vérifie dans chaque sous-boucle à l'aide de arrayIndex.
+         */
         if(profileType == 1) {
             for (int i = 1; i < profileSamples.length; i++) profileSamples[i] = Q28_4.asFloat(elevations.get(firstSampleId + i));
         } else {
@@ -118,6 +128,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
     public int attributesIndex(int edgeId) {
         return Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_ATTRIBUTE_SET_ID));
     }
+
 
     /**
      * Fonction privée permettant d'inverser un tableau d'échantillons dans le cas

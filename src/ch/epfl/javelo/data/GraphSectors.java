@@ -7,6 +7,7 @@ import ch.epfl.javelo.projection.SwissBounds;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Enregistrement représentant le tableau des 16384 secteurs du graphe JaVelo
@@ -34,18 +35,23 @@ public record GraphSectors(ByteBuffer buffer) {
      */
     public List<Sector> sectorsInArea(PointCh center, double distance){
         List<Sector> sectorsList = new ArrayList<>();
+        //Détermination des coordonnées des secteurs correspondants aux bords du carré.
         int xMin = (int)(Math2.clamp(0, (center.e() - distance - SwissBounds.MIN_E) / SECTOR_WIDTH, 127));
         int xMax = (int)(Math2.clamp(0, (center.e() + distance - SwissBounds.MIN_E)  / SECTOR_WIDTH, 127));
         int yMin = (int)(Math2.clamp(0, (center.n() - distance - SwissBounds.MIN_N) / SECTOR_HEIGHT,127));
         int yMax = (int)(Math2.clamp(0,(center.n() + distance - SwissBounds.MIN_N) / SECTOR_HEIGHT, 127));
+        //Récupération de tous les secteurs dont les coordonnées sont comprises entre les coordonnées calculées précédemment.
+
         for (int i = yMin; i <= yMax ; i++) {
             for (int j = xMin; j <= xMax ; j++) {
                 int sectorIndex = 128 * i + j;
+                System.out.println(sectorIndex * SECTOR_INTS + OFFSET_NODE_ID);
                 int firstNode = buffer.getInt(sectorIndex * SECTOR_INTS + OFFSET_NODE_ID);
                 int endNode = Short.toUnsignedInt(buffer.getShort(sectorIndex * SECTOR_INTS + OFFSET_NODE_NUMBER)) + firstNode ;
                 sectorsList.add(new Sector(firstNode, endNode));
             }
         }
+
         return sectorsList ;
     }
 

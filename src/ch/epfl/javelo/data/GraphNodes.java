@@ -4,6 +4,7 @@ import ch.epfl.javelo.Bits;
 import ch.epfl.javelo.Q28_4;
 
 import java.nio.IntBuffer;
+import java.util.Objects;
 
 /**
  * Enregistrement représentant le tableau de tous les noeuds du graphe JaVelo
