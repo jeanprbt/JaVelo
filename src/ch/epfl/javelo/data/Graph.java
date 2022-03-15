@@ -45,8 +45,8 @@ public final class Graph {
 
     /**
      * Fonction permettant de charger un graphe JaVelo entier à partir d'un répertoire
-     * source comportant les sous-répertoires correpondant aux différentes données
-     * du graphe (noeuds, secteurs, arêtes, attributs OSM).
+     * source comportant les sous-répertoires correspondant aux différentes données
+     * du graphe (nœuds, secteurs, arêtes, attributs OSM).
      *
      * @param basePath le répertoire source des données
      * @return un graphe JaVelo contenant toutes les données passées en argument
@@ -86,7 +86,7 @@ public final class Graph {
     /**
      * Fonction retournant le nombre de nœuds dans le graphe.
      *
-     * @return le nombre de nœuds dans le graphe.
+     * @return le nombre de nœuds dans le graphe
      */
     public int nodeCount(){
         return nodes.count();
@@ -119,7 +119,7 @@ public final class Graph {
      *
      * @param nodeId l'identité du nœud dans le graphe JaVelo
      * @param edgeIndex l'index de la edgeIndex-ième arête sortant du nœud
-     * @return l'identité de la edgeIndex-ième arête sortant du nœud d'identité nodeId.
+     * @return l'identité de la edgeIndex-ième arête sortant du nœud d'identité nodeId
      */
     public int nodeOutEdgeId(int nodeId, int edgeIndex){
         return nodes.edgeId(nodeId, edgeIndex);
@@ -162,7 +162,7 @@ public final class Graph {
      * Fonction qui retourne l'identité du nœud destination de l'arête d'identité donnée.
      *
      * @param edgeId l'identité de l'arête dont on veut le nœud destination
-     * @return l'identité du nœud destionation de l'arête d'identité donnée
+     * @return l'identité du nœud destination de l'arête d'identité donnée
      */
     public int edgeTargetNodeId(int edgeId){
         return edges.targetNodeId(edgeId);
@@ -183,7 +183,7 @@ public final class Graph {
      * Fonction qui retourne l'ensemble des attributs OSM attachés à l'arête d'identité donnée.
      *
      * @param edgeId : l'identité de l'arête donnée
-     * @return l'ensemble des attributs OSM attachés à l'arête d'identité donnée.
+     * @return l'ensemble des attributs OSM attachés à l'arête d'identité donnée
      */
     public AttributeSet edgeAttributes(int edgeId){
         return attributeSets.get(edges.attributesIndex(edgeId));
@@ -203,7 +203,7 @@ public final class Graph {
      * Fonction qui retourne le dénivelé positif total de l'arête d'identité donnée.
      *
      * @param edgeId l'arête dont on veut le dénivelé positif total
-     * @return le dénivelé positif total de l'arête d'identié donnée
+     * @return le dénivelé positif total de l'arête d'identité donnée
      */
     public double edgeElevationGain(int edgeId){
         return edges.elevationGain(edgeId);
@@ -214,7 +214,7 @@ public final class Graph {
      * Si l'arête ne possède pas de profil, alors cette fonction doit retourner Double.NaN pour n'importe quel argument.
      *
      * @param edgeId l'arête d'identité donnée
-     * @return le profil en long de l'arête d'identité donnée, sous la forme d'une fonction;
+     * @return le profil en long de l'arête d'identité donnée, sous la forme d'une fonction
      */
     public DoubleUnaryOperator edgeProfile(int edgeId){
         if (!edges.hasProfile(edgeId)) return Functions.constant(Double.NaN) ;

@@ -73,8 +73,8 @@ public interface Route {
      * plus proche du point de référence donné.
      *
      * @param point le point de référence donné
-     * @return le point de l'itinéraire se trouvant le
-     * plus proche du point de référence donné.
+     * @return le point de l'itinéraire se trouvant le plus proche du point de référence donné.
+     *
      */
     RoutePoint pointClosestTo(PointCh point);
 

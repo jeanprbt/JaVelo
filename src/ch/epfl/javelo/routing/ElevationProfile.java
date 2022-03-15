@@ -1,7 +1,6 @@
 package ch.epfl.javelo.routing;
 
 import ch.epfl.javelo.Functions;
-import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.Preconditions;
 
 import java.util.Arrays;
@@ -104,7 +103,7 @@ public final class ElevationProfile {
     }
 
     /**
-     * Fonction qui calcule le dénivelé positif ou négatif d'un profil.
+     * Méthode privée qui calcule le dénivelé positif ou négatif d'un profil.
      *
      * @param array le tableau donnant le profil dont on cherche le dénivelé positif ou négatif
      * @param positive vrai si on cherche le dénivelé positif et faux si on cherche le dénivelé négatif
