@@ -3,7 +3,6 @@ package ch.epfl.javelo.data;
 import ch.epfl.javelo.Functions;
 import ch.epfl.javelo.projection.PointCh;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -13,7 +12,6 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -149,7 +147,7 @@ public final class Graph {
         // pour déterminer la distance la plus faible possible et l'identité du nœud correspondant.
         for (GraphSectors.Sector sector : sectorsInArea) {
             for (int i = sector.startNodeId(); i < sector.endNodeId(); i++) {
-                PointCh node = new PointCh(nodes.nodeE(i), nodes.nodeN(i));
+                PointCh node = nodePoint(i);
                 double distance = point.squaredDistanceTo(node);
                 if(distance < closestDistance) {
                     closestNodeId = i ;

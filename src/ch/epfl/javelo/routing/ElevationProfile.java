@@ -19,7 +19,6 @@ public final class ElevationProfile {
     private final double length;
     private final float[] elevationSamples;
 
-
     /**
      * Constructeur public du profil en long d'un itinéraire simple ou multiple.
      *

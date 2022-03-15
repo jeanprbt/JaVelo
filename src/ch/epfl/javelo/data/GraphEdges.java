@@ -7,6 +7,7 @@ import ch.epfl.javelo.Q28_4;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static ch.epfl.javelo.Q28_4.ofInt;
@@ -92,7 +93,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
         float[] profileSamples = new float[1 + Math2.ceilDiv(Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_LENGTH)), ofInt(2))];
         int profileType = Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
         int firstSampleId = Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
-        profileSamples[0] =  Q28_4.asFloat(elevations.get(firstSampleId));
+        profileSamples[0] = Q28_4.asFloat(Short.toUnsignedInt(elevations.get(firstSampleId)));
 
         /* Séparation des cas :
         - si le profil est de type 1 on retourne seulement les différentes altitudes, données au format 12.4, suivant le premier échantillon de l'arête.
@@ -101,8 +102,9 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
           À chaque itération on boucle sur le short étudié pour le diviser en 2 (type 2) ou en 4 (type 3) afin de récupérer la différence d'altitude et
           d'ajouter un nouvel échantillon au tableau jusqu'à ce que celui-ci soit rempli, ce que l'on vérifie dans chaque sous-boucle à l'aide de arrayIndex.
          */
+
         if(profileType == 1) {
-            for (int i = 1; i < profileSamples.length; i++) profileSamples[i] = Q28_4.asFloat(elevations.get(firstSampleId + i));
+            for (int i = 1; i < profileSamples.length; i++) profileSamples[i] = Q28_4.asFloat(Short.toUnsignedInt(elevations.get(firstSampleId + i)));
         } else {
             float currentSample = profileSamples[0];
             int samplesPerShort = profileType == 2 ? 2 : 4, arrayIndex = 1 ; //2 ou 4 échantillons par short selon le profil

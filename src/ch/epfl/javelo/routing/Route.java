@@ -27,6 +27,7 @@ public interface Route {
      */
     double length();
 
+
     /**
      * Fonction qui retourne la totalité des arêtes de l'itinéraire.
      *
@@ -49,6 +50,13 @@ public interface Route {
      * @return le point se trouvant à la position donnée le long de l'itinéraire
      */
     PointCh pointAt(double position);
+
+    /**
+     * Fonction qui retourne l'altitude à la position donnée le long de l'itinéraire.
+     * @param position la position le long de l'itinéraire
+     * @return l'altitude à la position donnée le long de l'itinéraire
+     */
+    double elevationAt(double position);
 
     /**
      * Fonction qui retourne l'identité du nœud appartenant à l'itinéraire

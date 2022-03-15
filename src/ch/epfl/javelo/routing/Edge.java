@@ -1,8 +1,8 @@
 package ch.epfl.javelo.routing;
 
+import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.data.Graph;
 import ch.epfl.javelo.projection.PointCh;
-
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -35,5 +35,36 @@ public record Edge(int fromNodeId, int toNodeId, PointCh fromPoint, PointCh toPo
      */
     public static Edge of(Graph graph, int edgeId, int fromNodeId, int toNodeId){
         return null ;
+    }
+
+    /**
+     * Fonction qui retourne la position le long de l'arête, en mètres,
+     * qui se trouve le plus proche du point donné.
+     *
+     * @param point le point dont on veut la position la plus proche le long de l'arête
+     * @return la position en mètres le long de l'arête la plus proche du point donné
+     */
+    public double positionClosestTo(PointCh point){
+        return Math2.projectionLength(fromPoint.e(), fromPoint.n(), toPoint.e(), toPoint.n(), point.e(), point.n());
+    }
+
+    /**
+     * Fonction qui retourne le point se trouvant à la position donnée sur l'arête, exprimée en mètres.
+     *
+     * @param position la position du point sur l'arête, exprimée en mètres
+     * @return le point se trouvant à la position donnée sur l'arête
+     */
+    public PointCh pointAt(double position) {
+        return new PointCh(Math2.interpolate(fromPoint.e(), toPoint.e(), position / length), Math2.interpolate(fromPoint.n(), toPoint.n(), position/length));
+    }
+
+    /**
+     * Fonction qui retourne l'altitude, en mètres, à la position donnée sur l'arête.
+     *
+     * @param position la position du point sur l'arête, exprimée en mètres
+     * @return l'altitude, en mètres, à la position donnée sur l'arête
+     */
+    public double elevationAt(double position){
+        return profile.applyAsDouble(position);
     }
 }

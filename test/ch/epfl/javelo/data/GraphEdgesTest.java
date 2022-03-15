@@ -5,70 +5,16 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
+import java.util.List;
 
+import static ch.epfl.test.TestRandomizer.RANDOM_ITERATIONS;
+import static ch.epfl.test.TestRandomizer.newRandom;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GraphEdgesTest {
     @Test
-    void isInvertedWorksProperly(){
-        ByteBuffer edgesBuffer = ByteBuffer.allocate(1000);
-        IntBuffer profileIds = IntBuffer.allocate(1000);
-        ShortBuffer elevations = ShortBuffer.allocate(3000);
-        GraphEdges graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
-        edgesBuffer.putInt(-34);
-        assertEquals(true, graphEdges.isInverted(0));
-    }
-
-    @Test
-    void profileSamplesWorksWithNonCompressedProfiles(){
-        ByteBuffer edgesBuffer = ByteBuffer.allocate(10000);
-        IntBuffer profileIds = IntBuffer.allocate(1000);
-        ShortBuffer elevations = ShortBuffer.allocate(3000);
-        for (int i = 0; i < 1000; i++) {
-            edgesBuffer.putInt(i);
-            edgesBuffer.putShort((short)(3 << 4));
-            edgesBuffer.putShort((short)(3 << 4));
-            edgesBuffer.putShort((short)(i << 4));
-            profileIds.put(1 << 30 | 3*i);
-            for (int j = 0; j < 3; j++) {
-                elevations.put((short)(200 + i%16 + j));
-            }
-        }
-        GraphEdges graph = new GraphEdges(edgesBuffer, profileIds, elevations);
-        float[] expectedProfiles = new float[]{12.5f, 12.5625f , 12.625f};
-        assertArrayEquals(expectedProfiles, graph.profileSamples(160));
-
-        ByteBuffer edgesBufferInverted = ByteBuffer.allocate(10000);
-        GraphEdges graphInverted = new GraphEdges(edgesBufferInverted, profileIds, elevations);
-        for (int i = 0; i < 1000; i++) {
-            edgesBufferInverted.putInt(-i);
-            edgesBufferInverted.putShort((short)(3 << 4));
-            edgesBufferInverted.putShort((short)(3 << 4));
-            edgesBufferInverted.putShort((short)(i << 4));
-        }
-        float[] expectedProfilesInverted = new float[]{12.625f, 12.5625f, 12.5f};
-        assertArrayEquals(expectedProfilesInverted, graphInverted.profileSamples(160));
-
-    }
-
-    @Test
-    void profileSamplesWorksWithType0Profiles(){
-        ByteBuffer edgesBuffer = ByteBuffer.allocate(10);
-        IntBuffer profileIds = IntBuffer.wrap(new int[] {
-                0b00010101101010101010010101100011
-        });
-        ShortBuffer elevations = ShortBuffer.wrap(new short[]{
-                (short) 0,
-                (short) 0x180C, (short) 0xFEFF,
-                (short) 0xFFFE, (short) 0xF000
-        });
-        GraphEdges graph = new GraphEdges(edgesBuffer, profileIds, elevations);
-        assertArrayEquals(new float[]{}, graph.profileSamples(0));
-    }
-
-
-    @Test
-    void profileSamplesWorksWithType3Profiles(){
+    void graphEdgesWorksOnGivenExample() {
         ByteBuffer edgesBuffer = ByteBuffer.allocate(10);
         // Sens : inversé. Nœud destination : 12.
         edgesBuffer.putInt(0, ~12);
@@ -76,7 +22,7 @@ class GraphEdgesTest {
         edgesBuffer.putShort(4, (short) 0x10_b);
         // Dénivelé : 0x10.0 m (= 16.0 m)
         edgesBuffer.putShort(6, (short) 0x10_0);
-        // Identité de l'ensemble d'attributs OSM : 2022
+        // Identité de l'ensemble d'attributs OSM : 1
         edgesBuffer.putShort(8, (short) 2022);
 
         IntBuffer profileIds = IntBuffer.wrap(new int[]{
@@ -86,17 +32,16 @@ class GraphEdgesTest {
 
         ShortBuffer elevations = ShortBuffer.wrap(new short[]{
                 (short) 0,
-                (short) 0x180C, (short) 0xFEFF,
-                (short) 0xFFFE, (short) 0xF000
+                (short) 0x180C, (short) 0xFEFF, (short) 0xFFFE, (short) 0xF000
         });
 
-        GraphEdges edges =
-                new GraphEdges(edgesBuffer, profileIds, elevations);
+        GraphEdges edges = new GraphEdges(edgesBuffer, profileIds, elevations);
 
         assertTrue(edges.isInverted(0));
         assertEquals(12, edges.targetNodeId(0));
         assertEquals(16.6875, edges.length(0));
         assertEquals(16.0, edges.elevationGain(0));
+        assertTrue(edges.hasProfile(0));
         assertEquals(2022, edges.attributesIndex(0));
         float[] expectedSamples = new float[]{
                 384.0625f, 384.125f, 384.25f, 384.3125f, 384.375f,
@@ -106,38 +51,245 @@ class GraphEdgesTest {
     }
 
     @Test
-    void profileSamplesWorksWithType2Profiles(){
-        ByteBuffer edgesBuffer = ByteBuffer.allocate(10);
-        //Sens : non inversé. Noeud destination : 12.
-        edgesBuffer.putInt(0, 12);
-        //Longueur de l'arête : 16m ;
-        edgesBuffer.putShort(4, (short) 256);
-        //Dénivelé positif : 16m ;
-        edgesBuffer.putShort(6, (short) 256);
-        edgesBuffer.putShort(8, (short) 2022);
+    void graphEdgesIsInvertedWorksForPlusMinus100() {
+        var edgesCount = 10_000;
+        var edgesBuffer = ByteBuffer.allocate(10 * edgesCount);
+        var profileIds = IntBuffer.allocate(edgesCount);
+        var elevations = ShortBuffer.allocate(10);
+        var rng = newRandom();
+        for (int targetNodeId = -100; targetNodeId < 100; targetNodeId += 1) {
+            var edgeId = rng.nextInt(edgesCount);
+            edgesBuffer.putInt(10 * edgeId, targetNodeId);
+            var graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
+            assertEquals(targetNodeId < 0, graphEdges.isInverted(edgeId));
+        }
+    }
 
-        IntBuffer profileIds = IntBuffer.wrap(new int[]{
-                2 << 30
-        });
+    @Test
+    void graphEdgesTargetNodeIdWorksForPlusMinus100() {
+        var edgesCount = 10_000;
+        var edgesBuffer = ByteBuffer.allocate(10 * edgesCount);
+        var profileIds = IntBuffer.allocate(edgesCount);
+        var elevations = ShortBuffer.allocate(10);
+        var rng = newRandom();
+        for (int targetNodeId = -100; targetNodeId < 100; targetNodeId += 1) {
+            var edgeId = rng.nextInt(edgesCount);
+            edgesBuffer.putInt(10 * edgeId, targetNodeId);
+            var graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
+            var expectedTargetNodeId = targetNodeId < 0 ? ~targetNodeId : targetNodeId;
+            assertEquals(expectedTargetNodeId, graphEdges.targetNodeId(edgeId));
+        }
+    }
 
-        ShortBuffer elevations = ShortBuffer.wrap(new short[]{
-                (short) 0x180C,
-                (short) 0x0102, (short) 0x48EC,
-                (short) 0xFF7E, (short) 0x80C0
-        });
+    @Test
+    void graphEdgesLengthWorksOnRandomValues() {
+        var edgesCount = 10_000;
+        var edgesBuffer = ByteBuffer.allocate(10 * edgesCount);
+        var profileIds = IntBuffer.allocate(edgesCount);
+        var elevations = ShortBuffer.allocate(10);
+        var rng = newRandom();
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            var edgeId = rng.nextInt(edgesCount);
+            var length = rng.nextDouble(1 << 12);
+            var length_q12_4 = (int) Math.scalb(length, 4);
+            length = Math.scalb((double) length_q12_4, -4);
+            edgesBuffer.putShort(10 * edgeId + 4, (short) length_q12_4);
+            var graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
+            assertEquals(length, graphEdges.length(edgeId));
+        }
+    }
 
-        GraphEdges edges =
-                new GraphEdges(edgesBuffer, profileIds, elevations);
+    @Test
+    void graphEdgesElevationGainWorksOnRandomValues() {
+        var edgesCount = 10_000;
+        var edgesBuffer = ByteBuffer.allocate(10 * edgesCount);
+        var profileIds = IntBuffer.allocate(edgesCount);
+        var elevations = ShortBuffer.allocate(10);
+        var rng = newRandom();
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            var edgeId = rng.nextInt(edgesCount);
+            var elevationGain = rng.nextDouble(1 << 12);
+            var elevationGain_q12_4 = (int) Math.scalb(elevationGain, 4);
+            elevationGain = Math.scalb((double) elevationGain_q12_4, -4);
+            edgesBuffer.putShort(10 * edgeId + 6, (short) elevationGain_q12_4);
+            var graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
+            assertEquals(elevationGain, graphEdges.elevationGain(edgeId));
+        }
+    }
 
-        assertFalse(edges.isInverted(0));
-        assertEquals(12, edges.targetNodeId(0));
-        assertEquals(16.0, edges.length(0));
-        assertEquals(16.0, edges.elevationGain(0));
-        assertEquals(2022, edges.attributesIndex(0));
-        float[] expectedSamples = new float[]{
-                384.75f, 384.8125f, 384.9375f, 389.4375f , 388.1875f,
-                388.125f, 396f, 388f, 384f
-        };
-        assertArrayEquals(expectedSamples, edges.profileSamples(0));
+    @Test
+    void graphEdgesHasProfileWorks() {
+        var edgesCount = 10_000;
+        var elevationsCount = 25_000;
+        var edgesBuffer = ByteBuffer.allocate(10 * edgesCount);
+        var profileIds = IntBuffer.allocate(edgesCount);
+        var elevations = ShortBuffer.allocate(elevationsCount);
+        var rng = newRandom();
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            for (int profileType = 0; profileType < 4; profileType += 1) {
+                var edgeId = rng.nextInt(edgesCount);
+                var firstSampleIndex = rng.nextInt(elevationsCount);
+                profileIds.put(edgeId, (profileType << 30) | firstSampleIndex);
+                var graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
+                assertEquals(profileType != 0, graphEdges.hasProfile(edgeId));
+            }
+        }
+    }
+
+    @Test
+    void graphEdgesProfileSamplesWorksForType0() {
+        var edgesCount = 10_000;
+        var elevationsCount = 25_000;
+        var edgesBuffer = ByteBuffer.allocate(10 * edgesCount);
+        var profileIds = IntBuffer.allocate(edgesCount);
+        var elevations = ShortBuffer.allocate(elevationsCount);
+        var rng = newRandom();
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            var edgeId = rng.nextInt(edgesCount);
+            var firstSampleIndex = rng.nextInt(elevationsCount);
+            profileIds.put(edgeId, firstSampleIndex);
+            var graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
+            assertArrayEquals(new float[0], graphEdges.profileSamples(edgeId));
+        }
+    }
+
+    @Test
+    void graphEdgesProfileSamplesWorksForType1() {
+        var elevationsCount = 500;
+        var edgesBuffer = ByteBuffer.allocate(10);
+        var profileIds = IntBuffer.allocate(1);
+        var elevations = ShortBuffer.allocate(elevationsCount);
+        var rng = newRandom();
+        for (int i = 0; i < elevationsCount; i += 1)
+            elevations.put(i, (short) rng.nextInt(1 << 16));
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            var inverted = rng.nextBoolean();
+            var sampleCount = rng.nextInt(2, 100);
+            var firstSampleIndex = rng.nextInt(elevationsCount - sampleCount);
+            var edgeLength_q28_4 = (2 * (sampleCount - 1)) << 4;
+            edgesBuffer.putInt(0, inverted ? ~0 : 0);
+            edgesBuffer.putShort(4, (short) edgeLength_q28_4);
+            profileIds.put(0, (1 << 30) | firstSampleIndex);
+            var expectedSamples = new float[sampleCount];
+            for (int j = 0; j < sampleCount; j += 1) {
+                var elevation = Math.scalb(Short.toUnsignedInt(elevations.get(firstSampleIndex + j)), -4);
+                if (inverted)
+                    expectedSamples[sampleCount - 1 - j] = elevation;
+                else
+                    expectedSamples[j] = elevation;
+            }
+            var graphEdges = new GraphEdges(edgesBuffer.asReadOnlyBuffer(), profileIds.asReadOnlyBuffer(), elevations.asReadOnlyBuffer());
+            assertArrayEquals(expectedSamples, graphEdges.profileSamples(0));
+        }
+    }
+
+    @Test
+    void graphEdgesProfileSamplesWorksForType2() {
+        List<TestCase> samples = List.of(
+                new TestCase(
+                        new short[]{0x2a2d, 0x0201},
+                        new float[]{674.812500f, 674.937500f, 675.000000f}),
+                new TestCase(
+                        new short[]{0x2036, 0x01e0, (short) 0xd200},
+                        new float[]{515.375000f, 515.437500f, 513.437500f, 510.562500f}),
+                new TestCase(
+                        new short[]{0x2022, 0x0103, 0x090c},
+                        new float[]{514.125000f, 514.187500f, 514.375000f, 514.937500f, 515.687500f}),
+                new TestCase(
+                        new short[]{0x204d, (short) 0xf2f9, 0x0209, (short) 0xfa00},
+                        new float[]{516.812500f, 515.937500f, 515.500000f, 515.625000f, 516.187500f, 515.812500f}),
+                new TestCase(
+                        new short[]{0x19c8, (short) 0xfefe, (short) 0xfeff, (short) 0xff13},
+                        new float[]{412.500000f, 412.375000f, 412.250000f, 412.125000f, 412.062500f, 412.000000f, 413.187500f}),
+                new TestCase(
+                        new short[]{0x1776, 0x0100, (short) 0xfff3, (short) 0xe800, 0x0100},
+                        new float[]{375.375000f, 375.437500f, 375.437500f, 375.375000f, 374.562500f, 373.062500f, 373.062500f, 373.125000f}));
+
+        var edgesBuffer = ByteBuffer.allocate(10);
+        var profileIds = IntBuffer.wrap(new int[]{2 << 30}).asReadOnlyBuffer();
+        var elevations = ShortBuffer.allocate(20);
+        for (TestCase testCase : samples) {
+            var sampleCount = testCase.uncompressed().length;
+            var edgeLength_q28_4 = (2 * (sampleCount - 1)) << 4;
+            elevations.put(0, testCase.compressed());
+            edgesBuffer.putShort(4, (short) edgeLength_q28_4);
+            var graphEdges = new GraphEdges(edgesBuffer.asReadOnlyBuffer(), profileIds, elevations.asReadOnlyBuffer());
+
+            // Straight
+            edgesBuffer.putInt(0, 0);
+            assertArrayEquals(testCase.uncompressed(), graphEdges.profileSamples(0));
+
+            // Inverted
+            edgesBuffer.putInt(0, ~0);
+            assertArrayEquals(testCase.uncompressedInverted(), graphEdges.profileSamples(0));
+        }
+    }
+
+    @Test
+    void graphEdgesProfileSamplesWorksForType3() {
+        List<TestCase> samples = List.of(
+                new TestCase(
+                        new short[]{0x2a0f, (short) 0xeff0},
+                        new float[]{672.937500f, 672.812500f, 672.750000f, 672.687500f}),
+                new TestCase(
+                        new short[]{0x2a3e, (short) 0xefef},
+                        new float[]{675.875000f, 675.750000f, 675.687500f, 675.562500f, 675.500000f}),
+                new TestCase(
+                        new short[]{0x2a13, 0x1121, 0x1000},
+                        new float[]{673.187500f, 673.250000f, 673.312500f, 673.437500f, 673.500000f, 673.562500f}),
+                new TestCase(
+                        new short[]{0x2a8b, 0x2121, 0x2200},
+                        new float[]{680.687500f, 680.812500f, 680.875000f, 681.000000f, 681.062500f, 681.187500f, 681.312500f}),
+                new TestCase(
+                        new short[]{0x2a49, (short) 0xefef, (short) 0xeef0},
+                        new float[]{676.562500f, 676.437500f, 676.375000f, 676.250000f, 676.187500f, 676.062500f, 675.937500f, 675.875000f}));
+
+        var edgesBuffer = ByteBuffer.allocate(10);
+        var profileIds = IntBuffer.wrap(new int[]{3 << 30}).asReadOnlyBuffer();
+        var elevations = ShortBuffer.allocate(20);
+        for (TestCase testCase : samples) {
+            var sampleCount = testCase.uncompressed().length;
+            var edgeLength_q28_4 = (2 * (sampleCount - 1)) << 4;
+            elevations.put(0, testCase.compressed());
+            edgesBuffer.putShort(4, (short) edgeLength_q28_4);
+            var graphEdges = new GraphEdges(edgesBuffer.asReadOnlyBuffer(), profileIds, elevations.asReadOnlyBuffer());
+
+            // Straight
+            edgesBuffer.putInt(0, 0);
+            assertArrayEquals(testCase.uncompressed(), graphEdges.profileSamples(0));
+
+            // Inverted
+            edgesBuffer.putInt(0, ~0);
+            assertArrayEquals(testCase.uncompressedInverted(), graphEdges.profileSamples(0));
+        }
+    }
+
+    private record TestCase(short[] compressed, float[] uncompressed) {
+        public float[] uncompressedInverted() {
+            float[] array = uncompressed();
+            var inverted = Arrays.copyOf(array, array.length);
+            for (int i = 0, j = inverted.length - 1; i < j; i += 1, j -= 1) {
+                var t = inverted[i];
+                inverted[i] = inverted[j];
+                inverted[j] = t;
+            }
+            return inverted;
+        }
+    }
+
+    @Test
+    void graphEdgesAttributesIndexWorksOnRandomValues() {
+        var edgesCount = 10_000;
+        var edgesBuffer = ByteBuffer.allocate(10 * edgesCount);
+        var profileIds = IntBuffer.allocate(edgesCount);
+        var elevations = ShortBuffer.allocate(10);
+        var rng = newRandom();
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            var edgeId = rng.nextInt(edgesCount);
+            var attributesIndex = rng.nextInt(1 << 16);
+            edgesBuffer.putShort(10 * edgeId + 8, (short) attributesIndex);
+            var graphEdges = new GraphEdges(edgesBuffer, profileIds, elevations);
+            assertEquals(attributesIndex, graphEdges.attributesIndex(edgeId));
+        }
     }
 }
