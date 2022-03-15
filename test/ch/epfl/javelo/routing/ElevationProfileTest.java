@@ -44,5 +44,4 @@ class ElevationProfileTest {
         assertEquals(12, new ElevationProfile(12, test2).elevationAt(5));
         assertEquals(4, new ElevationProfile(12, test2).elevationAt(345));
     }
-
 }
