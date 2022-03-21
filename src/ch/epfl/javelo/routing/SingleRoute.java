@@ -63,26 +63,46 @@ public final class SingleRoute implements Route {
     @Override
     public PointCh pointAt(double position) {
         position = Math2.clamp(0, position, length());
-        int bound = Arrays.binarySearch(positions, position);
-        if (bound >= 0)  return edges.get(bound).pointAt(0);
-        return edges.get(-(bound + 2)).pointAt(position - positions[-(bound + 2)]);
+        int edgeId = Arrays.binarySearch(positions, position);
+
+        //Cas où la position correspond exactement à celle d'un nœud
+        if(edgeId == edges.size()) return edges.get(edges.size() - 1).toPoint() ;
+        if(edgeId >= 0) return edges.get(edgeId).fromPoint();
+
+        //Cas où la position correspond au milieu d'une arête
+        Edge matchingEdge = edges.get(-edgeId - 2);
+        double positionOnEdge = position - positions[-edgeId - 2];
+        return matchingEdge.pointAt(positionOnEdge);
     }
 
     @Override
     public double elevationAt(double position) {
         position = Math2.clamp(0, position, length());
-        int bound = Arrays.binarySearch(positions, position);
-        if (bound >= 0) return edges.get(bound).elevationAt(0);
-        return edges.get(-(bound + 2)).elevationAt(position - positions[-(bound + 2)]);
+        int edgeId = Arrays.binarySearch(positions, position);
 
+        //Cas où la position correspond exactement à celle d'un nœud
+        if(edgeId == edges.size()) return edges.get(edges.size() - 1).elevationAt(edges.get(edges.size() - 1).length()) ;
+        if(edgeId >= 0) return edges.get(edgeId).elevationAt(0);
+
+        //Cas où la position correspond au milieu d'une arête
+        Edge matchingEdge = edges.get(-edgeId - 2);
+        double positionOnEdge = position - positions[-edgeId - 2];
+        return matchingEdge.elevationAt(positionOnEdge);
     }
 
     @Override
     public int nodeClosestTo(double position) {
         position = Math2.clamp(0, position, length());
-        int bound = Arrays.binarySearch(positions, position);
-        if(bound >= 0) return edges.get(bound).fromNodeId() ;
-        return position - positions[-(bound + 2)] < edges.get(-(bound + 2)).length()/2.0 ? edges.get(-(bound + 2)).fromNodeId() : edges.get(-(bound + 2)).toNodeId();
+        int edgeId = Arrays.binarySearch(positions, position);
+
+        //Cas où la position correspond exactement à celle d'un nœud
+        if(edgeId == edges.size()) return edges.get(edges.size() - 1).toNodeId() ;
+        if(edgeId >= 0) return edges.get(edgeId).fromNodeId();
+
+        //Cas où la position correspond au milieu d'une arête
+        Edge matchingEdge = edges.get(-edgeId - 2);
+        double positionOnEdge = position - positions[-edgeId - 2];
+        return positionOnEdge <= matchingEdge.length() / 2.0 ? matchingEdge.fromNodeId() : matchingEdge.toNodeId();
     }
 
     @Override

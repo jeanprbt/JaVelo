@@ -149,7 +149,7 @@ public final class Graph {
             for (int i = sector.startNodeId(); i < sector.endNodeId(); i++) {
                 PointCh node = nodePoint(i);
                 double distance = point.squaredDistanceTo(node);
-                if(distance < closestDistance) {
+                if(distance <= closestDistance) {
                     closestNodeId = i ;
                     closestDistance = distance;
                 }

@@ -74,11 +74,21 @@ class SingleRouteTest {
     @Test
     void elevationAtWorksProperly(){
         List<Edge> list = new ArrayList<>();
-        DoubleUnaryOperator profile = Functions.constant(0);
-        list.add(new Edge(0, 1, new PointCh(SwissBounds.MIN_E, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 10, SwissBounds.MIN_N), 10, profile));
-        list.add(new Edge(1, 2, new PointCh(SwissBounds.MIN_E + 10, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 4), 5, profile));
-        list.add(new Edge(2, 3, new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 4), new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 10), 6, profile));
+        DoubleUnaryOperator profile1 = Functions.sampled(new float[]{2, 1, 2, 3, 2, 1, 0.5f, 1, 1.5f , 1, 0.5f}, 10);
+        DoubleUnaryOperator profile2 = Functions.sampled(new float[]{3, 4, 5, 6, 6, 7}, 5);
+        DoubleUnaryOperator profile3 = Functions.sampled(new float[]{187, 156, 134, 3, 456, 133, 34}, 6);
+
+        list.add(new Edge(0, 1, new PointCh(SwissBounds.MIN_E, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 10, SwissBounds.MIN_N), 10, profile1));
+        list.add(new Edge(1, 2, new PointCh(SwissBounds.MIN_E + 10, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 4), 5, profile2));
+        list.add(new Edge(2, 3, new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 4), new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 10), 6, profile3));
         SingleRoute route = new SingleRoute(list);
+
+        assertEquals(3, route.elevationAt(3));
+        assertEquals(2, route.elevationAt(-12));
+        assertEquals(34, route.elevationAt(1000));
+        assertEquals(145, route.elevationAt(16.5));
+
+
     }
 
     @Test

@@ -59,7 +59,7 @@ public final class ElevationProfileComputer {
     }
 
     /**
-     * Méthode privée permettant de calculer l'index du premier élément valide (différent de Float.NaN)
+     * Méthode privée permettant de calculer l'index du premier élément valide (différent de Float. NaN)
      * dans le tableau array, à partir de l'index start, et dans l'ordre inverse si inverted est à true
      * et dans l'ordre du tableau si inverted est à false.
      *
