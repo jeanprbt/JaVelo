@@ -82,7 +82,13 @@ public final class SingleRoute implements Route {
 
         //Cas où la position correspond exactement à celle d'un nœud
         if(edgeId == edges.size()) return edges.get(edges.size() - 1).elevationAt(edges.get(edges.size() - 1).length()) ;
-        if(edgeId >= 0) return edges.get(edgeId).elevationAt(0);
+        if(edgeId == 0) return edges.get(edgeId).elevationAt(0);
+
+        //Traitement du cas limite où l'élévation du nœud prise en compte correspond à celle de l'arête suivante, qui est potentiellement sans profil
+        if(edgeId > 0) {
+            if(Float.isNaN((float)edges.get(edgeId).elevationAt(0))) return edges.get(edgeId - 1).elevationAt(edges.get(edgeId - 1).length());
+            else return edges.get(edgeId).elevationAt(0);
+        }
 
         //Cas où la position correspond au milieu d'une arête
         Edge matchingEdge = edges.get(-edgeId - 2);
@@ -108,6 +114,7 @@ public final class SingleRoute implements Route {
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
         RoutePoint routePoint = RoutePoint.NONE;
+        int edgeId = 0 ;
         // Itération sur les arêtes pour déterminer le projeté orthogonal du point sur l'arête et
         // le point de l'arête correspondant à cette position, puis emploi de la méthode min() de
         // RoutePoint pour trouver le RoutePoint le plus proche du point passé en argument ;
@@ -117,7 +124,7 @@ public final class SingleRoute implements Route {
             if (closestPositionOnEdge < 0) closestPointOnEdge = edge.fromPoint();
             else if (closestPositionOnEdge > edge.length()) closestPointOnEdge = edge.toPoint() ;
             else closestPointOnEdge = edge.pointAt(closestPositionOnEdge);
-            routePoint = routePoint.min(closestPointOnEdge, closestPositionOnEdge, point.distanceTo(closestPointOnEdge));
+            routePoint = routePoint.min(closestPointOnEdge, positions[edgeId++] + Math2.clamp(0, closestPositionOnEdge, edge.length()), point.distanceTo(closestPointOnEdge));
         }
         return routePoint;
     }

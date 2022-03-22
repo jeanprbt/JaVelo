@@ -28,14 +28,14 @@ public final class ElevationProfileComputer {
     public static ElevationProfile elevationProfile(Route route, double maxStepLength){
         Preconditions.checkArgument(maxStepLength > 0);
         float[] elevationSamples = new float[(int) Math.ceil(route.length()/maxStepLength) + 1] ;
-        int arrayIndex = 0 ;
 
         //Remplissage du tableau avec les NaN
-        for (int i = 0; i < route.length(); i += maxStepLength) elevationSamples[arrayIndex++] = (float) route.elevationAt(i);
+        for (int i = 0; i < elevationSamples.length ; i++)
+            elevationSamples[i] = (float) route.elevationAt(i * maxStepLength);
 
         //Recherche du nombre d'éléments valide au début et à la fin du tableau
-        int numberOfFirstInvalidElements = searchNextValidElement(elevationSamples, 0, false);
-        int numberOfLastInvalidElements = searchNextValidElement(elevationSamples, 0, true);
+        int numberOfFirstInvalidElements = searchNextValidElement(elevationSamples, false);
+        int numberOfLastInvalidElements = searchNextValidElement(elevationSamples, true);
 
         //Retour d'un profil d'altitude 0 si uniquement des NaN
         if (numberOfFirstInvalidElements == elevationSamples.length) {
@@ -45,36 +45,40 @@ public final class ElevationProfileComputer {
 
         //Remplissage des premières et dernières valeurs invalides du tableau
         Arrays.fill(elevationSamples, 0, numberOfFirstInvalidElements, elevationSamples[numberOfFirstInvalidElements]);
-        Arrays.fill(elevationSamples, elevationSamples.length - 1 - numberOfLastInvalidElements, elevationSamples.length - 1, elevationSamples[elevationSamples.length - 1 - numberOfLastInvalidElements]);
+        Arrays.fill(elevationSamples, elevationSamples.length - 1 - numberOfLastInvalidElements, elevationSamples.length, elevationSamples[elevationSamples.length - 1 - numberOfLastInvalidElements]);
 
         //Remplissage des éléments invalides du tableau situés entre des éléments valides
         for (int i = numberOfFirstInvalidElements; i < elevationSamples.length - numberOfLastInvalidElements; i++) {
             if(Float.isNaN(elevationSamples[i])){
-                int nextValidElement = searchNextValidElement(elevationSamples, i, false);
-                elevationSamples[i] = (float) Math2.interpolate(elevationSamples[i - 1], elevationSamples[nextValidElement], maxStepLength / (double) nextValidElement - (i - 1));
+                double invalidElements = 1 ;
+                for (int j = 1; j < elevationSamples.length - 1; j++) {
+                    if(!Float.isNaN(elevationSamples[i + j])) break ;
+                    else invalidElements++ ;
+                }
+                for (int j = 0; j < invalidElements; j++)
+                    elevationSamples[i + j] = (float) Math2.interpolate(elevationSamples[i - 1], elevationSamples[(int)(i + invalidElements)], (j+1)/(invalidElements+1));
             }
         }
-
         return new ElevationProfile(route.length(), elevationSamples);
     }
 
     /**
      * Méthode privée permettant de calculer l'index du premier élément valide (différent de Float. NaN)
-     * dans le tableau array, à partir de l'index start, et dans l'ordre inverse si inverted est à true
-     * et dans l'ordre du tableau si inverted est à false.
+     * dans le tableau array, dans l'ordre inverse si inverted est à true et dans l'ordre du tableau si inverted est à false.
      *
      * @param array le tableau à analyser
-     * @param start l'index à partir duquel chercher le prochain élément valide
      * @param inverted vrai si chercher dans l'ordre inverse et faux si chercher dans l'ordre du tableau
      * @return l'index du prochain élément valide
      */
-    private static int searchNextValidElement(float[] array, int start, boolean inverted){
+    private static int searchNextValidElement(float[] array, boolean inverted){
         int numberOfInvalidElements = 0  ;
         if (!inverted) {
-            while (numberOfInvalidElements < array.length && Float.isNaN(array[start + numberOfInvalidElements])) numberOfInvalidElements++;
+            while (numberOfInvalidElements < array.length && Float.isNaN(array[numberOfInvalidElements]))
+                numberOfInvalidElements++;
         } else {
-            while(Float.isNaN(array[start + array.length - 1 - numberOfInvalidElements])) numberOfInvalidElements++ ;
+            while (numberOfInvalidElements < array.length && Float.isNaN(array[array.length - 1 - numberOfInvalidElements]))
+                numberOfInvalidElements++;
         }
-        return numberOfInvalidElements + start ;
+        return numberOfInvalidElements;
     }
 }

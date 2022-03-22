@@ -5,6 +5,7 @@ import ch.epfl.javelo.Preconditions;
 
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
+import java.util.Objects;
 
 
 /**
@@ -87,6 +88,14 @@ public final class ElevationProfile {
      */
     public double elevationAt(double position){
         return Functions.sampled(elevationSamples, length).applyAsDouble(position) ;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ElevationProfile that = (ElevationProfile) o;
+        return Double.compare(that.length, length) == 0 && Arrays.equals(elevationSamples, that.elevationSamples);
     }
 
     /**

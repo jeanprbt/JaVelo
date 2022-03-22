@@ -108,6 +108,16 @@ class SingleRouteTest {
         assertEquals(1, route.nodeClosestTo(12.5));
     }
 
+    @Test
+    void pointClosestToWorksProperly(){
+        List<Edge> list = new ArrayList<>();
+        DoubleUnaryOperator profile = Functions.constant(0);
+        list.add(new Edge(0, 1, new PointCh(SwissBounds.MIN_E, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 10, SwissBounds.MIN_N), 10, profile));
+        list.add(new Edge(1, 2, new PointCh(SwissBounds.MIN_E + 10, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 4), 5, profile));
+        list.add(new Edge(2, 3, new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 4), new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 10), 6, profile));
+        SingleRoute route = new SingleRoute(list);
 
-
+        assertEquals(new RoutePoint(new PointCh(SwissBounds.MIN_E + 13, SwissBounds.MIN_N + 10), 21, 5), route.pointClosestTo(new PointCh(SwissBounds.MIN_E + 8, SwissBounds.MIN_N + 10)));
+        assertEquals(new RoutePoint(new PointCh(SwissBounds.MIN_E + 6, SwissBounds.MIN_N), 6, 4), route.pointClosestTo(new PointCh(SwissBounds.MIN_E + 6, SwissBounds.MIN_N + 4)));
+    }
 }
