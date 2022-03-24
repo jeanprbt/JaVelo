@@ -28,10 +28,11 @@ public final class ElevationProfileComputer {
     public static ElevationProfile elevationProfile(Route route, double maxStepLength){
         Preconditions.checkArgument(maxStepLength > 0);
         float[] elevationSamples = new float[(int) Math.ceil(route.length()/maxStepLength) + 1] ;
+        double stepLength = route.length()/(elevationSamples.length - 1) ;
 
         //Remplissage du tableau avec les NaN
         for (int i = 0; i < elevationSamples.length ; i++)
-            elevationSamples[i] = (float) route.elevationAt(i * maxStepLength);
+            elevationSamples[i] = (float) route.elevationAt(i * stepLength);
 
         //Recherche du nombre d'éléments valide au début et à la fin du tableau
         int numberOfFirstInvalidElements = searchNextValidElement(elevationSamples, false);

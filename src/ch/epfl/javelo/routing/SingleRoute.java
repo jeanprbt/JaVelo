@@ -47,7 +47,7 @@ public final class SingleRoute implements Route {
 
     @Override
     public List<Edge> edges() {
-        return edges ;
+        return new ArrayList<>(edges);
     }
 
     @Override
