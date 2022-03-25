@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MultiRouteTest {
 
-    DoubleUnaryOperator profile = Functions.constant(0);
+    DoubleUnaryOperator profile = Functions.sampled(new float[]{4, 12, 5, 6, 6, 2, 89}, 6);
     Edge edge1 = new Edge(0, 1, new PointCh(SwissBounds.MIN_E, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 500, SwissBounds.MIN_N), 500, profile);
     Edge edge2 = new Edge(1, 2, new PointCh(SwissBounds.MIN_E + 500, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 1000, SwissBounds.MIN_N), 500, profile);
     Edge edge3 = new Edge(2, 3, new PointCh(SwissBounds.MIN_E + 1000, SwissBounds.MIN_N), new PointCh(SwissBounds.MIN_E + 1500, SwissBounds.MIN_N), 500, profile);
@@ -92,6 +92,29 @@ class MultiRouteTest {
 
     }
 
+    @Test
+    void elevationAtWorksProperly(){
+        assertEquals(6.0, globalRoute1.elevationAt(250));
+
+
+    }
+
+    @Test
+    void nodeClosestToWorksProperly(){
+        assertEquals(5, globalRoute2.nodeClosestTo(2300));
+        assertEquals(12, globalRoute2.nodeClosestTo(345234543));
+        assertEquals(0, globalRoute1.nodeClosestTo(-89));
+        assertEquals(0, globalRoute2.nodeClosestTo(250));
+        assertEquals(5, globalRoute2.nodeClosestTo(2500));
+    }
+
+    @Test
+    void pointClosestToWorksProperly(){
+        assertEquals(new RoutePoint(new PointCh(SwissBounds.MIN_E + 5, SwissBounds.MIN_N), 5, 5), globalRoute1.pointClosestTo(new PointCh(SwissBounds.MIN_E + 5, SwissBounds.MIN_N + 5)));
+        assertEquals(new RoutePoint(new PointCh(SwissBounds.MIN_E + 2347, SwissBounds.MIN_N), 2347, 1234), globalRoute1.pointClosestTo(new PointCh(SwissBounds.MIN_E + 2347, SwissBounds.MIN_N + 1234)));
+        assertEquals(new RoutePoint(new PointCh(SwissBounds.MIN_E + 5, SwissBounds.MIN_N), 5, 5), globalRoute1.pointClosestTo(new PointCh(SwissBounds.MIN_E + 5, SwissBounds.MIN_N + 5)));
+
+    }
 
 
 }

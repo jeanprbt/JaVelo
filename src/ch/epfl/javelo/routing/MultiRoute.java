@@ -83,7 +83,11 @@ public final class MultiRoute implements Route {
     public double elevationAt(double position) {
         position = Math2.clamp(0, position, length());
         for (Route segment : segments) {
-            if(position - segment.length() <= 0) return segment.elevationAt(position);
+
+            if(position - segment.length() <= 0) {
+                System.out.println("d");
+                return segment.elevationAt(position);
+            }
             position -= segment.length() ;
         }
         return 0;
