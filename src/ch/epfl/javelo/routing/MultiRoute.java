@@ -101,10 +101,13 @@ public final class MultiRoute implements Route {
 
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
+        double totalPosition = 0;
         RoutePoint routePoint = RoutePoint.NONE ;
-        List<RoutePoint> closestPoints = new ArrayList<>();
-        for (Route segment : segments) closestPoints.add(segment.pointClosestTo(point));
-        for (RoutePoint closestPoint : closestPoints) routePoint = routePoint.min(closestPoint);
+        for (Route segment : segments) {
+            RoutePoint closestPoint = segment.pointClosestTo(point);
+            totalPosition += closestPoint.position();
+            routePoint = routePoint.min(closestPoint.point(), totalPosition, closestPoint.distanceToReference());
+        }
         return routePoint ;
     }
 }
