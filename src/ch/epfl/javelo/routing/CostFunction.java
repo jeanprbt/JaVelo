@@ -6,7 +6,7 @@ package ch.epfl.javelo.routing;
  *
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)
- **/
+ */
 public interface CostFunction {
 
     /**
