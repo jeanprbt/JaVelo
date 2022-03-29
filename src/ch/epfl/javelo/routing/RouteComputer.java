@@ -4,7 +4,6 @@ import ch.epfl.javelo.Preconditions;
 import ch.epfl.javelo.data.Graph;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -22,7 +21,7 @@ public final class RouteComputer {
     /**
      * Constructeur public d'un planificateur d'itinéraire.
      */
-    RouteComputer(Graph graph, CostFunction costFunction) {
+    public RouteComputer(Graph graph, CostFunction costFunction) {
         this.graph = graph;
         this.costFunction = costFunction;
     }
@@ -39,64 +38,68 @@ public final class RouteComputer {
     public Route bestRouteBetween(int startNodeId, int endNodeId) {
         Preconditions.checkArgument(startNodeId != endNodeId);
 
+        // Enregistrement permettant d'associer à chaque nœud du graphe sa distance au nœud de départ
         record WeightedNode(int nodeId, float distance, int previousNodeId) implements Comparable<WeightedNode> {
-
             @Override
             public int compareTo(WeightedNode that) {
                 return Float.compare(this.distance, that.distance);
-            }
-
-            /**
-             * Constructeur de copie pour un WeightedNode changeant uniquement la distance
-             * @param distance la nouvelle distance
-             * @return un nouveau WeightNode identique sauf pour la distance
-             */
-            public WeightedNode copy(float distance){
-                return new WeightedNode(nodeId(), distance, previousNodeId());
             }
         }
 
         PriorityQueue<WeightedNode> toExplore = new PriorityQueue<>();
         List<Edge> edges = new ArrayList<>();
+
+        //Association à tous les nœuds du graphe d'une distance infinie
         List<WeightedNode> allNodes = new ArrayList<>();
         for (int i = 0; i < graph.nodeCount(); i++) allNodes.add(new WeightedNode(i, Float.POSITIVE_INFINITY, -1));
 
-        toExplore.add(new WeightedNode(startNodeId, 0, 0));
+        //Réglage de la distance du nœud de départ et ajout de ce dernier à l'ensemble en_exploration
+        allNodes.set(startNodeId, new WeightedNode(startNodeId, 0, startNodeId));
+        toExplore.add(allNodes.get(startNodeId));
 
-        while(!toExplore.isEmpty()){
+        //Application de l'algorithme de Djikstra
+        while (!toExplore.isEmpty()) {
+
+            //Choix du nœud dont la distance au nœud de départ est minimale et retrait de la liste en_exploration
             WeightedNode node = toExplore.remove();
 
-            if(node.distance == Float.NEGATIVE_INFINITY) continue ;
+            //Ignorance des nœuds que l'on a déjà traités
+            if (node.distance == Float.NEGATIVE_INFINITY) continue;
 
-            if(node.nodeId == endNodeId){
-                while(node.nodeId != startNodeId){
+            /* Traitement de la fin de l'algorithme lorsqu'il atteint le nœud d'arrivée : reconstruction de l'itinéraire
+            //grâce au previousNodeId de chaque nœud parcouru par Djikstra en cherchant à chaque tour de boucle l'arête sortante
+            du nœud étudié arrivant au previousNodeId */
+            if (node.nodeId == endNodeId) {
+                while (node.nodeId != startNodeId) {
                     float minDistance = Float.POSITIVE_INFINITY;
-                    int edgeIndex = -1 ;
+                    int edgeIndex = -1;
                     for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
                         int edgeId = graph.nodeOutEdgeId(node.nodeId, i);
-                        float edgeDistance = (float) costFunction.costFactor(node.nodeId, edgeId) * (node.distance + (float) graph.edgeLength(edgeId));
-                        if(edgeDistance < minDistance){
+                        float edgeDistance = allNodes.get(graph.edgeTargetNodeId(edgeId)).distance + (float) graph.edgeLength(edgeId);
+                        if (edgeDistance < minDistance) {
                             minDistance = edgeDistance;
-                            edgeIndex = i ;
+                            edgeIndex = i;
                         }
                     }
-                    edges.add(Edge.of(graph, graph.nodeOutEdgeId(node.nodeId, edgeIndex) ,node.nodeId, node.previousNodeId));
+                    edges.add(Edge.of(graph, graph.nodeOutEdgeId(node.nodeId, edgeIndex), node.nodeId, node.previousNodeId));
                     node = allNodes.get(node.previousNodeId);
                 }
                 return new SingleRoute(edges);
             }
 
             for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
-                int edgeId = graph.nodeOutEdgeId(node.nodeId, i), nodePrimeId = graph.edgeTargetNodeId(edgeId) ;
-                float nodePrimeDistance = (float) costFunction.costFactor(node.nodeId, edgeId) * (node.distance + (float) graph.edgeLength(edgeId)) ;
-                if(nodePrimeDistance < allNodes.get(nodePrimeId).distance){
-                    allNodes.set(nodePrimeId, new WeightedNode(nodePrimeId, nodePrimeDistance, node.nodeId)) ;
-                    toExplore.add(new WeightedNode(nodePrimeId, nodePrimeDistance, node.nodeId)) ;
+                int edgeId = graph.nodeOutEdgeId(node.nodeId, i), nodePrimeId = graph.edgeTargetNodeId(edgeId);
+                float d = (float) (node.distance + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
+                if (d < allNodes.get(nodePrimeId).distance) {
+                    allNodes.set(nodePrimeId, new WeightedNode(nodePrimeId, d, node.nodeId));
+                    toExplore.add(allNodes.get(nodePrimeId));
                 }
             }
-            allNodes.set(node.nodeId, node.copy(Float.NEGATIVE_INFINITY)) ;
+            allNodes.set(node.nodeId, new WeightedNode(node.nodeId, Float.NEGATIVE_INFINITY, node.previousNodeId));
         }
-
         return null;
     }
 }
+
+
+
