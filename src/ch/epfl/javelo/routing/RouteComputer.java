@@ -87,6 +87,9 @@ public final class RouteComputer {
                 return new SingleRoute(edges);
             }
 
+            /* Itération sur l'ensemble des arêtes sortant de node afin de trouver l'arête
+            optimale et d'ajouter son nœud d'arrivée à toExplore, et changer la distance
+            totale parcourue depuis le nœud de départ jusqu'à ce nœud */
             for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, i), nodePrimeId = graph.edgeTargetNodeId(edgeId);
                 float d = (float) (node.distance + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
