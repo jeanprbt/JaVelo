@@ -77,10 +77,8 @@ public final class RouteComputer {
                     for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
                         int edgeId = graph.nodeOutEdgeId(node.nodeId, i);
                         float edgeDistance = allNodes.get(graph.edgeTargetNodeId(edgeId)).distance + (float) graph.edgeLength(edgeId);
-                        if (edgeDistance < minDistance) {
-                            minDistance = edgeDistance;
-                            edgeIndex = i;
-                        }
+                        edgeIndex = edgeDistance < minDistance ? i : edgeIndex ;
+                        minDistance = Math.min(edgeDistance, minDistance) ;
                     }
                     edges.add(Edge.of(graph, graph.nodeOutEdgeId(node.nodeId, (int)edgeIndex), node.nodeId, node.previousNodeId));
                     node = allNodes.get(node.previousNodeId);
@@ -99,7 +97,7 @@ public final class RouteComputer {
                     toExplore.add(allNodes.get(nodePrimeId));
                 }
             }
-            allNodes.set(node.nodeId, new WeightedNode(node.nodeId, Float.NEGATIVE_INFINITY, node.previousNodeId));
+            allNodes.set(node.nodeId, new WeightedNode(node.nodeId, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, node.previousNodeId));
         }
         return null;
     }
