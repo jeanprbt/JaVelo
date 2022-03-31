@@ -62,25 +62,27 @@ public final class RouteComputer {
         //Application de l'algorithme de Djikstra
         while (!toExplore.isEmpty()) {
 
-            //Choix du nœud dont la distance au nœud de départ est minimale et retrait de la liste en_exploration
+            /* Choix du nœud dont la somme de la distance au nœud de départ et de la distance
+            à vol d'oiseau au nœud d'arrivée est minimale et retrait de la liste en_exploration */
             WeightedNode node = toExplore.remove();
 
             //Ignorance des nœuds que l'on a déjà traités
             if (node.distance == Float.NEGATIVE_INFINITY) continue;
 
             /* Traitement de la fin de l'algorithme lorsqu'il atteint le nœud d'arrivée : reconstruction de l'itinéraire
-            //grâce au previousNodeId de chaque nœud parcouru par Djikstra en cherchant à chaque tour de boucle l'arête sortante
+            grâce au previousNodeId de chaque nœud parcouru par Djikstra en cherchant à chaque tour de boucle l'arête sortante
             du nœud étudié arrivant au previousNodeId */
             if (node.nodeId == endNodeId) {
                 while (node.nodeId != startNodeId) {
-                    float minDistance = Float.POSITIVE_INFINITY, edgeIndex = 0 ;
+                    float minDistance = Float.POSITIVE_INFINITY;
+                    int edgeIndex = 0 ;
                     for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
                         int edgeId = graph.nodeOutEdgeId(node.nodeId, i);
                         float edgeDistance = allNodes.get(graph.edgeTargetNodeId(edgeId)).distance + (float) graph.edgeLength(edgeId);
                         edgeIndex = edgeDistance < minDistance ? i : edgeIndex ;
                         minDistance = Math.min(edgeDistance, minDistance) ;
                     }
-                    edges.add(Edge.of(graph, graph.nodeOutEdgeId(node.nodeId, (int)edgeIndex), node.nodeId, node.previousNodeId));
+                    edges.add(Edge.of(graph, graph.nodeOutEdgeId(node.nodeId, edgeIndex), node.nodeId, node.previousNodeId));
                     node = allNodes.get(node.previousNodeId);
                 }
                 return new SingleRoute(edges);
