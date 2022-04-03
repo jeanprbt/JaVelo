@@ -98,7 +98,7 @@ public final class RouteComputer {
                     toExplore.add(allNodes.get(nodePrimeId));
                 }
             }
-            allNodes.set(node.nodeId, new WeightedNode(node.nodeId, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, node.previousNodeId));
+            allNodes.set(node.nodeId, new WeightedNode(node.nodeId, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));
         }
         return null;
     }
