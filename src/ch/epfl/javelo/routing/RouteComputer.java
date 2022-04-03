@@ -4,9 +4,9 @@ import ch.epfl.javelo.Preconditions;
 import ch.epfl.javelo.data.Graph;
 import ch.epfl.javelo.projection.PointCh;
 
-import java.util.ArrayList;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.PriorityQueue;
 
 /**
  * Classe représentant un planificateur d'itinéraire.
@@ -40,23 +40,24 @@ public final class RouteComputer {
         Preconditions.checkArgument(startNodeId != endNodeId);
 
         //Enregistrement permettant d'associer à chaque nœud du graphe sa distance au nœud de départ
-        record WeightedNode(int nodeId, float distance, float straightDistance, int previousNodeId) implements Comparable<WeightedNode> {
+        record WeightedNode(int nodeId, float distance, float straightDistance) implements Comparable<WeightedNode> {
             @Override
             public int compareTo(WeightedNode that) {
                 return Double.compare(this.distance + this.straightDistance, that.distance + that.straightDistance);
             }
         }
 
+        int[] predecessors = new int[graph.nodeCount()];
         PriorityQueue<WeightedNode> toExplore = new PriorityQueue<>();
         List<Edge> edges = new ArrayList<>();
         PointCh endPoint = graph.nodePoint(endNodeId);
 
         //Association à tous les nœuds du graphe d'une distance infinie
         List<WeightedNode> allNodes = new ArrayList<>();
-        for (int i = 0; i < graph.nodeCount(); i++) allNodes.add(new WeightedNode(i, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, -1));
+        for (int i = 0; i < graph.nodeCount(); i++) allNodes.add(new WeightedNode(i, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
 
         //Réglage de la distance du nœud de départ et ajout de ce dernier à l'ensemble en_exploration
-        allNodes.set(startNodeId, new WeightedNode(startNodeId,0, (float)graph.nodePoint(endNodeId).distanceTo(endPoint), startNodeId));
+        allNodes.set(startNodeId, new WeightedNode(startNodeId,0, (float)graph.nodePoint(endNodeId).distanceTo(endPoint)));
         toExplore.add(allNodes.get(startNodeId));
 
         //Application de l'algorithme de Djikstra
@@ -74,18 +75,15 @@ public final class RouteComputer {
             du nœud étudié arrivant au previousNodeId */
             if (node.nodeId == endNodeId) {
                 while (node.nodeId != startNodeId) {
-                    float minDistance = Float.POSITIVE_INFINITY;
-                    int edgeIndex = 0 ;
                     for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
                         int edgeId = graph.nodeOutEdgeId(node.nodeId, i);
-                        float edgeDistance = allNodes.get(graph.edgeTargetNodeId(edgeId)).distance + (float) graph.edgeLength(edgeId);
-                        edgeIndex = edgeDistance < minDistance ? i : edgeIndex ;
-                        minDistance = Math.min(edgeDistance, minDistance) ;
+                        if(graph.edgeTargetNodeId(edgeId) == predecessors[node.nodeId]) {
+                            edges.add(Edge.of(graph, edgeId, predecessors[node.nodeId], node.nodeId));
+                            node = allNodes.get(predecessors[node.nodeId]);
+                        }
                     }
-                    edges.add(Edge.of(graph, graph.nodeOutEdgeId(node.nodeId, edgeIndex), node.nodeId, node.previousNodeId));
-                    node = allNodes.get(node.previousNodeId);
                 }
-                return new SingleRoute(edges);
+                return new SingleRoute(invertList(edges));
             }
 
             /* Itération sur l'ensemble des arêtes sortant de node afin de trouver l'arête
@@ -95,7 +93,8 @@ public final class RouteComputer {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, i), nodePrimeId = graph.edgeTargetNodeId(edgeId);
                 float d = (float) (node.distance + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
                 if (d < allNodes.get(nodePrimeId).distance) {
-                    allNodes.set(nodePrimeId, new WeightedNode(nodePrimeId, d, (float)graph.nodePoint(nodePrimeId).distanceTo(endPoint), node.nodeId));
+                    allNodes.set(nodePrimeId, new WeightedNode(nodePrimeId, d, (float)graph.nodePoint(nodePrimeId).distanceTo(endPoint)));
+                    predecessors[nodePrimeId] = node.nodeId ;
                     toExplore.add(allNodes.get(nodePrimeId));
                 }
             }
@@ -103,7 +102,17 @@ public final class RouteComputer {
         }
         return null;
     }
+
+    /**
+     * Fonction privée permettant d'inverser une liste.
+     *
+     * @param list la liste que l'on veut inverser
+     * @return la liste inversée
+     */
+    private <E> List<E> invertList(List<E> list){
+        List<E> invertedList = new ArrayList<>(list) ;
+        for (int i = 0; i < list.size(); i++) invertedList.set(i, list.get(list.size()-1-i));
+        return invertedList;
+    }
 }
-
-
 

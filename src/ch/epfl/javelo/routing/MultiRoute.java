@@ -16,7 +16,7 @@ import java.util.List;
  */
 public final class MultiRoute implements Route {
 
-    private final List<Route> segments ;
+   private final List<Route> segments ;
 
     /**
      * Constructeur public d'un itinéraire multiple.
@@ -55,18 +55,18 @@ public final class MultiRoute implements Route {
     public List<Edge> edges() {
         List<Edge> edges = new ArrayList<>() ;
         for (Route segment : segments) edges.addAll(segment.edges());
-        return edges ;
+        return List.copyOf(edges) ;
     }
 
     @Override
     public List<PointCh> points() {
         List<PointCh> points = new ArrayList<>();
         for (Route segment : segments) {
+            if(!points.isEmpty())
+                points.remove(points.size() - 1);
             points.addAll(segment.points());
-            points.remove(points.size() - 1);
         }
-        points.add(segments.get(segments.size() - 1).pointAt(segments.get(segments.size() - 1).length()));
-        return points ;
+        return List.copyOf(points) ;
     }
 
     @Override
@@ -105,8 +105,8 @@ public final class MultiRoute implements Route {
         RoutePoint routePoint = RoutePoint.NONE ;
         for (Route segment : segments) {
             RoutePoint closestPoint = segment.pointClosestTo(point);
-            totalPosition += closestPoint.position();
-            routePoint = routePoint.min(closestPoint.point(), totalPosition, closestPoint.distanceToReference());
+            routePoint = routePoint.min(closestPoint.point(), totalPosition + closestPoint.position(), closestPoint.distanceToReference());
+            totalPosition += segment.length() ;
         }
         return routePoint ;
     }
