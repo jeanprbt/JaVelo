@@ -43,11 +43,12 @@ public final class RouteComputer {
         record WeightedNode(int nodeId, float distance, float straightDistance) implements Comparable<WeightedNode> {
             @Override
             public int compareTo(WeightedNode that) {
-                return Double.compare(this.distance + this.straightDistance, that.distance + that.straightDistance);
+                return Double.compare(this.distance, that.distance);
             }
         }
 
         int[] predecessors = new int[graph.nodeCount()];
+        float[] straightDistances = new float[graph.nodeCount()];
         PriorityQueue<WeightedNode> toExplore = new PriorityQueue<>();
         List<Edge> edges = new ArrayList<>();
         PointCh endPoint = graph.nodePoint(endNodeId);
@@ -57,7 +58,7 @@ public final class RouteComputer {
         for (int i = 0; i < graph.nodeCount(); i++) allNodes.add(new WeightedNode(i, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
 
         //Réglage de la distance du nœud de départ et ajout de ce dernier à l'ensemble en_exploration
-        allNodes.set(startNodeId, new WeightedNode(startNodeId,0, (float)graph.nodePoint(endNodeId).distanceTo(endPoint)));
+        allNodes.set(startNodeId, new WeightedNode(startNodeId,0));
         toExplore.add(allNodes.get(startNodeId));
 
         //Application de l'algorithme de Djikstra
@@ -86,14 +87,16 @@ public final class RouteComputer {
                 return new SingleRoute(invertList(edges));
             }
 
-            /* Itération sur l'ensemble des arêtes sortant de node afin de trouver l'arête
-            optimale et d'ajouter son nœud d'arrivée à toExplore, et changer la distance
-            totale parcourue depuis le nœud de départ jusqu'à ce nœud */
+            /* Itération sur l'ensemble des arêtes sortant de node afin de trouver
+            l'arête optimale et d'ajouter son nœud d'arrivée à toExplore, et changer
+            la somme de la distance  totale parcourue depuis le nœud de départ jusqu'à
+            ce nœud avec la distance à vol d'oiseau entre ce nœud et le nœud d'arrivée */
             for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, i), nodePrimeId = graph.edgeTargetNodeId(edgeId);
-                float d = (float) (node.distance + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
+                straightDistances[nodePrimeId] = (float)graph.nodePoint(nodePrimeId).distanceTo(endPoint);
+                float d = (float) (node.distance - straightDistances[node.nodeId] + straightDistances[nodePrimeId] + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
                 if (d < allNodes.get(nodePrimeId).distance) {
-                    allNodes.set(nodePrimeId, new WeightedNode(nodePrimeId, d, (float)graph.nodePoint(nodePrimeId).distanceTo(endPoint)));
+                    allNodes.set(nodePrimeId, new WeightedNode(nodePrimeId, d));
                     predecessors[nodePrimeId] = node.nodeId ;
                     toExplore.add(allNodes.get(nodePrimeId));
                 }

@@ -43,3 +43,5 @@ hs_err_pid*
 /out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/routing/SingleRoute.java
 /out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/projection/SwissBounds.java
 /out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/projection/WebMercator.java
+.idea/JaVelo.iml
+javelo.kml
