@@ -38,7 +38,7 @@ public final class ElevationProfileComputer {
         for (int i = 0; i < elevationSamples.length ; i++)
             elevationSamples[i] = (float) route.elevationAt(i * stepLength);
 
-        //Recherche du nombre d'éléments valide au début et à la fin du tableau
+        //Recherche du nombre d'éléments valides au début et à la fin du tableau
         int numberOfFirstInvalidElements = searchNextValidElement(elevationSamples, false);
         int numberOfLastInvalidElements = searchNextValidElement(elevationSamples, true);
 
@@ -64,6 +64,7 @@ public final class ElevationProfileComputer {
                     elevationSamples[i + j] = (float) Math2.interpolate(elevationSamples[i - 1], elevationSamples[(int)(i + invalidElements)], (j+1)/(invalidElements+1));
             }
         }
+
         return new ElevationProfile(route.length(), elevationSamples);
     }
 

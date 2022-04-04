@@ -31,7 +31,7 @@ public final class Graph {
     /**
      * Constructeur public d'un graphe JaVelo.
      *
-     * @param nodes le graphe des noeuds à implémenter dans le graphe JaVelo
+     * @param nodes le graphe des nœuds à implémenter dans le graphe JaVelo
      * @param sectors le graphe des secteurs à implémenter dans le graphe JaVelo
      * @param edges le graphe des arêtes à implémenter dans le graphe JaVelo
      * @param attributeSets les ensembles d'attributs correspondant aux entités précédentes
@@ -118,8 +118,8 @@ public final class Graph {
      * arête sortant du nœud d'identité nodeId.
      *
      * @param nodeId l'identité du nœud dans le graphe JaVelo
-     * @param edgeIndex l'index de la edgeIndex-ième arête sortant du nœud
-     * @return l'identité de la edgeIndex-ième arête sortant du nœud d'identité nodeId
+     * @param edgeIndex l'index de l'edgeIndex-ième arête sortant du nœud
+     * @return l'identité de l'edgeIndex-ième arête sortant du nœud d'identité nodeId
      */
     public int nodeOutEdgeId(int nodeId, int edgeIndex){
         return nodes.edgeId(nodeId, edgeIndex);
@@ -127,10 +127,10 @@ public final class Graph {
 
     /**
      * Fonction retournant l'identité du nœud se trouvant le plus proche du point donné, à la distance
-     * maximale donnée (en mètres), ou -1 si aucun noeud ne correspond à ces critères.
+     * maximale donnée (en mètres), ou -1 si aucun nœud ne correspond à ces critères.
      *
      * @param point le point dont on veut l'identité du nœud le plus proche
-     * @param searchDistance la distance maximale de recherche du noeud autour du point
+     * @param searchDistance la distance maximale de recherche du nœud autour du point
      * @return l'identité du nœud le plus proche du point donné à la distance maximale donnée ou -1
      */
     public int nodeClosestTo(PointCh point, double searchDistance){

@@ -7,7 +7,6 @@ import ch.epfl.javelo.projection.SwissBounds;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Enregistrement représentant le tableau des 16384 secteurs du graphe JaVelo
@@ -61,6 +60,5 @@ public record GraphSectors(ByteBuffer buffer) {
      * mais moins compacte, des secteurs.
      */
     public record Sector(int startNodeId, int endNodeId){
-
     }
 }

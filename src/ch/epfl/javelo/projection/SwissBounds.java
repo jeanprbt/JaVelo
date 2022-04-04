@@ -21,7 +21,7 @@ public final class SwissBounds {
      * Méthode pour tester qu'un point se situe dans les limites ci-dessus.
      *
      * @param e la coordonnée est d'un point
-     * @param n coordonnée nord d'un point
+     * @param n la coordonnée nord d'un point
      * @return true si le point est situé dans les limites de la Suisse et false sinon
      */
     public static boolean containsEN(double e, double n){

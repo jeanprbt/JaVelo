@@ -7,8 +7,6 @@ import ch.epfl.javelo.Q28_4;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.Arrays;
-import java.util.Objects;
 
 import static ch.epfl.javelo.Q28_4.ofInt;
 
@@ -41,7 +39,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * Fonction qui retourne l'identité du nœud destination de l'arête d'identité donnée.
      *
      * @param edgeId l'arête dont on veut connaître le sens
-     * @return l'identité du noeud destination de l'arête donnée
+     * @return l'identité du nœud destination de l'arête donnée
      */
     public int targetNodeId(int edgeId){
         int nodeId = EDGE_INTS * edgeId + OFFSET_EDGE_DIRECTION_AND_ID ;
@@ -101,9 +99,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
         - si le profil est de type 2 ou 3, on cherche le nombre de différences d'altitudes (donc d'échantillons) empaquetées dans chaque short, et on parcourt
           le nombre de shorts correspondant au nombre d'échantillons (nb d'échantillons / 2 pour le profil n°2 et nb d'échantillons / 4 pour le profil n°3).
           À chaque itération on boucle sur le short étudié pour le diviser en 2 (type 2) ou en 4 (type 3) afin de récupérer la différence d'altitude et
-          d'ajouter un nouvel échantillon au tableau jusqu'à ce que celui-ci soit rempli, ce que l'on vérifie dans chaque sous-boucle à l'aide de arrayIndex.
-         */
-
+          d'ajouter un nouvel échantillon au tableau jusqu'à ce que celui-ci soit rempli, ce que l'on vérifie dans chaque sous-boucle à l'aide d'arrayIndex. */
         if(profileType == 1) {
             for (int i = 1; i < profileSamples.length; i++) profileSamples[i] = Q28_4.asFloat(Short.toUnsignedInt(elevations.get(firstSampleId + i)));
         } else {

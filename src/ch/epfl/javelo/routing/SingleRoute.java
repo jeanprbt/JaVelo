@@ -128,9 +128,10 @@ public final class SingleRoute implements Route {
     public RoutePoint pointClosestTo(PointCh point) {
         RoutePoint routePoint = RoutePoint.NONE;
         int edgeId = 0 ;
-        // Itération sur les arêtes pour déterminer le projeté orthogonal du point sur l'arête et
-        // le point de l'arête correspondant à cette position, puis emploi de la méthode min() de
-        // RoutePoint pour trouver le RoutePoint le plus proche du point passé en argument ;
+
+        /* Itération sur les arêtes pour déterminer le projeté orthogonal du point sur chaque arête
+        et le point de l'arête correspondant à cette position, puis emploi de la méthode min() de
+        RoutePoint pour trouver le RoutePoint le plus proche du point passé en argument */
         for (Edge edge : edges) {
             PointCh closestPointOnEdge ;
             double closestPositionOnEdge = edge.positionClosestTo(point) ;

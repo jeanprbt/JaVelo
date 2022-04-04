@@ -28,7 +28,7 @@ public final class Bits {
     }
 
     /**
-     * Fonction qui fait la même chose que la méthode précédente, à deux différences près:
+     * Fonction qui fait la même chose que la méthode précédente, à deux différences près :
      * d'une part, la valeur extraite est interprétée de manière non signée et d'autre part,
      * l'exception IllegalArgumentException est également levée si length vaut 32.
      *
@@ -40,6 +40,7 @@ public final class Bits {
      */
     public static int extractUnsigned(int value, int start, int length){
         Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= 32 && length < 32);
-        return (value << 32 - start - length) >>> 32 - length ; //Décalage à gauche puis à droite (logique)
+        //Décalage à gauche puis à droite (logique)
+        return (value << 32 - start - length) >>> 32 - length ;
     }
 }

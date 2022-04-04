@@ -20,7 +20,7 @@ public record GraphNodes(IntBuffer buffer) {
     private static final int NODE_INTS = OFFSET_OUT_EDGES + 1;
 
     /**
-     * Fonction qui retourne le nombre total de noeuds.
+     * Fonction qui retourne le nombre total de nœuds.
      *
      * @return le nombre total de noeuds
      */
@@ -29,19 +29,19 @@ public record GraphNodes(IntBuffer buffer) {
     }
 
     /**
-     * Fonction qui retourne la coordonnée E du noeud d'identité donnée.
+     * Fonction qui retourne la coordonnée E du nœud d'identité donnée.
      *
-     * @param nodeId l'identité du noeud dans le graphe JaVelo
-     * @return la coordonnée E du noeud d'identité nodeId
+     * @param nodeId l'identité du nœud dans le graphe JaVelo
+     * @return la coordonnée E du nœud d'identité nodeId
      */
     public double nodeE(int nodeId){
         return Q28_4.asDouble(buffer.get(nodeId * NODE_INTS + OFFSET_E));
     }
 
     /**
-     * Fonction qui retourne la coordonnée N du noeud d'identité donnée.
+     * Fonction qui retourne la coordonnée N du nœud d'identité donnée.
      *
-     * @param nodeId l'identité du noeud dans le graphe JaVelo
+     * @param nodeId l'identité du nœud dans le graphe JaVelo
      * @return la coordonnée N du nœud d'identité nodeId
      */
     public double nodeN(int nodeId){
@@ -51,7 +51,7 @@ public record GraphNodes(IntBuffer buffer) {
     /**
      * Fonction qui retourne le nombre d'arêtes sortant du nœud d'identité donnée.
      *
-     * @param nodeId l'identité du noeud dans le graphe JaVelo
+     * @param nodeId l'identité du nœud dans le graphe JaVelo
      * @return le nombre d'arêtes du nœud d'identité nodeId
      */
     public int outDegree(int nodeId){
@@ -59,14 +59,14 @@ public record GraphNodes(IntBuffer buffer) {
         return Bits.extractUnsigned(toExtract, 28, 4);
     }
     /**
-     * Fonction qui retourne l'identité de la edgeIndex-ième
+     * Fonction qui retourne l'identité de l'edgeIndex-ième
      * arête sortant du nœud d'identité nodeId.
      *
-     * @param nodeId l'identité du noeud dans le graphe JaVelo
-     * @param edgeIndex l'index de la edgeIndex-ième arête sortant du nœud
-     * @return l'identité de la edgeIndex-ième
+     * @param nodeId l'identité du nœud dans le graphe JaVelo
+     * @param edgeIndex l'index de l'edgeIndex-ième arête sortant du nœud
+     * @return l'identité de l'edgeIndex-ième
      * arête sortant du nœud d'identité nodeId.
-     * @throws AssertionError quand le edgeIndex est plus élevé que le nombre de branches sortantes
+     * @throws AssertionError quand l'edgeIndex est plus élevé que le nombre de branches sortantes
      */
     public int edgeId(int nodeId, int edgeIndex){
         assert 0 <= edgeIndex && edgeIndex < outDegree(nodeId);

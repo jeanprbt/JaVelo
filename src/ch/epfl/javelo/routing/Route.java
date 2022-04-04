@@ -77,5 +77,4 @@ public interface Route {
      *
      */
     RoutePoint pointClosestTo(PointCh point);
-
 }

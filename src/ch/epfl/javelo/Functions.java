@@ -1,7 +1,6 @@
 package ch.epfl.javelo;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -32,7 +31,7 @@ public final class Functions {
      * @param samples les ordonnées des échantillons, dont les abscisses sont réparties
      *                régulièrement entre 0 et xMax
      * @param xMax l'abscisse maximale de la plage
-     * @return la fonction obtenue par interpolation linéaire des échantillons samples entre 0 et xMaxs
+     * @return la fonction obtenue par interpolation linéaire des échantillons samples entre 0 et xMax
      * @throws IllegalArgumentException lorsque samples a moins de deux éléments ou lorsque xMax est négatif ou nul
      */
     public static DoubleUnaryOperator sampled(float[] samples, double xMax) {
