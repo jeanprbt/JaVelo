@@ -6,7 +6,6 @@ import ch.epfl.javelo.Preconditions;
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 
-
 /**
  * Classe immuable représentant le profil en long d'un itinéraire simple ou multiple.
  *
@@ -89,6 +88,7 @@ public final class ElevationProfile {
         return Functions.sampled(elevationSamples, length).applyAsDouble(position) ;
     }
 
+    //La redéfinition de la méthode equals() est ici uniquement utile à des fins de tests unitaires.
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

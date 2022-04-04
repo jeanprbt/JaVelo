@@ -49,8 +49,10 @@ public final class RouteComputer {
 
         int[] predecessors = new int[graph.nodeCount()];
         float[] straightDistances = new float[graph.nodeCount()];
+
         PriorityQueue<WeightedNode> toExplore = new PriorityQueue<>();
         List<Edge> edges = new ArrayList<>();
+
         PointCh endPoint = graph.nodePoint(endNodeId);
 
         //Association à tous les nœuds du graphe d'une distance infinie
@@ -61,7 +63,7 @@ public final class RouteComputer {
         allNodes.set(startNodeId, new WeightedNode(startNodeId,0));
         toExplore.add(allNodes.get(startNodeId));
 
-        //Application de l'algorithme de Djikstra
+        //Application de l'algorithme A*
         while (!toExplore.isEmpty()) {
 
             /* Choix du nœud dont la somme de la distance au nœud de départ et de la distance
@@ -72,7 +74,7 @@ public final class RouteComputer {
             if (node.distance == Float.NEGATIVE_INFINITY) continue;
 
             /* Traitement de la fin de l'algorithme lorsqu'il atteint le nœud d'arrivée : reconstruction de l'itinéraire
-            grâce au previousNodeId de chaque nœud parcouru par Djikstra en cherchant à chaque tour de boucle l'arête sortante
+            grâce au previousNodeId de chaque nœud parcouru par A* en cherchant à chaque tour de boucle l'arête sortante
             du nœud étudié arrivant au previousNodeId */
             if (node.nodeId == endNodeId) {
                 while (node.nodeId != startNodeId) {

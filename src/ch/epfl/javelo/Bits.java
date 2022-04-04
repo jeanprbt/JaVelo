@@ -11,9 +11,9 @@ public final class Bits {
     private Bits(){}
 
     /**
-     * Fonction qui extrait du vecteur de 32 bits value la plage de length
+     * Fonction qui extrait du vecteur de 32 bits passé en argument la plage de length
      * bits commençant au bit d'index start, qu'elle interprète comme une valeur signée
-     * en complément à deux, ou lève IllegalArgumentException si la plage est invalide.
+     * en complément à deux, ou qui lève une IllegalArgumentException si la plage est invalide.
      *
      * @param value le vecteur de 32 bits
      * @param start le bit de départ de la plage à extraire
@@ -23,7 +23,8 @@ public final class Bits {
      */
     public static int extractSigned(int value, int start, int length){
         Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= 32);
-        return (value << 32 - start - length) >> 32 - length ; //Décalage à gauche puis à droite (arithmétique)
+        //Décalage à gauche puis à droite (arithmétique)
+        return (value << 32 - start - length) >> 32 - length ;
     }
 
     /**

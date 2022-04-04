@@ -4,10 +4,9 @@ import ch.epfl.javelo.Bits;
 import ch.epfl.javelo.Q28_4;
 
 import java.nio.IntBuffer;
-import java.util.Objects;
 
 /**
- * Enregistrement représentant le tableau de tous les noeuds du graphe JaVelo
+ * Enregistrement représentant le tableau de tous les nœuds du graphe JaVelo
  * sous la forme de son seul attribut : la mémoire tampon buffer.
  *
  * @author Jean Perbet (341418)
@@ -50,7 +49,7 @@ public record GraphNodes(IntBuffer buffer) {
     }
 
     /**
-     * Fonction qui retourne le nombre d'arêtes sortant du noeud d'identité donnée.
+     * Fonction qui retourne le nombre d'arêtes sortant du nœud d'identité donnée.
      *
      * @param nodeId l'identité du noeud dans le graphe JaVelo
      * @return le nombre d'arêtes du nœud d'identité nodeId

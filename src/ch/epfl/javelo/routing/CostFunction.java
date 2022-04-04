@@ -1,6 +1,5 @@
 package ch.epfl.javelo.routing;
 
-
 /**
  * Interface représentant une fonction de coût.
  *

@@ -29,12 +29,12 @@ public final class Graph {
     private final List<AttributeSet> attributeSets;
 
     /**
-     * Constructeur public d'un graphe Javelo.
+     * Constructeur public d'un graphe JaVelo.
      *
      * @param nodes le graphe des noeuds à implémenter dans le graphe JaVelo
      * @param sectors le graphe des secteurs à implémenter dans le graphe JaVelo
      * @param edges le graphe des arêtes à implémenter dans le graphe JaVelo
-     * @param attributeSets les ensembles d'attributs correspondant aux entités précedentes
+     * @param attributeSets les ensembles d'attributs correspondant aux entités précédentes
      */
     public Graph(GraphNodes nodes, GraphSectors sectors, GraphEdges edges, List<AttributeSet> attributeSets){
         this.nodes = nodes ;
@@ -54,7 +54,7 @@ public final class Graph {
      */
     public static Graph loadFrom(Path basePath) throws IOException {
 
-        //Récupération des différents chemins d'accès aux sous-répertoires de basePath.
+        //Récupération des différents chemins d'accès aux sous-répertoires de basePath
         Path nodesPath = basePath.resolve("nodes.bin");
         Path sectorsPath = basePath.resolve("sectors.bin");
         Path edgesPath = basePath.resolve("edges.bin");
@@ -62,7 +62,7 @@ public final class Graph {
         Path profileIdsPath = basePath.resolve("profile_ids.bin");
         Path attributeSetsPath = basePath.resolve("attributes.bin");
 
-        //Chargement des différents buffers nécessaires à la création des différents sous-graphes.
+        //Chargement des différents buffers nécessaires à la création des différents sous-graphes
         IntBuffer nodesBuffer = mappedBuffer(nodesPath).asIntBuffer() ;
         ByteBuffer sectorsBuffer = mappedBuffer(sectorsPath);
         ByteBuffer edgesBuffer = mappedBuffer(edgesPath) ;
@@ -76,7 +76,7 @@ public final class Graph {
             attributeSetsList.add(new AttributeSet(attributeSets.get(i)));
         }
 
-        //Création du graphe total JaVelo.
+        //Création du graphe total JaVelo
         return new Graph(new GraphNodes(nodesBuffer),
                          new GraphSectors(sectorsBuffer),
                          new GraphEdges(edgesBuffer, profileIdsBuffer, elevationsBuffer),
@@ -114,7 +114,7 @@ public final class Graph {
     }
 
     /**
-     * Fonction qui retourne l'identité de la edgeIndex-ième
+     * Fonction qui retourne l'identité de l'edgeIndex-ième
      * arête sortant du nœud d'identité nodeId.
      *
      * @param nodeId l'identité du nœud dans le graphe JaVelo
@@ -143,8 +143,8 @@ public final class Graph {
         //Liste de tous les secteurs étant compris dans le cercle de rayon searchDistance autour du point passé en paramètre.s
         List<GraphSectors.Sector> sectorsInArea = sectors.sectorsInArea(point, searchDistance);
 
-        //Itération sur tous les secteurs proches, et à l'intérieur sur tous les nœuds de chaque secteur proche
-        // pour déterminer la distance la plus faible possible et l'identité du nœud correspondant.
+        /* Itération sur tous les secteurs proches, et à l'intérieur sur tous les nœuds de chaque secteur proche
+        pour déterminer la distance la plus faible possible et l'identité du nœud correspondant */
         for (GraphSectors.Sector sector : sectorsInArea) {
             for (int i = sector.startNodeId(); i < sector.endNodeId(); i++) {
                 PointCh node = nodePoint(i);
@@ -210,8 +210,8 @@ public final class Graph {
     }
 
     /**
-     * Fonction qui retourne le profil en long de l'arête d'identité donnée, sous la forme d'une fonction.
-     * Si l'arête ne possède pas de profil, alors cette fonction doit retourner Double.NaN pour n'importe quel argument.
+     * Fonction qui retourne le profil en long de l'arête d'identité donnée, sous la forme d'une fonction. Si l'arête
+     * ne possède pas de profil, alors cette fonction doit retourner Double.NaN pour n'importe quel argument.
      *
      * @param edgeId l'arête d'identité donnée
      * @return le profil en long de l'arête d'identité donnée, sous la forme d'une fonction

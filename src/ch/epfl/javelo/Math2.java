@@ -3,7 +3,7 @@ package ch.epfl.javelo;
 /**
  * Classe fournissant des fonctions afin d'effectuer
  * certains calculs mathématiques spécifiques au
- * calcul d'itinéraires en Suisse dans Javelo.
+ * calcul d'itinéraires en Suisse dans JaVelo.
  *
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)
@@ -54,7 +54,7 @@ public final class Math2 {
     }
 
     /**
-     * La même fonction que celle précédente mais prenant
+     * La même fonction que celle précédente, mais prenant
      * et retournant des double plutôt que des int.
      */
     public static double clamp(double min, double v, double max){

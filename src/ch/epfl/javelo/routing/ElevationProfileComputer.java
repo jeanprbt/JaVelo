@@ -27,10 +27,14 @@ public final class ElevationProfileComputer {
      */
     public static ElevationProfile elevationProfile(Route route, double maxStepLength){
         Preconditions.checkArgument(maxStepLength > 0);
+
+        //Initialisation d'un tableau contenant le bon nombre d'échantillons
         float[] elevationSamples = new float[(int) Math.ceil(route.length()/maxStepLength) + 1] ;
+
+        //L'espacement entre les échantillons contenus de maxStepLength et de la longueur de l'itinéraire
         double stepLength = route.length()/(elevationSamples.length - 1) ;
 
-        //Remplissage du tableau avec les NaN
+        //Remplissage du tableau, en comptant les éventuels NaN
         for (int i = 0; i < elevationSamples.length ; i++)
             elevationSamples[i] = (float) route.elevationAt(i * stepLength);
 
@@ -64,8 +68,8 @@ public final class ElevationProfileComputer {
     }
 
     /**
-     * Méthode privée permettant de calculer l'index du premier élément valide (différent de Float. NaN)
-     * dans le tableau array, dans l'ordre inverse si inverted est à true et dans l'ordre du tableau si inverted est à false.
+     * Méthode privée permettant de calculer l'index du premier élément valide (différent de Float.NaN) dans le tableau
+     * array, dans l'ordre inverse si inverted est à true et dans l'ordre du tableau si inverted est à false.
      *
      * @param array le tableau à analyser
      * @param inverted vrai si chercher dans l'ordre inverse et faux si chercher dans l'ordre du tableau

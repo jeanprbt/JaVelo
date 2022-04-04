@@ -6,7 +6,7 @@ import java.util.function.DoubleUnaryOperator;
 
 /**
  * Classe fournissant des méthodes pour créer des fonctions mathématiques définies
- * des réels vers les réels, c'est-à-dire R --> R.
+ * des réels vers les réels, c'est-à-dire R → R.
  *
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)

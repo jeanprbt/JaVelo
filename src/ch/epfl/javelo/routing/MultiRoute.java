@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Classe représentant un itinéraire multiple, c.-à-d. composé d'une séquence d'itinéraires contigus nommés segments,
- * pouvant être des itinéraires simples ou des itinéraires multiples eux-mêmes.
+ * Classe immuable représentant un itinéraire multiple, c.-à-d. composé
+ * d'une séquence d'itinéraires contigus nommés segments, pouvant être
+ * des itinéraires simples ou des itinéraires multiples eux-mêmes.
  *
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)

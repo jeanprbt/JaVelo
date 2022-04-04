@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Classe représentant un itinéraire simple reliant un point de
+ * Classe immuable représentant un itinéraire simple reliant un point de
  * départ et un point d'arrivée sans point de passage intermédiaire.
  *
  * @author Jean Perbet (341418)
@@ -30,7 +30,8 @@ public final class SingleRoute implements Route {
         Preconditions.checkArgument(!edges.isEmpty());
         this.edges = List.copyOf(edges);
         positions = new double[edges.size() + 1];
-        for (int i = 1 ; i < edges.size() + 1; i++) positions[i] = positions[i - 1] + edges.get(i - 1).length() ;
+        for (int i = 1 ; i < edges.size() + 1; i++)
+            positions[i] = positions[i - 1] + edges.get(i - 1).length() ;
     }
 
     @Override
@@ -62,7 +63,11 @@ public final class SingleRoute implements Route {
 
     @Override
     public PointCh pointAt(double position) {
+        //Traitement de toutes les positions potentiellement passées en argument
         position = Math2.clamp(0, position, length());
+
+        /* Recherche dichotomique de l'index éventuel de la position
+        passée en argument dans le tableau des positions */
         int edgeId = Arrays.binarySearch(positions, position);
 
         //Cas où la position correspond exactement à celle d'un nœud
@@ -77,7 +82,11 @@ public final class SingleRoute implements Route {
 
     @Override
     public double elevationAt(double position) {
+        //Traitement de toutes les positions potentiellement passées en argument
         position = Math2.clamp(0, position, length());
+
+        /* Recherche dichotomique de l'index éventuel de la position
+        passée en argument dans le tableau des positions */
         int edgeId = Arrays.binarySearch(positions, position);
 
         //Cas où la position correspond exactement à celle d'un nœud
@@ -98,7 +107,11 @@ public final class SingleRoute implements Route {
 
     @Override
     public int nodeClosestTo(double position) {
+        //Traitement de toutes les positions potentiellement passées en argument
         position = Math2.clamp(0, position, length());
+
+         /* Recherche dichotomique de l'index éventuel de la position
+        passée en argument dans le tableau des positions */
         int edgeId = Arrays.binarySearch(positions, position);
 
         //Cas où la position correspond exactement à celle d'un nœud
@@ -121,9 +134,12 @@ public final class SingleRoute implements Route {
         for (Edge edge : edges) {
             PointCh closestPointOnEdge ;
             double closestPositionOnEdge = edge.positionClosestTo(point) ;
-            if (closestPositionOnEdge < 0) closestPointOnEdge = edge.fromPoint();
-            else if (closestPositionOnEdge > edge.length()) closestPointOnEdge = edge.toPoint() ;
-            else closestPointOnEdge = edge.pointAt(closestPositionOnEdge);
+            if (closestPositionOnEdge < 0)
+                closestPointOnEdge = edge.fromPoint();
+            else if (closestPositionOnEdge > edge.length())
+                closestPointOnEdge = edge.toPoint() ;
+            else
+                closestPointOnEdge = edge.pointAt(closestPositionOnEdge);
             routePoint = routePoint.min(closestPointOnEdge, positions[edgeId++] + Math2.clamp(0, closestPositionOnEdge, edge.length()), point.distanceTo(closestPointOnEdge));
         }
         return routePoint;

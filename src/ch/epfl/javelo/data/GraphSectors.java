@@ -34,7 +34,10 @@ public record GraphSectors(ByteBuffer buffer) {
      * égal au double de la distance donnée
      */
     public List<Sector> sectorsInArea(PointCh center, double distance){
+
+        //Initialisation de la liste de secteurs à retourner
         List<Sector> sectorsList = new ArrayList<>();
+
         //Détermination des coordonnées des secteurs correspondants aux bords du carré.
         int xMin = (int)(Math2.clamp(0, (center.e() - distance - SwissBounds.MIN_E) / SECTOR_WIDTH, 127));
         int xMax = (int)(Math2.clamp(0, (center.e() + distance - SwissBounds.MIN_E)  / SECTOR_WIDTH, 127));
@@ -50,7 +53,6 @@ public record GraphSectors(ByteBuffer buffer) {
                 sectorsList.add(new Sector(firstNode, endNode));
             }
         }
-
         return sectorsList ;
     }
 

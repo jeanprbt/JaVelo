@@ -13,7 +13,7 @@ public record AttributeSet(long bits) {
 
     /**
      * Constructeur compact qui vérifie que la valeur passée au constructeur
-     * ne contienne aucun bit à 1 ne correspondant pas à un attribut valide.
+     * ne contienne aucun bit non nul ne correspondant pas à un attribut valide.
      *
      * @param bits la chaîne de bits représentant le contenu de l'ensemble :
      *             le bit b est à 1 si et seulement si l'attribut b est dans l'ensemble
