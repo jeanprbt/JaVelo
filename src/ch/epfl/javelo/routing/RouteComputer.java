@@ -40,7 +40,7 @@ public final class RouteComputer {
         Preconditions.checkArgument(startNodeId != endNodeId);
 
         //Enregistrement permettant d'associer à chaque nœud du graphe sa distance au nœud de départ
-        record WeightedNode(int nodeId, float distance, float straightDistance) implements Comparable<WeightedNode> {
+        record WeightedNode(int nodeId, float distance) implements Comparable<WeightedNode> {
             @Override
             public int compareTo(WeightedNode that) {
                 return Double.compare(this.distance, that.distance);
@@ -55,7 +55,7 @@ public final class RouteComputer {
 
         //Association à tous les nœuds du graphe d'une distance infinie
         List<WeightedNode> allNodes = new ArrayList<>();
-        for (int i = 0; i < graph.nodeCount(); i++) allNodes.add(new WeightedNode(i, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
+        for (int i = 0; i < graph.nodeCount(); i++) allNodes.add(new WeightedNode(i, Float.POSITIVE_INFINITY));
 
         //Réglage de la distance du nœud de départ et ajout de ce dernier à l'ensemble en_exploration
         allNodes.set(startNodeId, new WeightedNode(startNodeId,0));
@@ -101,7 +101,7 @@ public final class RouteComputer {
                     toExplore.add(allNodes.get(nodePrimeId));
                 }
             }
-            allNodes.set(node.nodeId, new WeightedNode(node.nodeId, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));
+            allNodes.set(node.nodeId, new WeightedNode(node.nodeId, Float.NEGATIVE_INFINITY));
         }
         return null;
     }
