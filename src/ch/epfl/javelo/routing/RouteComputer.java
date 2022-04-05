@@ -42,11 +42,12 @@ public final class RouteComputer {
         record WeightedNode(int nodeId, float distance) implements Comparable<WeightedNode> {
             @Override
             public int compareTo(WeightedNode that) {
-                return Double.compare(this.distance, that.distance);
+                return Float.compare(this.distance, that.distance);
             }
         }
 
         int[] predecessors = new int[graph.nodeCount()];
+        float[] distances = new float[graph.nodeCount()];
         float[] straightDistances = new float[graph.nodeCount()];
 
         PriorityQueue<WeightedNode> toExplore = new PriorityQueue<>();
@@ -55,12 +56,11 @@ public final class RouteComputer {
         PointCh endPoint = graph.nodePoint(endNodeId);
 
         //Association à tous les nœuds du graphe d'une distance infinie
-        List<WeightedNode> allNodes = new ArrayList<>();
-        for (int i = 0; i < graph.nodeCount(); i++) allNodes.add(new WeightedNode(i, Float.POSITIVE_INFINITY));
+        Arrays.fill(distances, Float.POSITIVE_INFINITY);
 
         //Réglage de la distance du nœud de départ et ajout de ce dernier à l'ensemble en_exploration
-        allNodes.set(startNodeId, new WeightedNode(startNodeId,0));
-        toExplore.add(allNodes.get(startNodeId));
+        distances[startNodeId] = 0 ;
+        toExplore.add(new WeightedNode(startNodeId, distances[startNodeId]));
 
         //Application de l'algorithme A*
         while (!toExplore.isEmpty()) {
@@ -81,11 +81,12 @@ public final class RouteComputer {
                         int edgeId = graph.nodeOutEdgeId(node.nodeId, i);
                         if(graph.edgeTargetNodeId(edgeId) == predecessors[node.nodeId]) {
                             edges.add(Edge.of(graph, edgeId, predecessors[node.nodeId], node.nodeId));
-                            node = allNodes.get(predecessors[node.nodeId]);
+                            node = new WeightedNode(predecessors[node.nodeId], distances[predecessors[node.nodeId]]);
                         }
                     }
                 }
-                return new SingleRoute(invertList(edges));
+                Collections.reverse(edges);
+                return new SingleRoute(edges);
             }
 
             /* Itération sur l'ensemble des arêtes sortant de node afin de trouver l'arête optimale et d'ajouter son
@@ -95,27 +96,15 @@ public final class RouteComputer {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, i), nodePrimeId = graph.edgeTargetNodeId(edgeId);
                 straightDistances[nodePrimeId] = (float)graph.nodePoint(nodePrimeId).distanceTo(endPoint);
                 float d = (float) (node.distance - straightDistances[node.nodeId] + straightDistances[nodePrimeId] + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
-                if (d < allNodes.get(nodePrimeId).distance) {
-                    allNodes.set(nodePrimeId, new WeightedNode(nodePrimeId, d));
+                if (d < distances[nodePrimeId]) {
+                    distances[nodePrimeId] = d;
                     predecessors[nodePrimeId] = node.nodeId ;
-                    toExplore.add(allNodes.get(nodePrimeId));
+                    toExplore.add(new WeightedNode(nodePrimeId, distances[nodePrimeId]));
                 }
             }
-            allNodes.set(node.nodeId, new WeightedNode(node.nodeId, Float.NEGATIVE_INFINITY));
+            distances[node.nodeId] = Float.NEGATIVE_INFINITY;
         }
         return null;
-    }
-
-    /**
-     * Fonction privée permettant d'inverser une liste.
-     *
-     * @param list la liste que l'on veut inverser
-     * @return la liste inversée
-     */
-    private <E> List<E> invertList(List<E> list){
-        List<E> invertedList = new ArrayList<>(list) ;
-        for (int i = 0; i < list.size(); i++) invertedList.set(i, list.get(list.size()-1-i));
-        return invertedList;
     }
 }
 
