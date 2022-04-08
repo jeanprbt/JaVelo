@@ -31,16 +31,16 @@ public final class Graph {
     /**
      * Constructeur public d'un graphe JaVelo.
      *
-     * @param nodes le graphe des nœuds à implémenter dans le graphe JaVelo
-     * @param sectors le graphe des secteurs à implémenter dans le graphe JaVelo
-     * @param edges le graphe des arêtes à implémenter dans le graphe JaVelo
+     * @param nodes         le graphe des nœuds à implémenter dans le graphe JaVelo
+     * @param sectors       le graphe des secteurs à implémenter dans le graphe JaVelo
+     * @param edges         le graphe des arêtes à implémenter dans le graphe JaVelo
      * @param attributeSets les ensembles d'attributs correspondant aux entités précédentes
      */
-    public Graph(GraphNodes nodes, GraphSectors sectors, GraphEdges edges, List<AttributeSet> attributeSets){
-        this.nodes = nodes ;
-        this.sectors = sectors ;
-        this.edges = edges ;
-        this.attributeSets = List.copyOf(attributeSets) ;
+    public Graph(GraphNodes nodes, GraphSectors sectors, GraphEdges edges, List<AttributeSet> attributeSets) {
+        this.nodes = nodes;
+        this.sectors = sectors;
+        this.edges = edges;
+        this.attributeSets = List.copyOf(attributeSets);
     }
 
     /**
@@ -63,12 +63,12 @@ public final class Graph {
         Path attributeSetsPath = basePath.resolve("attributes.bin");
 
         //Chargement des différents buffers nécessaires à la création des différents sous-graphes
-        IntBuffer nodesBuffer = mappedBuffer(nodesPath).asIntBuffer() ;
+        IntBuffer nodesBuffer = mappedBuffer(nodesPath).asIntBuffer();
         ByteBuffer sectorsBuffer = mappedBuffer(sectorsPath);
-        ByteBuffer edgesBuffer = mappedBuffer(edgesPath) ;
-        IntBuffer profileIdsBuffer = mappedBuffer(profileIdsPath).asIntBuffer() ;
-        ShortBuffer elevationsBuffer = mappedBuffer(elevationsPath).asShortBuffer() ;
-        LongBuffer attributeSets = mappedBuffer(attributeSetsPath).asLongBuffer() ;
+        ByteBuffer edgesBuffer = mappedBuffer(edgesPath);
+        IntBuffer profileIdsBuffer = mappedBuffer(profileIdsPath).asIntBuffer();
+        ShortBuffer elevationsBuffer = mappedBuffer(elevationsPath).asShortBuffer();
+        LongBuffer attributeSets = mappedBuffer(attributeSetsPath).asLongBuffer();
 
         //Mise dans une liste de tous les AttributeSet du buffer correspondant
         List<AttributeSet> attributeSetsList = new ArrayList<>();
@@ -78,9 +78,24 @@ public final class Graph {
 
         //Création du graphe total JaVelo
         return new Graph(new GraphNodes(nodesBuffer),
-                         new GraphSectors(sectorsBuffer),
-                         new GraphEdges(edgesBuffer, profileIdsBuffer, elevationsBuffer),
-                         attributeSetsList);
+                new GraphSectors(sectorsBuffer),
+                new GraphEdges(edgesBuffer, profileIdsBuffer, elevationsBuffer),
+                attributeSetsList);
+    }
+
+    /**
+     * Méthode privée permettant de mapper un fichier et de le retourner en ByteBuffer.
+     *
+     * @param path le chemin d'accès au fichier
+     * @return le ByteBuffer correspondant au fichier "mappé"
+     * @throws IOException en cas d'erreur d'entrée/sortie, par ex. si l'un des fichiers n'existe pas
+     */
+    private static ByteBuffer mappedBuffer(Path path) throws IOException {
+        ByteBuffer mappedBuffer;
+        try (FileChannel channel = FileChannel.open(path)) {
+            mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+        }
+        return mappedBuffer;
     }
 
     /**
@@ -88,7 +103,7 @@ public final class Graph {
      *
      * @return le nombre de nœuds dans le graphe
      */
-    public int nodeCount(){
+    public int nodeCount() {
         return nodes.count();
     }
 
@@ -99,7 +114,7 @@ public final class Graph {
      * @param nodeId l'identité du nœud dont on souhaite connaître la position
      * @return un PointCh dont la position correspond à celle du nœud d'identité donnée
      */
-    public PointCh nodePoint(int nodeId){
+    public PointCh nodePoint(int nodeId) {
         return new PointCh(nodes.nodeE(nodeId), nodes.nodeN(nodeId));
     }
 
@@ -109,7 +124,7 @@ public final class Graph {
      * @param nodeId l'identité du nœud dans le graphe JaVelo
      * @return le nombre d'arêtes du nœud d'identité nodeId
      */
-    public int nodeOutDegree(int nodeId){
+    public int nodeOutDegree(int nodeId) {
         return nodes.outDegree(nodeId);
     }
 
@@ -117,11 +132,11 @@ public final class Graph {
      * Fonction qui retourne l'identité de l'edgeIndex-ième
      * arête sortant du nœud d'identité nodeId.
      *
-     * @param nodeId l'identité du nœud dans le graphe JaVelo
+     * @param nodeId    l'identité du nœud dans le graphe JaVelo
      * @param edgeIndex l'index de l'edgeIndex-ième arête sortant du nœud
      * @return l'identité de l'edgeIndex-ième arête sortant du nœud d'identité nodeId
      */
-    public int nodeOutEdgeId(int nodeId, int edgeIndex){
+    public int nodeOutEdgeId(int nodeId, int edgeIndex) {
         return nodes.edgeId(nodeId, edgeIndex);
     }
 
@@ -129,11 +144,11 @@ public final class Graph {
      * Fonction retournant l'identité du nœud se trouvant le plus proche du point donné, à la distance
      * maximale donnée (en mètres), ou -1 si aucun nœud ne correspond à ces critères.
      *
-     * @param point le point dont on veut l'identité du nœud le plus proche
+     * @param point          le point dont on veut l'identité du nœud le plus proche
      * @param searchDistance la distance maximale de recherche du nœud autour du point
      * @return l'identité du nœud le plus proche du point donné à la distance maximale donnée ou -1
      */
-    public int nodeClosestTo(PointCh point, double searchDistance){
+    public int nodeClosestTo(PointCh point, double searchDistance) {
         //Initialisation de closestNodeId à -1 pour retourner cette valeur si aucun nœud ne correspond aux critères donnés.
         int closestNodeId = -1;
 
@@ -149,8 +164,8 @@ public final class Graph {
             for (int i = sector.startNodeId(); i < sector.endNodeId(); i++) {
                 PointCh node = nodePoint(i);
                 double distance = point.squaredDistanceTo(node);
-                if(distance <= closestDistance) {
-                    closestNodeId = i ;
+                if (distance <= closestDistance) {
+                    closestNodeId = i;
                     closestDistance = distance;
                 }
             }
@@ -164,7 +179,7 @@ public final class Graph {
      * @param edgeId l'identité de l'arête dont on veut le nœud destination
      * @return l'identité du nœud destination de l'arête d'identité donnée
      */
-    public int edgeTargetNodeId(int edgeId){
+    public int edgeTargetNodeId(int edgeId) {
         return edges.targetNodeId(edgeId);
     }
 
@@ -175,7 +190,7 @@ public final class Graph {
      * @param edgeId l'arête dont on veut connaître le sens
      * @return vrai si elle va dans le sens inverse de la voie dont elle provient et faux autrement
      */
-    public boolean edgeIsInverted(int edgeId){
+    public boolean edgeIsInverted(int edgeId) {
         return edges.isInverted(edgeId);
     }
 
@@ -185,7 +200,7 @@ public final class Graph {
      * @param edgeId : l'identité de l'arête donnée
      * @return l'ensemble des attributs OSM attachés à l'arête d'identité donnée
      */
-    public AttributeSet edgeAttributes(int edgeId){
+    public AttributeSet edgeAttributes(int edgeId) {
         return attributeSets.get(edges.attributesIndex(edgeId));
     }
 
@@ -195,7 +210,7 @@ public final class Graph {
      * @param edgeId l'arête dont on veut la longueur
      * @return la longueur de l'arête d'identité donnée
      */
-    public double edgeLength(int edgeId){
+    public double edgeLength(int edgeId) {
         return edges.length(edgeId);
     }
 
@@ -205,7 +220,7 @@ public final class Graph {
      * @param edgeId l'arête dont on veut le dénivelé positif total
      * @return le dénivelé positif total de l'arête d'identité donnée
      */
-    public double edgeElevationGain(int edgeId){
+    public double edgeElevationGain(int edgeId) {
         return edges.elevationGain(edgeId);
     }
 
@@ -216,25 +231,9 @@ public final class Graph {
      * @param edgeId l'arête d'identité donnée
      * @return le profil en long de l'arête d'identité donnée, sous la forme d'une fonction
      */
-    public DoubleUnaryOperator edgeProfile(int edgeId){
-        if (!edges.hasProfile(edgeId)) return Functions.constant(Double.NaN) ;
+    public DoubleUnaryOperator edgeProfile(int edgeId) {
+        if (!edges.hasProfile(edgeId)) return Functions.constant(Double.NaN);
         float[] samples = edges.profileSamples(edgeId);
         return Functions.sampled(samples, edges.length(edgeId));
-    }
-
-
-    /**
-     * Méthode privée permettant de mapper un fichier et de le retourner en ByteBuffer.
-     *
-     * @param path le chemin d'accès au fichier
-     * @return le ByteBuffer correspondant au fichier "mappé"
-     * @throws IOException en cas d'erreur d'entrée/sortie, par ex. si l'un des fichiers n'existe pas
-     */
-    private static ByteBuffer mappedBuffer(Path path) throws IOException {
-        ByteBuffer mappedBuffer ;
-        try (FileChannel channel = FileChannel.open(path)) {
-            mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-        }
-        return mappedBuffer ;
     }
 }

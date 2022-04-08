@@ -53,6 +53,7 @@ public interface Route {
 
     /**
      * Fonction qui retourne l'altitude à la position donnée le long de l'itinéraire.
+     *
      * @param position la position le long de l'itinéraire
      * @return l'altitude à la position donnée le long de l'itinéraire
      */
@@ -74,7 +75,6 @@ public interface Route {
      *
      * @param point le point de référence donné
      * @return le point de l'itinéraire se trouvant le plus proche du point de référence donné.
-     *
      */
     RoutePoint pointClosestTo(PointCh point);
 }

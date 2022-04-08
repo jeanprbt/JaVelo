@@ -1,6 +1,7 @@
 package ch.epfl.javelo.data;
 
 import ch.epfl.javelo.Preconditions;
+
 import java.util.StringJoiner;
 
 /**
@@ -30,11 +31,11 @@ public record AttributeSet(long bits) {
      * @param attributes les attributs de l'ensemble
      * @return un AttributeSet contenant les attributs passés en argument
      */
-    public static AttributeSet of(Attribute... attributes){
-        long mask = 0L ;
+    public static AttributeSet of(Attribute... attributes) {
+        long mask = 0L;
         for (Attribute attribute : attributes) {
-            long maskTemp = 1L << attribute.ordinal() ;
-            mask = mask | maskTemp ;
+            long maskTemp = 1L << attribute.ordinal();
+            mask = mask | maskTemp;
         }
         return new AttributeSet(mask);
     }
@@ -46,7 +47,7 @@ public record AttributeSet(long bits) {
      * @param attribute l'attribut donné
      * @return true si et seulement si l'ensemble récepteur (this) contient l'attribut donné
      */
-    public boolean contains(Attribute attribute){
+    public boolean contains(Attribute attribute) {
         long mask = 1L << attribute.ordinal();
         return (mask & bits) == mask;
     }
@@ -59,7 +60,7 @@ public record AttributeSet(long bits) {
      * @param that l'ensemble dont on veut tester l'intersection
      * @return true si l'intersection est non vide et false sinon
      */
-    public boolean intersects(AttributeSet that){
+    public boolean intersects(AttributeSet that) {
         return (that.bits & this.bits) != 0;
     }
 
@@ -69,6 +70,6 @@ public record AttributeSet(long bits) {
         for (Attribute a : Attribute.ALL) {
             if (((1L << a.ordinal()) & bits) != 0) string.add(a.toString());
         }
-        return string.toString() ;
+        return string.toString();
     }
 }

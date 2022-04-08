@@ -29,7 +29,7 @@ public record PointCh(double e, double n) {
      * @param that le PointCh dont on veut le carré de la distance par rapport à this
      * @return le carré de la distance en mètres séparant this de that
      */
-    public double squaredDistanceTo(PointCh that){
+    public double squaredDistanceTo(PointCh that) {
         return Math.pow(that.e() - e, 2) + Math.pow(that.n() - n, 2);
     }
 
@@ -41,7 +41,7 @@ public record PointCh(double e, double n) {
      * @param that le PointCh dont on veut la distance par rapport à this
      * @return la distance en mètres séparant this de that
      */
-    public double distanceTo(PointCh that){
+    public double distanceTo(PointCh that) {
         return Math.sqrt(squaredDistanceTo(that));
     }
 
@@ -50,7 +50,7 @@ public record PointCh(double e, double n) {
      *
      * @return la longitude en coordonnées WGS84 de this
      */
-    public double lon(){
+    public double lon() {
         return Ch1903.lon(e, n);
     }
 
@@ -59,7 +59,7 @@ public record PointCh(double e, double n) {
      *
      * @return la latitude en coordonnées WGS84 de this
      */
-    public double lat(){
+    public double lat() {
         return Ch1903.lat(e, n);
     }
 

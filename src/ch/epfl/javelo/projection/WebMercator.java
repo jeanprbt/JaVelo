@@ -10,7 +10,8 @@ import ch.epfl.javelo.Math2;
  */
 public final class WebMercator {
 
-    private WebMercator (){}
+    private WebMercator() {
+    }
 
     /**
      * Fonction qui retourne la coordonnée x de la projection en Web Mercator
@@ -19,8 +20,8 @@ public final class WebMercator {
      * @param lon la longitude du point à convertir, exprimée en radians
      * @return la coordonnée x du point de longitude lon en Web Mercator
      */
-    public static double x(double lon){
-        return (1.0 / (2*Math.PI)) * (lon + Math.PI);
+    public static double x(double lon) {
+        return (1.0 / (2 * Math.PI)) * (lon + Math.PI);
     }
 
     /**
@@ -30,8 +31,8 @@ public final class WebMercator {
      * @param lat la latitude du point à convertir, exprimée en radians
      * @return la coordonnée y du point de latitude lat en Web Mercator
      */
-    public static double y(double lat){
-        return (1.0 / (2*Math.PI) * (Math.PI - Math2.asinh(Math.tan(lat))));
+    public static double y(double lat) {
+        return (1.0 / (2 * Math.PI) * (Math.PI - Math2.asinh(Math.tan(lat))));
     }
 
     /**
@@ -41,8 +42,8 @@ public final class WebMercator {
      * @param x la position horizontale du point à convertir, exprimée en Web Mercator
      * @return la longitude du point de coordonnée x, exprimée en radians
      */
-    public static double lon(double x){
-        return 2*Math.PI*x - Math.PI ;
+    public static double lon(double x) {
+        return 2 * Math.PI * x - Math.PI;
     }
 
     /**
@@ -52,7 +53,7 @@ public final class WebMercator {
      * @param y la coordonnée y du point à convertir, exprimée en Web Mercator
      * @return la latitude du point de coordonnée y, exprimée en radians
      */
-    public static double lat(double y){
-        return Math.atan(Math.sinh(Math.PI - Math.PI*2*y));
+    public static double lat(double y) {
+        return Math.atan(Math.sinh(Math.PI - Math.PI * 2 * y));
     }
 }

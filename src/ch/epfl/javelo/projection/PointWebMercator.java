@@ -28,12 +28,12 @@ public record PointWebMercator(double x, double y) {
      * les coordonnées sont x et y au niveau de zoom zoomLevel.
      *
      * @param zoomLevel le niveau de zoom du point dont on veut les coordonnées Web Mercator
-     * @param x la coordonnée horizontale au niveau zoomLevel
-     * @param y la coordonnée verticale au niveau zoomLevel
+     * @param x         la coordonnée horizontale au niveau zoomLevel
+     * @param y         la coordonnée verticale au niveau zoomLevel
      * @return le point en système Web Mercator dont les coordonnées
      * sont x et y au niveau de zoom zoomLevel
      */
-    public static PointWebMercator of(int zoomLevel, double x, double y){
+    public static PointWebMercator of(int zoomLevel, double x, double y) {
         return new PointWebMercator(Math.scalb(x, -(8 + zoomLevel)), Math.scalb(y, -(8 + zoomLevel)));
     }
 
@@ -45,7 +45,7 @@ public record PointWebMercator(double x, double y) {
      * @return le point en système Web Mercator dont les coordonnées
      * sont x et y
      */
-    public static PointWebMercator ofPointCh(PointCh pointCh){
+    public static PointWebMercator ofPointCh(PointCh pointCh) {
         return new PointWebMercator(WebMercator.x(pointCh.lon()), WebMercator.y(pointCh.lat()));
     }
 
@@ -74,7 +74,7 @@ public record PointWebMercator(double x, double y) {
      *
      * @return la longitude du point, exprimée en radians
      */
-    public double lon(){
+    public double lon() {
         return WebMercator.lon(x);
     }
 
@@ -83,7 +83,7 @@ public record PointWebMercator(double x, double y) {
      *
      * @return la latitude du point, exprimée en radians
      */
-    public double lat(){
+    public double lat() {
         return WebMercator.lat(y);
     }
 
@@ -94,8 +94,8 @@ public record PointWebMercator(double x, double y) {
      *
      * @return le point, exprimé en coordonnées suisses ou null si ce dernier n'est pas dans le territoire suisse
      */
-    public PointCh toPointCh(){
-       return SwissBounds.containsEN(Ch1903.e(lon(), lat()), Ch1903.n(lon(), lat())) ? new PointCh(Ch1903.e(lon(), lat()), Ch1903.n(lon(), lat())) : null ;
+    public PointCh toPointCh() {
+        return SwissBounds.containsEN(Ch1903.e(lon(), lat()), Ch1903.n(lon(), lat())) ? new PointCh(Ch1903.e(lon(), lat()), Ch1903.n(lon(), lat())) : null;
     }
 
 }

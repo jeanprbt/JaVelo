@@ -14,7 +14,7 @@ import java.nio.IntBuffer;
  */
 public record GraphNodes(IntBuffer buffer) {
 
-    private static final int OFFSET_E = 0 ;
+    private static final int OFFSET_E = 0;
     private static final int OFFSET_N = OFFSET_E + 1;
     private static final int OFFSET_OUT_EDGES = OFFSET_N + 1;
     private static final int NODE_INTS = OFFSET_OUT_EDGES + 1;
@@ -24,8 +24,8 @@ public record GraphNodes(IntBuffer buffer) {
      *
      * @return le nombre total de noeuds
      */
-    public int count(){
-        return buffer.capacity() / 3 ;
+    public int count() {
+        return buffer.capacity() / 3;
     }
 
     /**
@@ -34,7 +34,7 @@ public record GraphNodes(IntBuffer buffer) {
      * @param nodeId l'identité du nœud dans le graphe JaVelo
      * @return la coordonnée E du nœud d'identité nodeId
      */
-    public double nodeE(int nodeId){
+    public double nodeE(int nodeId) {
         return Q28_4.asDouble(buffer.get(nodeId * NODE_INTS + OFFSET_E));
     }
 
@@ -44,7 +44,7 @@ public record GraphNodes(IntBuffer buffer) {
      * @param nodeId l'identité du nœud dans le graphe JaVelo
      * @return la coordonnée N du nœud d'identité nodeId
      */
-    public double nodeN(int nodeId){
+    public double nodeN(int nodeId) {
         return Q28_4.asDouble(buffer.get(nodeId * NODE_INTS + OFFSET_N));
     }
 
@@ -54,23 +54,24 @@ public record GraphNodes(IntBuffer buffer) {
      * @param nodeId l'identité du nœud dans le graphe JaVelo
      * @return le nombre d'arêtes du nœud d'identité nodeId
      */
-    public int outDegree(int nodeId){
+    public int outDegree(int nodeId) {
         int toExtract = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
         return Bits.extractUnsigned(toExtract, 28, 4);
     }
+
     /**
      * Fonction qui retourne l'identité de l'edgeIndex-ième
      * arête sortant du nœud d'identité nodeId.
      *
-     * @param nodeId l'identité du nœud dans le graphe JaVelo
+     * @param nodeId    l'identité du nœud dans le graphe JaVelo
      * @param edgeIndex l'index de l'edgeIndex-ième arête sortant du nœud
      * @return l'identité de l'edgeIndex-ième
      * arête sortant du nœud d'identité nodeId.
      * @throws AssertionError quand l'edgeIndex est plus élevé que le nombre de branches sortantes
      */
-    public int edgeId(int nodeId, int edgeIndex){
+    public int edgeId(int nodeId, int edgeIndex) {
         assert 0 <= edgeIndex && edgeIndex < outDegree(nodeId);
         int toExtract = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
-        return Bits.extractUnsigned(toExtract, 0, 28) + edgeIndex ;
+        return Bits.extractUnsigned(toExtract, 0, 28) + edgeIndex;
     }
 }

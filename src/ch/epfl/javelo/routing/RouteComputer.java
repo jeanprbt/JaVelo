@@ -5,7 +5,6 @@ import ch.epfl.javelo.data.Graph;
 import ch.epfl.javelo.projection.PointCh;
 
 import java.util.*;
-import java.util.List;
 
 /**
  * Classe représentant un planificateur d'itinéraire.
@@ -51,15 +50,15 @@ public final class RouteComputer {
         float[] straightDistances = new float[graph.nodeCount()];
 
         PriorityQueue<WeightedNode> toExplore = new PriorityQueue<>();
-        List<Edge> edges = new ArrayList<>();
 
+        //Point d'arrivée pour le calcul des distances à vol d'oiseau
         PointCh endPoint = graph.nodePoint(endNodeId);
 
         //Association à tous les nœuds du graphe d'une distance infinie
         Arrays.fill(distances, Float.POSITIVE_INFINITY);
 
         //Réglage de la distance du nœud de départ et ajout de ce dernier à l'ensemble en_exploration
-        distances[startNodeId] = 0 ;
+        distances[startNodeId] = 0;
         toExplore.add(new WeightedNode(startNodeId, distances[startNodeId]));
 
         //Application de l'algorithme A*
@@ -72,39 +71,56 @@ public final class RouteComputer {
             //Ignorance des nœuds que l'on a déjà traités
             if (node.distance == Float.NEGATIVE_INFINITY) continue;
 
-            /* Traitement de la fin de l'algorithme lorsqu'il atteint le nœud d'arrivée : reconstruction de l'itinéraire
-            grâce au previousNodeId de chaque nœud parcouru par A* en cherchant à chaque tour de boucle l'arête sortante
-            du nœud étudié arrivant au previousNodeId */
-            if (node.nodeId == endNodeId) {
-                while (node.nodeId != startNodeId) {
-                    for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
-                        int edgeId = graph.nodeOutEdgeId(node.nodeId, i);
-                        if(graph.edgeTargetNodeId(edgeId) == predecessors[node.nodeId]) {
-                            edges.add(Edge.of(graph, edgeId, predecessors[node.nodeId], node.nodeId));
-                            node = new WeightedNode(predecessors[node.nodeId], distances[predecessors[node.nodeId]]);
-                        }
-                    }
-                }
-                Collections.reverse(edges);
-                return new SingleRoute(edges);
-            }
+            //Traitement de la fin de l'algorithme lorsqu'il atteint le nœud d'arrivée grâce à la méthode buildRoute()
+            if (node.nodeId == endNodeId)
+                return buildRoute(startNodeId, endNodeId, predecessors);
 
-            /* Itération sur l'ensemble des arêtes sortant de node afin de trouver l'arête optimale et d'ajouter son
-            nœud d'arrivée à toExplore, et changer la somme de la distance totale parcourue depuis le nœud de départ
-            jusqu'à ce nœud avec la distance à vol d'oiseau entre ce nœud et le nœud d'arrivée */
+            /* Itération sur l'ensemble des arêtes sortant de node afin de trouver l'arête optimale pour ajouter son nœud d'arrivée
+            à toExplore, ajouter node en tant que prédécesseur de ce nœud d'arrivée et changer la somme de la distance totale
+            parcourue depuis le nœud de départ jusqu'à ce nœud avec la distance à vol d'oiseau entre ce nœud et le nœud d'arrivée */
             for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, i), nodePrimeId = graph.edgeTargetNodeId(edgeId);
-                straightDistances[nodePrimeId] = (float)graph.nodePoint(nodePrimeId).distanceTo(endPoint);
-                float d = (float) (node.distance - straightDistances[node.nodeId] + straightDistances[nodePrimeId] + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
+                straightDistances[nodePrimeId] = (float) graph.nodePoint(nodePrimeId).distanceTo(endPoint);
+                float d = (float) (node.distance - straightDistances[node.nodeId] + straightDistances[nodePrimeId]
+                        + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
                 if (d < distances[nodePrimeId]) {
                     distances[nodePrimeId] = d;
-                    predecessors[nodePrimeId] = node.nodeId ;
+                    predecessors[nodePrimeId] = node.nodeId;
                     toExplore.add(new WeightedNode(nodePrimeId, distances[nodePrimeId]));
                 }
             }
+
+            //Marquage des nœuds une fois traités
             distances[node.nodeId] = Float.NEGATIVE_INFINITY;
         }
         return null;
+    }
+
+    /**
+     * Méthode privée permettant de reconstruire un itinéraire entre les nœuds de départ et d'arrivée,
+     * grâce à un tableau donnant pour chaque nœud de l'itinéraire son prédécesseur préalablement calculé.
+     *
+     * @param startNodeId  le nœud de départ
+     * @param endNodeId    le nœud d'arrivée
+     * @param predecessors le tableau contenant à l'index i le prédécesseur du nœud d'identité i dans l'itinéraire
+     * @return l'itinéraire entre startNodeId et endNodeId grâce au tableau predecessors
+     */
+    private SingleRoute buildRoute(int startNodeId, int endNodeId, int[] predecessors) {
+        List<Edge> edges = new ArrayList<>();
+        int nodeId = endNodeId;
+        while (nodeId != startNodeId) {
+            //À chaque tour de boucle, recherche de l'arête sortante du nœud étudié arrivant à son prédécesseur
+            for (int i = 0; i < graph.nodeOutDegree(nodeId); i++) {
+                int edgeId = graph.nodeOutEdgeId(nodeId, i);
+                if (graph.edgeTargetNodeId(edgeId) == predecessors[nodeId]) {
+                    edges.add(Edge.of(graph, edgeId, predecessors[nodeId], nodeId));
+                    nodeId = predecessors[nodeId];
+                }
+            }
+        }
+        //Inversion des arêtes, car l'itinéraire a été construit en partant de la fin
+        Collections.reverse(edges);
+        return new SingleRoute(edges);
     }
 }
 

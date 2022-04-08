@@ -17,7 +17,7 @@ import java.util.List;
  */
 public final class MultiRoute implements Route {
 
-   private final List<Route> segments ;
+    private final List<Route> segments;
 
     /**
      * Constructeur public d'un itinéraire multiple.
@@ -25,7 +25,7 @@ public final class MultiRoute implements Route {
      * @param segments la liste des segments constituant l'itinéraire
      * @throws IllegalArgumentException si la liste de segments est vide
      */
-    public MultiRoute(List<Route> segments){
+    public MultiRoute(List<Route> segments) {
         Preconditions.checkArgument(!segments.isEmpty());
         this.segments = List.copyOf(segments);
     }
@@ -33,48 +33,48 @@ public final class MultiRoute implements Route {
     @Override
     public int indexOfSegmentAt(double position) {
         position = Math2.clamp(0, position, length());
-        int indexOfSegment = 0 ;
+        int indexOfSegment = 0;
         for (Route segment : segments) {
-            if(position - segment.length() <= 0) {
+            if (position - segment.length() <= 0) {
                 indexOfSegment += segment.indexOfSegmentAt(position);
                 return indexOfSegment;
             }
             indexOfSegment += segment.indexOfSegmentAt(segment.length()) + 1;
-            position -= segment.length() ;
+            position -= segment.length();
         }
-        return 0 ;
+        return 0;
     }
 
     @Override
     public double length() {
-        double totalLength = 0 ;
+        double totalLength = 0;
         for (Route segment : segments) totalLength += segment.length();
-        return totalLength ;
+        return totalLength;
     }
 
     @Override
     public List<Edge> edges() {
-        List<Edge> edges = new ArrayList<>() ;
+        List<Edge> edges = new ArrayList<>();
         for (Route segment : segments) edges.addAll(segment.edges());
-        return List.copyOf(edges) ;
+        return List.copyOf(edges);
     }
 
     @Override
     public List<PointCh> points() {
         List<PointCh> points = new ArrayList<>();
         for (Route segment : segments) {
-            if(!points.isEmpty())
+            if (!points.isEmpty())
                 points.remove(points.size() - 1);
             points.addAll(segment.points());
         }
-        return List.copyOf(points) ;
+        return List.copyOf(points);
     }
 
     @Override
     public PointCh pointAt(double position) {
         position = Math2.clamp(0, position, length());
         for (Route segment : segments) {
-            if(position - segment.length() <= 0) return segment.pointAt(position);
+            if (position - segment.length() <= 0) return segment.pointAt(position);
             position -= segment.length();
         }
         return null;
@@ -84,8 +84,8 @@ public final class MultiRoute implements Route {
     public double elevationAt(double position) {
         position = Math2.clamp(0, position, length());
         for (Route segment : segments) {
-            if(position - segment.length() <= 0) return segment.elevationAt(position);
-            position -= segment.length() ;
+            if (position - segment.length() <= 0) return segment.elevationAt(position);
+            position -= segment.length();
         }
         return 0;
     }
@@ -94,8 +94,8 @@ public final class MultiRoute implements Route {
     public int nodeClosestTo(double position) {
         position = Math2.clamp(0, position, length());
         for (Route segment : segments) {
-            if(position - segment.length() <= 0) return segment.nodeClosestTo(position);
-            position -= segment.length() ;
+            if (position - segment.length() <= 0) return segment.nodeClosestTo(position);
+            position -= segment.length();
         }
         return 0;
     }
@@ -103,12 +103,12 @@ public final class MultiRoute implements Route {
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
         double totalPosition = 0;
-        RoutePoint routePoint = RoutePoint.NONE ;
+        RoutePoint routePoint = RoutePoint.NONE;
         for (Route segment : segments) {
             RoutePoint closestPoint = segment.pointClosestTo(point);
             routePoint = routePoint.min(closestPoint.point(), totalPosition + closestPoint.position(), closestPoint.distanceToReference());
-            totalPosition += segment.length() ;
+            totalPosition += segment.length();
         }
-        return routePoint ;
+        return routePoint;
     }
 }

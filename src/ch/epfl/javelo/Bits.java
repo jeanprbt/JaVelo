@@ -8,23 +8,23 @@ package ch.epfl.javelo;
  */
 public final class Bits {
 
-    private Bits(){}
+    private Bits() {}
 
     /**
      * Fonction qui extrait du vecteur de 32 bits passé en argument la plage de length
      * bits commençant au bit d'index start, qu'elle interprète comme une valeur signée
      * en complément à deux, ou qui lève une IllegalArgumentException si la plage est invalide.
      *
-     * @param value le vecteur de 32 bits
-     * @param start le bit de départ de la plage à extraire
+     * @param value  le vecteur de 32 bits
+     * @param start  le bit de départ de la plage à extraire
      * @param length la longueur de la plage à extraire
      * @return la valeur signée en complément à 2 correspondant à la plage donnée en argument
      * @throws IllegalArgumentException si la plage est invalide
      */
-    public static int extractSigned(int value, int start, int length){
+    public static int extractSigned(int value, int start, int length) {
         Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= 32);
         //Décalage à gauche puis à droite (arithmétique)
-        return (value << 32 - start - length) >> 32 - length ;
+        return (value << 32 - start - length) >> 32 - length;
     }
 
     /**
@@ -32,15 +32,15 @@ public final class Bits {
      * d'une part, la valeur extraite est interprétée de manière non signée et d'autre part,
      * l'exception IllegalArgumentException est également levée si length vaut 32.
      *
-     * @param value le vecteur de 32 bits
-     * @param start le bit de départ de la plage à extraire
+     * @param value  le vecteur de 32 bits
+     * @param start  le bit de départ de la plage à extraire
      * @param length la longueur de la plage à extraire
      * @return la valeur non signée correspondant à la plage donnée en argument
      * @throws IllegalArgumentException si la plage est invalide ou si length vaut 32
      */
-    public static int extractUnsigned(int value, int start, int length){
+    public static int extractUnsigned(int value, int start, int length) {
         Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= 32 && length < 32);
         //Décalage à gauche puis à droite (logique)
-        return (value << 32 - start - length) >>> 32 - length ;
+        return (value << 32 - start - length) >>> 32 - length;
     }
 }

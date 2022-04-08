@@ -20,7 +20,7 @@ public final class Math2 {
      * @param y l'ordonnée d'un point
      * @return le plus petit entier supérieur ou égal à x / y
      */
-    public static int ceilDiv(int x, int y){
+    public static int ceilDiv(int x, int y) {
         Preconditions.checkArgument(x >= 0 && y > 0);
         return (x + y - 1) / y;
     }
@@ -29,7 +29,7 @@ public final class Math2 {
      * Fonction qui retourne la coordonnée y du point se trouvant sur la droite
      * passant par (0, y0) et (1, y1) et de coordonnée x donnée.
      *
-     * @param x l'abscisse du point dont on recherche l'ordonnée
+     * @param x  l'abscisse du point dont on recherche l'ordonnée
      * @param y0 l'ordonnée du point de la droite d'abscisse 0
      * @param y1 l'ordonnée du point de la droite d'abscisse 1
      * @return l'ordonnée du point de la droite d'ordonnée x
@@ -43,13 +43,13 @@ public final class Math2 {
      * Fonction qui limite la valeur de v dans l'intervalle allant de min à max.
      *
      * @param min la borne min de l'intervalle
-     * @param v la valeur à limiter
+     * @param v   la valeur à limiter
      * @param max la borne max de l'intervalle
      * @return la valeur v limitée dans l'intervalle allant de min à max
      */
-    public static int clamp(int min, int v, int max){
+    public static int clamp(int min, int v, int max) {
         Preconditions.checkArgument(min <= max);
-        if(v < min) return min ;
+        if (v < min) return min;
         else return Math.min(v, max);
     }
 
@@ -57,9 +57,9 @@ public final class Math2 {
      * La même fonction que celle précédente, mais prenant
      * et retournant des double plutôt que des int.
      */
-    public static double clamp(double min, double v, double max){
+    public static double clamp(double min, double v, double max) {
         Preconditions.checkArgument(min <= max);
-        if(v < min) return min ;
+        if (v < min) return min;
         else return Math.min(v, max);
     }
 
@@ -70,7 +70,7 @@ public final class Math2 {
      * @param x nombre réel dont on veut le sinus hyperbolique inverse
      * @return le sinus hyperbolique inverse d'un réel x
      */
-    public static double asinh(double x){
+    public static double asinh(double x) {
         return Math.log(x + Math.sqrt(1 + Math.pow(x, 2)));
     }
 
@@ -84,7 +84,7 @@ public final class Math2 {
      * @param vY composante y du vecteur v
      * @return le produit scalaire des vecteurs u(uX, uY) et v(vX, vY)
      */
-    public static double dotProduct(double uX, double uY, double vX, double vY){
+    public static double dotProduct(double uX, double uY, double vX, double vY) {
         return uX * vX + uY * vY;
     }
 
@@ -95,7 +95,7 @@ public final class Math2 {
      * @param uY composante y du vecteur
      * @return la norme au carré du vecteur (uX, uY)
      */
-    public static double squaredNorm(double uX, double uY){
+    public static double squaredNorm(double uX, double uY) {
         return Math.pow(uX, 2) + Math.pow(uY, 2);
     }
 
@@ -106,7 +106,7 @@ public final class Math2 {
      * @param uY composante y du vecteur
      * @return la norme du vecteur (uX, uY)
      */
-    public static double norm(double uX, double uY ){
+    public static double norm(double uX, double uY) {
         return Math.sqrt(squaredNorm(uX, uY));
     }
 
@@ -122,7 +122,7 @@ public final class Math2 {
      * @param pY ordonnée du point P
      * @return la longueur de la projection orthogonale du vecteur AP sur le vecteur AB
      */
-    public static double projectionLength(double aX, double aY, double bX, double bY, double pX, double pY){
-        return dotProduct(pX - aX, pY - aY, bX - aX, bY - aY)/norm(bX - aX, bY - aY);
+    public static double projectionLength(double aX, double aY, double bX, double bY, double pX, double pY) {
+        return dotProduct(pX - aX, pY - aY, bX - aX, bY - aY) / norm(bX - aX, bY - aY);
     }
 }

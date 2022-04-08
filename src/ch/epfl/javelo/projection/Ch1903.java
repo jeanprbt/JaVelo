@@ -8,7 +8,8 @@ package ch.epfl.javelo.projection;
  */
 public final class Ch1903 {
 
-    private Ch1903() {}
+    private Ch1903() {
+    }
 
     /**
      * Fonction qui retourne la coordonnée E (est) dans le système Ch1903 du point de latitude lat
@@ -57,7 +58,7 @@ public final class Ch1903 {
     public static double lon(double e, double n) {
         double x = 1e-6 * (e - 2_600_000);
         double y = 1e-6 * (n - 1_200_000);
-        double lon0 = 2.6779094 + 4.728982*x + 0.791484*x*y + 0.1306*x*Math.pow(y, 2) - 0.0436*Math.pow(x, 3);
+        double lon0 = 2.6779094 + 4.728982 * x + 0.791484 * x * y + 0.1306 * x * Math.pow(y, 2) - 0.0436 * Math.pow(x, 3);
         return Math.toRadians(lon0 * (100 / 36.0));
     }
 

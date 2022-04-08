@@ -12,7 +12,7 @@ import java.util.function.DoubleUnaryOperator;
  */
 public final class Functions {
 
-    private Functions(){}
+    private Functions() {}
 
     /**
      * Fonction qui retourne une fonction constante dont la valeur est toujours y.
@@ -20,7 +20,7 @@ public final class Functions {
      * @param y la valeur de la fonction constante
      * @return la fonction constante qui retourne toujours y
      */
-    public static DoubleUnaryOperator constant(double y){
+    public static DoubleUnaryOperator constant(double y) {
         return new Constant(y);
     }
 
@@ -30,7 +30,7 @@ public final class Functions {
      *
      * @param samples les ordonnées des échantillons, dont les abscisses sont réparties
      *                régulièrement entre 0 et xMax
-     * @param xMax l'abscisse maximale de la plage
+     * @param xMax    l'abscisse maximale de la plage
      * @return la fonction obtenue par interpolation linéaire des échantillons samples entre 0 et xMax
      * @throws IllegalArgumentException lorsque samples a moins de deux éléments ou lorsque xMax est négatif ou nul
      */
@@ -39,14 +39,14 @@ public final class Functions {
         return new Sampled(samples, xMax);
     }
 
-    private final static record Constant(double y) implements DoubleUnaryOperator{
+    private final static record Constant(double y) implements DoubleUnaryOperator {
         @Override
         public double applyAsDouble(double operand) {
             return y;
         }
     }
 
-    private final static record Sampled(float[] samples, double xMax) implements DoubleUnaryOperator{
+    private final static record Sampled(float[] samples, double xMax) implements DoubleUnaryOperator {
 
         @Override
         public boolean equals(Object o) {
@@ -58,13 +58,13 @@ public final class Functions {
 
         @Override
         public double applyAsDouble(double operand) {
-            if(operand < 0) return samples[0];
+            if (operand < 0) return samples[0];
             else if (operand >= xMax) return samples[samples.length - 1];
             else {
-                double spacing = xMax / (samples.length - 1) ;
-                double proportion = (operand % spacing) / spacing ;
-                int minBorn = (int)(operand / spacing);
-                return Math2.interpolate(samples[minBorn], samples[minBorn+1], proportion);
+                double spacing = xMax / (samples.length - 1);
+                double proportion = (operand % spacing) / spacing;
+                int minBorn = (int) (operand / spacing);
+                return Math2.interpolate(samples[minBorn], samples[minBorn + 1], proportion);
             }
         }
     }
