@@ -107,7 +107,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
         afin de récupérer la différence d'altitude et d'ajouter un nouvel échantillon au tableau jusqu'à ce que celui-ci soit rempli. */
         else {
             float currentSample = profileSamples[0];
-            int samplesPerShort = profileType == 2 ? 2 : 4, arrayIndex = 1;
+            int samplesPerShort = profileType == 2 ? TYPE_2_SAMPLES : TYPE_3_SAMPLES, arrayIndex = 1;
             for (int i = 1; i <= Math2.ceilDiv(profileSamples.length - 1, samplesPerShort); i++) {
                 short toExtract = elevations.get(firstSampleId + i);
                 for (int j = samplesPerShort - 1; j >= 0 && arrayIndex < profileSamples.length; j--) {
