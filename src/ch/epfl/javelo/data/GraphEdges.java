@@ -24,6 +24,8 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
     private static final int OFFSET_ELEVATION = OFFSET_LENGTH + Short.BYTES;
     private static final int OFFSET_ATTRIBUTE_SET_ID = OFFSET_ELEVATION + Short.BYTES;
     private static final int EDGE_INTS = OFFSET_ATTRIBUTE_SET_ID + Short.BYTES;
+    private static final int TYPE_2_SAMPLES = 2 ;
+    private static final int TYPE_3_SAMPLES = 4 ;
 
     /**
      * Fonction qui retourne vrai si et seulement si l'arête d'identité donnée
@@ -100,7 +102,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
             for (int i = 1; i < profileSamples.length; i++)
                 profileSamples[i] = Q28_4.asFloat(Short.toUnsignedInt(elevations.get(firstSampleId + i)));
 
-            /* Si le profil est de type 2 ou 3, on cherche le nombre de différences d'altitudes (donc d'échantillons) empaquetées dans chaque short,
+        /* Si le profil est de type 2 ou 3, on cherche le nombre de différences d'altitudes (donc d'échantillons) empaquetées dans chaque short,
         et on parcourt le nombre de shorts correspondant au nombre d'échantillons. À chaque itération on boucle sur le short étudié pour le diviser
         afin de récupérer la différence d'altitude et d'ajouter un nouvel échantillon au tableau jusqu'à ce que celui-ci soit rempli. */
         else {
