@@ -60,6 +60,8 @@ public final class TileManager {
         URL u = new URL("https://tile.openstreetmap.org/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png");
         URLConnection c = u.openConnection();
         c.setRequestProperty("User-Agent", "JaVelo");
+        Files.createDirectories(Path.of(diskCachePath.toString() + "/" + tileId.zoomLevel + "/" + tileId.x + "/"));
+        Files.createFile(tilePath);
         try(InputStream is = c.getInputStream();
             OutputStream os = new FileOutputStream(tilePath.toString())){
             is.transferTo(os);
