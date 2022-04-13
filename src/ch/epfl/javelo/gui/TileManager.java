@@ -8,7 +8,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -45,10 +44,10 @@ public final class TileManager {
      */
    public Image imageForTileAt(TileId tileId) throws FileNotFoundException, IOException{
 
-        //Cache mémoire
+        //Si la tuile est déjà dans le cache mémoire
         if(cacheMemory.containsKey(tileId)) return cacheMemory.get(tileId);
 
-        //Cache disque
+        //Si la tuile n'est pas dans le cache mémoire mais déjà dans le cache disque
         Path tilePath = Path.of(diskCachePath.toString() + "/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png") ;
         if(Files.exists(tilePath)){
             try(InputStream is = new FileInputStream(tilePath.toString())){
@@ -57,7 +56,7 @@ public final class TileManager {
             }
         }
 
-        //Téléchargement de la tuile depuis le serveur
+        //Si la tuile n'est pas dans le cache mémoire ni dans le cache disque, téléchargement de la tuile depuis le serveur
         URL u = new URL("https://tile.openstreetmap.org/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png");
         URLConnection c = u.openConnection();
         c.setRequestProperty("User-Agent", "JaVelo");
