@@ -27,7 +27,7 @@ public final class TileManager {
     public TileManager(Path diskCachePath, String tileServerName){
         this.diskCachePath = diskCachePath ;
         this.tileServerName = tileServerName ;
-        cacheMemory = new LinkedHashMap<>(100, 0.75f, true) {
+        this.cacheMemory = new LinkedHashMap<>(100, 0.75f, true) {
             private static final int MAX_ENTRIES = 100;
             @Override
             protected boolean removeEldestEntry(Map.Entry eldest) {
@@ -42,12 +42,12 @@ public final class TileManager {
      * @param tileId l'identité de la tuile dont on cherche l'image
      * @return l'image correspondant à la tuile tileId
      */
-   public Image imageForTileAt(TileId tileId) throws FileNotFoundException, IOException{
+   public Image imageForTileAt(TileId tileId) throws IOException{
 
         //Si la tuile est déjà dans le cache mémoire
         if(cacheMemory.containsKey(tileId)) return cacheMemory.get(tileId);
 
-        //Si la tuile n'est pas dans le cache mémoire mais déjà dans le cache disque
+        //Si la tuile n'est pas dans le cache mémoire, mais déjà dans le cache disque
         Path tilePath = Path.of(diskCachePath.toString() + "/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png") ;
         if(Files.exists(tilePath)){
             try(InputStream is = new FileInputStream(tilePath.toString())){
@@ -57,10 +57,10 @@ public final class TileManager {
         }
 
         //Si la tuile n'est pas dans le cache mémoire ni dans le cache disque, téléchargement de la tuile depuis le serveur
-        URL u = new URL("https://tile.openstreetmap.org/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png");
+        URL u = new URL(tileServerName + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png");
         URLConnection c = u.openConnection();
         c.setRequestProperty("User-Agent", "JaVelo");
-        Files.createDirectories(Path.of(diskCachePath.toString() + "/" + tileId.zoomLevel + "/" + tileId.x + "/"));
+        Files.createDirectories(Path.of(diskCachePath + "/" + tileId.zoomLevel + "/" + tileId.x + "/"));
         Files.createFile(tilePath);
         try(InputStream is = c.getInputStream();
             OutputStream os = new FileOutputStream(tilePath.toString())){

@@ -64,7 +64,7 @@ public record MapViewParameters(int zoomLevel, int x, int y) {
      * @return la coordonnée x du point par rapport au coin haut-gauche
      */
     public double viewX(PointWebMercator point){
-        return point.x() - this.x ;
+        return point.xAtZoomLevel(zoomLevel) - this.x ;
     }
 
     /**
@@ -74,7 +74,7 @@ public record MapViewParameters(int zoomLevel, int x, int y) {
      * @return la coordonnée y du point par rapport au coin haut-gauche
      */
     public double viewY(PointWebMercator point) {
-        return point.y() - this.y ;
+        return point.yAtZoomLevel(zoomLevel) - this.y ;
     }
 
 }
