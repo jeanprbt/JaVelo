@@ -52,6 +52,8 @@ public final class BaseMapManager {
             newS.addPreLayoutPulseListener(this::redrawIfNeeded);
         });
 
+        property.addListener((observable, oldS, newS) -> redrawOnNextPulse());
+
         //Ajout des gestionnaires d'évènement au panneau pour toutes les actions possibles de souris
         pane.setOnScroll(event -> {
             System.out.println("ça scrolle");
@@ -96,6 +98,7 @@ public final class BaseMapManager {
     private void redrawIfNeeded() {
         if (!redrawNeeded) return;
         redrawNeeded = false;
+
 
         final int TILE_WIDTH = 256;
         final int TILE_HEIGHT = 256;
