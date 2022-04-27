@@ -44,30 +44,52 @@ public final class TileManager {
      */
    public Image imageForTileAt(TileId tileId) throws IOException{
 
+        Path tilePath = Path.of(diskCachePath.toString() + "/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png") ;
+
         //Si la tuile est déjà dans le cache mémoire
         if(cacheMemory.containsKey(tileId)) return cacheMemory.get(tileId);
 
         //Si la tuile n'est pas dans le cache mémoire, mais déjà dans le cache disque
-        Path tilePath = Path.of(diskCachePath.toString() + "/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png") ;
-        if(Files.exists(tilePath)){
-            try(InputStream is = new FileInputStream(tilePath.toString())){
-                cacheMemory.put(tileId, new Image(is));
-                return cacheMemory.get(tileId);
-            }
-        }
+        if(Files.exists(tilePath)) return getImageFromDisk(tilePath, tileId);
 
         //Si la tuile n'est pas dans le cache mémoire ni dans le cache disque, téléchargement de la tuile depuis le serveur
-        URL u = new URL(tileServerName + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png");
-        URLConnection c = u.openConnection();
-        c.setRequestProperty("User-Agent", "JaVelo");
-        Files.createDirectories(Path.of(diskCachePath + "/" + tileId.zoomLevel + "/" + tileId.x + "/"));
-        Files.createFile(tilePath);
-        try(InputStream is = c.getInputStream();
-            OutputStream os = new FileOutputStream(tilePath.toString())){
-            is.transferTo(os);
-            cacheMemory.put(tileId, new Image(is));
-            return cacheMemory.get(tileId);
-        }
+        downloadImageFromServer(tilePath, tileId);
+
+        return getImageFromDisk(tilePath, tileId);
+   }
+
+    /**
+     * Méthode permettant d'extraire une image du cache disque et de la mettre dans le cache mémoire.
+     *
+     * @param tilePath le chemin d'accès à la tuile dans le cache disque
+     * @param tileId l'identité de la tuile dans le cache mémoire
+     * @return l'image de la tuile d'identité tileId
+     * @throws IOException en cas d'erreur avec les fichiers
+     */
+   private Image getImageFromDisk(Path tilePath, TileId tileId) throws IOException{
+       try(InputStream is = new FileInputStream(tilePath.toString())){
+           cacheMemory.put(tileId, new Image(is));
+           return cacheMemory.get(tileId);
+       }
+   }
+
+    /**
+     * Méthode permettant de télécharger une image depuis le serveur et de les mettre dans le cache disque.
+     *
+     * @param tilePath le chemin d'accès que l'on veut donner à la tuile dans le cache disque
+     * @param tileId l'identité de la tuile permettant de déduire son URL pour les requêtes
+     * @throws IOException en cas d'erreur avec les fichiers
+     */
+   private void downloadImageFromServer(Path tilePath, TileId tileId) throws IOException {
+       URL u = new URL("https://" + tileServerName + "/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png");
+       URLConnection c = u.openConnection();
+       c.setRequestProperty("User-Agent", "JaVelo");
+       Files.createDirectories(Path.of(diskCachePath + "/" + tileId.zoomLevel + "/" + tileId.x + "/"));
+       Files.createFile(tilePath);
+       try(InputStream is = c.getInputStream();
+           OutputStream os = new FileOutputStream(tilePath.toString())){
+           is.transferTo(os);
+       }
    }
 
     /**
