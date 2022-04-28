@@ -43,6 +43,7 @@ public final class BaseMapManager {
         canvas.widthProperty().bind(pane.widthProperty());
         canvas.heightProperty().bind(pane.heightProperty());
 
+        //Régulation de redrawIfNeeded à une fois par battement
         canvas.sceneProperty().addListener((p, oldS, newS) -> {
             assert oldS == null;
             newS.addPreLayoutPulseListener(this::redrawIfNeeded);
@@ -104,7 +105,7 @@ public final class BaseMapManager {
 
 
     /**
-     * Méthode appelant le redessin de la carte sur le prochain pulse.
+     * Méthode appelant le redessin de la carte sur le prochain battement.
      */
     private void redrawOnNextPulse() {
         redrawNeeded = true;

@@ -97,4 +97,17 @@ public final class WaypointsManager {
         waypoints.add(waypoint);
         marks.put(mark, waypoint);
     }
+
+    private void recreateWaypoints() {
+        pane.getChildren().removeAll();
+        for (Waypoint waypoint : waypoints) {
+            addWayPoint(parameters.get().viewX(PointWebMercator.ofPointCh(waypoint.wayPoint())),
+                        parameters.get().viewY(PointWebMercator.ofPointCh(waypoint.wayPoint())));
+        }
+
+    }
+
+    private void placeWaypoints() {
+
+    }
 }
