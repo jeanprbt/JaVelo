@@ -21,27 +21,8 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/data/Attribute.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/data/AttributeSet.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/Bits.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/projection/Ch1903.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/routing/Edge.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/routing/ElevationProfile.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/routing/ElevationProfileComputer.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/Functions.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/data/Graph.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/data/GraphEdges.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/data/GraphNodes.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/data/GraphSectors.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/Math2.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/projection/PointCh.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/projection/PointWebMercator.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/Preconditions.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/Q28_4.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/routing/Route.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/routing/RoutePoint.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/routing/SingleRoute.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/projection/SwissBounds.java
-/out/artifacts/rendu/JaVelo/src/ch/epfl/javelo/projection/WebMercator.java
+
 .idea/JaVelo.iml
 javelo.kml
+/out/*
+*.png
