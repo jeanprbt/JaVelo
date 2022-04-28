@@ -5,16 +5,13 @@ import ch.epfl.javelo.gui.TileManager.TileId;
 import ch.epfl.javelo.projection.PointWebMercator;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
-import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 
 import java.io.IOException;
-import java.util.*;
 
 
 /**
@@ -29,7 +26,7 @@ public final class BaseMapManager {
     private final Canvas canvas ;
     private final TileManager tileManager ;
     private boolean redrawNeeded ;
-    private MapViewParameters parameters ;
+    private ObjectProperty<MapViewParameters> parameters;
     private final WaypointsManager waypointsManager ;
     private Point2D cursorPosition ;
 
@@ -38,10 +35,9 @@ public final class BaseMapManager {
         this.canvas = new Canvas() ;
         this.pane = new Pane(canvas) ;
         this.redrawNeeded = true ;
-        this.parameters = property.get() ;
         this.tileManager = tileManager ;
         this.waypointsManager = waypointsManager;
-
+        this.parameters = property ;
 
         //Redimensionnement automatique du canevas en fonction du panneau qui le contient
         canvas.widthProperty().bind(pane.widthProperty());
@@ -52,35 +48,13 @@ public final class BaseMapManager {
             newS.addPreLayoutPulseListener(this::redrawIfNeeded);
         });
 
-        property.addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        //Installation de tous les gestionnaires d'évènements
+        installHandlers();
 
-        //Ajout des gestionnaires d'évènement au panneau pour toutes les actions possibles de souris
-        pane.setOnScroll(event -> {
-            System.out.println("ça scrolle");
-            PointWebMercator currentCursorPosition = parameters.pointAt((int)event.getX(), (int)event.getY());
-            int newZoomLevel = Math2.clamp(8, (int)event.getDeltaY() + parameters.zoomLevel(), 19) ;
-            int newX = (int) (currentCursorPosition.xAtZoomLevel(newZoomLevel) - event.getX() - parameters.topLeft().getX());
-            int newY = (int) (currentCursorPosition.yAtZoomLevel(newZoomLevel) - event.getY() - parameters.topLeft().getY());
-            parameters = new MapViewParameters(newZoomLevel, newX, newY);
-        });
-
-        pane.setOnMousePressed(event -> {
-            cursorPosition = new Point2D(event.getX(), event.getY());
-        });
-
-        pane.setOnMouseDragged(event -> {
-            Point2D translation = cursorPosition.subtract(new Point2D(event.getX(), event.getY()));
-            parameters = new MapViewParameters(parameters.zoomLevel(),
-                    (int) (parameters.x() + translation.getX()),
-                    (int) (parameters.y() + translation.getY()));
-            cursorPosition = new Point2D(event.getX(), event.getY());
-        });
-
-        pane.setOnMouseClicked(event -> {
-            if (event.isStillSincePress())
-            this.waypointsManager.addWayPoint(event.getX(), event.getY());
-        });
-
+        //Ajout de listeners aux paramètres de fond de carte et à la taille du canevas pour mettre à jour la carte en conséquence
+        this.parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        this.canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        this.canvas.heightProperty().addListener((observable, oldValue, newValue) -> redrawOnNextPulse());
     }
 
     /**
@@ -99,7 +73,6 @@ public final class BaseMapManager {
         if (!redrawNeeded) return;
         redrawNeeded = false;
 
-
         final int TILE_WIDTH = 256;
         final int TILE_HEIGHT = 256;
 
@@ -107,15 +80,15 @@ public final class BaseMapManager {
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
 
         //Détermination des coordonnées des tuiles.
-        int xMin = parameters.x() / TILE_WIDTH;
+        int xMin = (int)parameters.get().x() / TILE_WIDTH;
         int xMax = (int) Math.ceil(xMin + canvas.getWidth() / (double) TILE_WIDTH);
-        int yMin = parameters.y() / TILE_HEIGHT;
+        int yMin = (int)parameters.get().y() / TILE_HEIGHT;
         int yMax = (int) Math.ceil(yMin + canvas.getHeight() / (double) TILE_HEIGHT);
 
         //Récupération puis dessin des tuiles, et simplement absence de dessin si la tuile déclenche une IOException
         for (int i = yMin; i <= yMax; i++) {
             for (int j = xMin; j <= xMax; j++) {
-                TileId tileId = new TileId(parameters.zoomLevel(), j, i);
+                TileId tileId = new TileId(parameters.get().zoomLevel(), j, i);
                 Image tile;
                 try {
                     tile = tileManager.imageForTileAt(tileId);
@@ -123,11 +96,10 @@ public final class BaseMapManager {
                     continue;
                 }
                 graphicsContext.drawImage(tile,
-                        j * TILE_WIDTH - parameters.x(),
-                        i * TILE_HEIGHT - parameters.y());
+                        j * TILE_WIDTH - parameters.get().x(),
+                        i * TILE_HEIGHT - parameters.get().y());
             }
         }
-        redrawOnNextPulse();
     }
 
 
@@ -137,5 +109,41 @@ public final class BaseMapManager {
     private void redrawOnNextPulse() {
         redrawNeeded = true;
         Platform.requestNextPulse();
+    }
+
+    /**
+     * Méthode permettant d'installer les gestionnaires d'évènements sur les différentes actions possibles de la souris
+     * pour redimensionner les mapViewParameters en conséquence.
+     */
+    private void installHandlers() {
+        //Gestion du zoom : ajout de +-1 au niveau de zoom à chaque scroll pour le rendre plus fluide
+        pane.setOnScroll(event -> {
+            PointWebMercator currentCursorPosition = PointWebMercator.of(parameters.get().zoomLevel(), parameters.get().x() + event.getX(), parameters.get().y() + event.getY());
+            if(Math.abs(event.getDeltaY()) > 2) {
+                int newZoomLevel = Math2.clamp(8, parameters.get().zoomLevel() + (int) Math.signum(event.getDeltaY()), 19);
+                double newX = currentCursorPosition.xAtZoomLevel(newZoomLevel) -  event.getX();
+                double newY = currentCursorPosition.yAtZoomLevel(newZoomLevel) - event.getY();
+                parameters.set(new MapViewParameters(newZoomLevel, newX, newY));
+            }
+        });
+
+        //A chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur
+        pane.setOnMousePressed(event -> {
+            cursorPosition = new Point2D(event.getX(), event.getY());
+        });
+
+        //À chaque fois que la souris est décalée, mise à jour des mapViewParameters en fonction
+        pane.setOnMouseDragged(event -> {
+            Point2D translation = cursorPosition.subtract(new Point2D(event.getX(), event.getY()));
+            parameters.set(new MapViewParameters(parameters.get().zoomLevel(),
+                    (int) (parameters.get().x() + translation.getX()),
+                    (int) (parameters.get().y() + translation.getY())));
+            cursorPosition = new Point2D(event.getX(), event.getY());
+        });
+
+        //À chaque fois que la souris est cliquée, création d'un nouveau waypoint
+        pane.setOnMouseClicked(event -> {
+            if (event.isStillSincePress()) this.waypointsManager.addWayPoint(event.getX(), event.getY());
+        });
     }
 }

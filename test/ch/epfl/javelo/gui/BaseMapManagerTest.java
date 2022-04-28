@@ -22,7 +22,7 @@ public final class BaseMapManagerTest extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Graph graph = Graph.loadFrom(Path.of("lausanne"));
-        Path cacheBasePath = Path.of(".");
+        Path cacheBasePath = Path.of("resources/tiles/");
         String tileServerHost = "tile.openstreetmap.org";
         TileManager tileManager =
                 new TileManager(cacheBasePath, tileServerHost);

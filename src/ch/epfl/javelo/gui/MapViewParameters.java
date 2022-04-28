@@ -10,7 +10,7 @@ import javafx.geometry.Point2D;
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)
  */
-public record MapViewParameters(int zoomLevel, int x, int y) {
+public record MapViewParameters(int zoomLevel, double x, double y) {
 
     /**
      * Constructeur public de MapViewParameters vérifiant la validité des arguments.
