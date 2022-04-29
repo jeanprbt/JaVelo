@@ -7,6 +7,7 @@ import javafx.beans.property.ObjectProperty;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
@@ -113,6 +114,10 @@ public final class WaypointsManager {
         pane.getChildren().add(mark);
     }
 
+    /**
+     * Méthode permettant, à chaque modification de la liste waypoints, de supprimer puis recréer tous les points de passage y
+     * figurant toujours avec leurs attributs mis à jour (arrivée, départ ou intermédiaire).
+     */
     private void recreateWaypoints() {
         pane.getChildren().clear();
         indexInWaypoints = 0 ;
