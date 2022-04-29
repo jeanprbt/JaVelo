@@ -35,7 +35,7 @@ public record AttributeSet(long bits) {
         long mask = 0L;
         for (Attribute attribute : attributes) {
             long maskTemp = 1L << attribute.ordinal();
-            mask = mask | maskTemp;
+            mask |= maskTemp;
         }
         return new AttributeSet(mask);
     }

@@ -71,8 +71,8 @@ public final class Graph {
         LongBuffer attributeSets = mappedBuffer(attributeSetsPath).asLongBuffer();
 
         //Mise dans une liste de tous les AttributeSet du buffer correspondant
-        List<AttributeSet> attributeSetsList = new ArrayList<>();
-        for (int i = 0; i < attributeSets.capacity(); i++) {
+        List<AttributeSet> attributeSetsList = new ArrayList<>(attributeSets.capacity());
+        for (int i = 0; i < attributeSets.capacity(); i++)
             attributeSetsList.add(new AttributeSet(attributeSets.get(i)));
 
         //Création du graphe total JaVelo
@@ -152,7 +152,7 @@ public final class Graph {
         int closestNodeId = -1;
 
         //Mise au carré du paramètre searchDistance pour rendre plus efficace le calcul de distance en évitant de calculer des racines carrées.
-        double closestDistance = Math.pow(searchDistance, 2);
+        double closestDistance = searchDistance * searchDistance;
 
         //Liste de tous les secteurs étant compris dans le cercle de rayon searchDistance autour du point passé en paramètre.s
         List<GraphSectors.Sector> sectorsInArea = sectors.sectorsInArea(point, searchDistance);

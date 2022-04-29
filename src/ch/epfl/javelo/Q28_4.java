@@ -8,6 +8,8 @@ package ch.epfl.javelo;
  */
 public final class Q28_4 {
 
+    private static final int DECIMALS = 4;
+
     private Q28_4() {}
 
     /**
@@ -17,7 +19,7 @@ public final class Q28_4 {
      * @return la valeur Q28.4 correspondante au paramètre
      */
     public static int ofInt(int i) {
-        return i << 4;
+        return i << DECIMALS;
     }
 
     /**
@@ -27,7 +29,7 @@ public final class Q28_4 {
      * @return le double correspondant au paramètre
      */
     public static double asDouble(int q28_4) {
-        return Math.scalb((double) q28_4, -4);
+        return Math.scalb((double) q28_4, -DECIMALS);
     }
 
     /**
@@ -37,7 +39,7 @@ public final class Q28_4 {
      * @return le float correspondant au paramètre
      */
     public static float asFloat(int q28_4) {
-        return Math.scalb(q28_4, -4);
+        return Math.scalb(q28_4, -DECIMALS);
     }
 
 }

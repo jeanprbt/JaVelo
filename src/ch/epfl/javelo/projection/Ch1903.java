@@ -84,7 +84,10 @@ public final class Ch1903 {
 
         double x = 1e-6 * (e - 2_600_000);
         double y = 1e-6 * (n - 1_200_000);
-        double lat0 = 16.9023892 + 3.238272 * y - 0.270978 * Math.pow(x, 2) - 0.002528 * Math.pow(y, 2) - 0.0447 * Math.pow(x, 2) * y - 0.0140 * Math.pow(y, 3);
+
+        double lat0 = 16.9023892 + 3.238272 * y - 0.270978 * Math.pow(x, 2) - 0.002528 * Math.pow(y, 2) -
+                      0.0447 * Math.pow(x, 2) * y - 0.0140 * Math.pow(y, 3);
+
         return Math.toRadians(lat0 * (100 / 36.0));
     }
 }

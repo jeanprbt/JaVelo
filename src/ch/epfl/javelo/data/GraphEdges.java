@@ -7,6 +7,7 @@ import ch.epfl.javelo.Q28_4;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 
 import static ch.epfl.javelo.Q28_4.ofInt;
 
@@ -151,8 +152,11 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return le tableau inversé
      */
     private float[] invertArray(float[] array) {
-        float[] invertedArray = new float[array.length];
-        for (int i = 0; i < array.length; i++) invertedArray[i] = array[array.length - 1 - i];
+        float[] invertedArray = Arrays.copyOf(array, array.length);
+        for (int i = 0; i < array.length / 2; i++){
+            invertedArray[i] = array[array.length - 1 - i];
+            invertedArray[array.length - 1 - i] = array[i];
+        }
         return invertedArray;
     }
 }

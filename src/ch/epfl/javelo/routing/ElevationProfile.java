@@ -90,17 +90,6 @@ public final class ElevationProfile {
     }
 
     /**
-     * La redéfinition de la méthode equals() est ici uniquement utile à des fins de tests unitaires.
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ElevationProfile that = (ElevationProfile) o;
-        return Double.compare(that.length, length) == 0 && Arrays.equals(elevationSamples, that.elevationSamples);
-    }
-
-    /**
      * Méthode privée retournant une classe statistique comprenant toutes les
      * valeurs contenues dans le tableau passé en paramètre.
      *

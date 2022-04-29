@@ -8,6 +8,8 @@ package ch.epfl.javelo;
  */
 public final class Bits {
 
+    private static final int VECTOR_LENGTH = Integer.SIZE;
+
     private Bits() {}
 
     /**
@@ -22,9 +24,9 @@ public final class Bits {
      * @throws IllegalArgumentException si la plage est invalide
      */
     public static int extractSigned(int value, int start, int length) {
-        Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= 32);
+        Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= VECTOR_LENGTH);
         //Décalage à gauche puis à droite (arithmétique)
-        return (value << 32 - start - length) >> 32 - length;
+        return (value << VECTOR_LENGTH - start - length) >> VECTOR_LENGTH - length;
     }
 
     /**
@@ -39,8 +41,8 @@ public final class Bits {
      * @throws IllegalArgumentException si la plage est invalide ou si length vaut 32
      */
     public static int extractUnsigned(int value, int start, int length) {
-        Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= 32 && length < 32);
+        Preconditions.checkArgument(start >= 0 && length >= 0 && start + length <= VECTOR_LENGTH && length < VECTOR_LENGTH);
         //Décalage à gauche puis à droite (logique)
-        return (value << 32 - start - length) >>> 32 - length;
+        return (value << VECTOR_LENGTH - start - length) >>> VECTOR_LENGTH - length;
     }
 }

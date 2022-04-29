@@ -19,6 +19,7 @@ public final class SingleRoute implements Route {
 
     private final List<Edge> edges;
     private final double[] positions;
+    private final List<PointCh> points;
 
     /**
      * Constructeur public d'un itinéraire simple.
@@ -29,6 +30,13 @@ public final class SingleRoute implements Route {
     public SingleRoute(List<Edge> edges) {
         Preconditions.checkArgument(!edges.isEmpty());
         this.edges = List.copyOf(edges);
+
+        points = new ArrayList<>();
+        for (Edge edge : edges) {
+            points.add(edge.fromPoint());
+        }
+        points.add(edges.get(edges.size() - 1).toPoint());
+
         positions = new double[edges.size() + 1];
         for (int i = 1; i < edges.size() + 1; i++)
             positions[i] = positions[i - 1] + edges.get(i - 1).length();
@@ -50,12 +58,7 @@ public final class SingleRoute implements Route {
     }
 
     @Override
-    public List<PointCh> points() {
-        List<PointCh> points = new ArrayList<>();
-        for (Edge edge : edges) {
-            points.add(edge.fromPoint());
-        }
-        points.add(edges.get(edges.size() - 1).toPoint());
+    public List<PointCh> points(){
         return points;
     }
 
@@ -132,13 +135,9 @@ public final class SingleRoute implements Route {
         RoutePoint pour trouver le RoutePoint le plus proche du point passé en argument */
         for (Edge edge : edges) {
             PointCh closestPointOnEdge;
-            double closestPositionOnEdge = edge.positionClosestTo(point);
-            if (closestPositionOnEdge < 0)
-                closestPointOnEdge = edge.fromPoint();
-            else if (closestPositionOnEdge > edge.length())
-                closestPointOnEdge = edge.toPoint();
-            else
-                closestPointOnEdge = edge.pointAt(closestPositionOnEdge);
+            double closestPositionOnEdge = Math2.clamp(0, edge.positionClosestTo(point), edge.length());
+            closestPointOnEdge = edge.pointAt(closestPositionOnEdge);
+
             routePoint = routePoint.min(closestPointOnEdge, positions[edgeId++] + Math2.clamp(0, closestPositionOnEdge, edge.length()), point.distanceTo(closestPointOnEdge));
         }
         return routePoint;
