@@ -57,7 +57,7 @@ public record PointWebMercator(double x, double y) {
      * @param zoomLevel le niveau de zoom compris entre 1 et 20
      * @return la coordonnée x du point au niveau de zoom donné
      */
-    public double  xAtZoomLevel(int zoomLevel) {
+    public double xAtZoomLevel(int zoomLevel) {
         return Math.scalb(x, BASE_ZOOM + zoomLevel);
     }
 

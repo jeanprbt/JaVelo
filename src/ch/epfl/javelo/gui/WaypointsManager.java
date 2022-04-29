@@ -35,7 +35,6 @@ public final class WaypointsManager {
     private final ObservableList<Waypoint> waypoints ;
     private int indexInWaypoints ;
     private Point2D initialCursorPosition ;
-    private Point2D initialLayoutPosition ;
 
     public WaypointsManager(Graph graph, ObjectProperty<MapViewParameters> property, ObservableList<Waypoint> waypoints, Consumer<String> consumer) {
 
@@ -76,10 +75,42 @@ public final class WaypointsManager {
         try {
             Waypoint waypoint = new Waypoint(graph.nodePoint(closestNodeId), closestNodeId);
             waypoints.add(waypoint); //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
-        }  catch(IndexOutOfBoundsException o){
+        } catch(IndexOutOfBoundsException o){
             consumer.accept("Aucune route à proximité !");
         }
     }
+
+    /**
+     * Méthode permettant, à chaque modification de la liste waypoints, de supprimer puis recréer tous les points de passage y
+     * figurant toujours avec leurs attributs mis à jour (arrivée, départ ou intermédiaire).
+     */
+    private void recreateWaypoints() {
+        pane.getChildren().clear();
+        indexInWaypoints = 0 ;
+        for (Waypoint waypoint : waypoints) {
+            addToPane(parameters.get().viewX(PointWebMercator.ofPointCh(waypoint.wayPoint())),
+                      parameters.get().viewY(PointWebMercator.ofPointCh(waypoint.wayPoint())));
+            indexInWaypoints++ ;
+        }
+    }
+
+    /**
+     * Méthode replaçant les points de passages après un changement des paramètres de la carte, au drag ou au scroll
+     * de la souris. Elle utilise les anciens paramètres de la carte pour calculer l'ancienne position de chaque
+     * marqueur du panneau, puis y applique les méthodes viewX et viewY depuis les nouveaux paramètres de la carte
+     * pour avoir leur position mise à jour.
+     *
+     * @param oldValue : les anciens paramètres de la carte
+     */
+    private void replaceWaypoints(MapViewParameters oldValue) {
+        for (Node mark : pane.getChildren()) {
+            mark.setLayoutX(parameters.get().viewX(PointWebMercator.of(oldValue.zoomLevel(),
+                         mark.getLayoutX() + oldValue.x(), mark.getLayoutY() + oldValue.y())));
+            mark.setLayoutY(parameters.get().viewY(PointWebMercator.of(oldValue.zoomLevel(),
+                         mark.getLayoutX() + oldValue.x(), mark.getLayoutY() + oldValue.y())));
+        }
+    }
+
 
     /**
      * Méthode permettant d'ajouter au panneau un nouveau marqueur SVG avec les bons attributs et
@@ -115,37 +146,6 @@ public final class WaypointsManager {
     }
 
     /**
-     * Méthode permettant, à chaque modification de la liste waypoints, de supprimer puis recréer tous les points de passage y
-     * figurant toujours avec leurs attributs mis à jour (arrivée, départ ou intermédiaire).
-     */
-    private void recreateWaypoints() {
-        pane.getChildren().clear();
-        indexInWaypoints = 0 ;
-        for (Waypoint waypoint : waypoints) {
-            addToPane(parameters.get().viewX(PointWebMercator.ofPointCh(waypoint.wayPoint())),
-                      parameters.get().viewY(PointWebMercator.ofPointCh(waypoint.wayPoint())));
-            indexInWaypoints++ ;
-        }
-    }
-
-    /**
-     * Méthode replaçant les points de passages après un changement des paramètres de la carte, au drag ou au scroll
-     * de la souris. Elle utilise les anciens paramètres de la carte pour calculer l'ancienne position de chaque
-     * marqueur du panneau, puis y applique les méthodes viewX et viewY depuis les nouveaux paramètres de la carte
-     * pour avoir leur position mise à jour.
-     *
-     * @param oldS : les anciens paramètres de la carte
-     */
-    private void replaceWaypoints(MapViewParameters oldS) {
-        for (Node mark : pane.getChildren()) {
-            mark.setLayoutX(parameters.get().viewX(PointWebMercator.of(oldS.zoomLevel(),
-                         mark.getLayoutX() + oldS.x(), mark.getLayoutY() + oldS.y())));
-            mark.setLayoutY(parameters.get().viewY(PointWebMercator.of(oldS.zoomLevel(),
-                         mark.getLayoutX() + oldS.x(), mark.getLayoutY() + oldS.y())));
-        }
-    }
-
-    /**
      * Méthode permettant d'installer les gestionnaires d'évènement sur le nœud mark afin
      * de gérer la suppression du marqueur et son déplacement en fonction des actions de souris.
      *
@@ -164,7 +164,6 @@ public final class WaypointsManager {
         //À chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur
         mark.setOnMousePressed(event -> {
             initialCursorPosition = new Point2D(event.getX(), event.getY());
-            initialLayoutPosition = new Point2D(mark.getLayoutX(), mark.getLayoutY());
         });
 
         //À chaque fois que la souris est décalée depuis un marqueur, mise à jour de la position de ce dernier en fonction
@@ -186,8 +185,7 @@ public final class WaypointsManager {
                     waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(graph.nodePoint(closestNodeId), closestNodeId));
                 else {
                     consumer.accept("Aucune route à proximité !");
-                    mark.setLayoutX(initialLayoutPosition.getX());
-                    mark.setLayoutY(initialLayoutPosition.getY());
+                    recreateWaypoints();
                 }
             }});
     }
@@ -198,6 +196,6 @@ public final class WaypointsManager {
      */
     private void installListeners(){
         this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> recreateWaypoints()));
-        this.parameters.addListener((observableValue, oldS, newS) -> replaceWaypoints(oldS));
+        this.parameters.addListener((observableValue, oldValue, newValue) -> replaceWaypoints(oldValue));
     }
 }

@@ -17,8 +17,6 @@ public final class RouteComputer {
     private final Graph graph;
     private final CostFunction costFunction;
 
-    private final float ALREADY_HANDLED = Float.NEGATIVE_INFINITY ;
-
     /**
      * Constructeur public d'un planificateur d'itinéraire.
      */
@@ -38,6 +36,7 @@ public final class RouteComputer {
      */
     public Route bestRouteBetween(int startNodeId, int endNodeId) {
         Preconditions.checkArgument(startNodeId != endNodeId);
+        float ALREADY_HANDLED = Float.NEGATIVE_INFINITY;
 
         //Enregistrement permettant d'associer à chaque nœud du graphe sa distance au nœud de départ
         record WeightedNode(int nodeId, float distance) implements Comparable<WeightedNode> {

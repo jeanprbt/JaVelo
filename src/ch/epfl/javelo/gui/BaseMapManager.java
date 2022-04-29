@@ -63,7 +63,7 @@ public final class BaseMapManager {
      * @return le panneau affichant le fond de carte
      */
     public Pane pane(){
-       return this.pane;
+       return pane;
     }
 
     /**
