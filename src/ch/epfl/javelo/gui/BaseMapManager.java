@@ -117,7 +117,7 @@ public final class BaseMapManager {
      */
     private void installHandlers() {
 
-        //Gestion du zoom : ajout de +-1 au niveau de zoom à chaque scroll pour le rendre plus fluide
+        //À chaque fois que la souris est scrollée, ajout de +-1 au niveau de zoom à chaque scroll pour le rendre plus fluide
         pane.setOnScroll(event -> {
             PointWebMercator currentCursorPosition = PointWebMercator.of(parameters.get().zoomLevel(), parameters.get().x() + event.getX(), parameters.get().y() + event.getY());
             if(Math.abs(event.getDeltaY()) > 2) {
@@ -128,7 +128,7 @@ public final class BaseMapManager {
             }
         });
 
-        //A chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur
+        //À chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur
         pane.setOnMousePressed(event -> cursorPosition = new Point2D(event.getX(), event.getY()));
 
         //À chaque fois que la souris est décalée, mise à jour des mapViewParameters en fonction
@@ -146,6 +146,10 @@ public final class BaseMapManager {
         });
     }
 
+    /**
+     * Méthode permettant d'installer des listeners sur les paramètres de fond de carte et du canvas
+     * pour déclencher un redessin au prochain battement.
+     */
     private void installListeners(){
         this.parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
         this.canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());

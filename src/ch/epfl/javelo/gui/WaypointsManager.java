@@ -1,6 +1,7 @@
 package ch.epfl.javelo.gui;
 
 import ch.epfl.javelo.data.Graph;
+import ch.epfl.javelo.projection.PointCh;
 import ch.epfl.javelo.projection.PointWebMercator;
 import javafx.beans.property.ObjectProperty;
 
@@ -32,8 +33,11 @@ public final class WaypointsManager {
     private final Consumer<String> consumer;
     private final ObservableList<Waypoint> waypoints ;
     private int indexInWaypoints ;
+    private Point2D initialCursorPosition ;
+    private Point2D initialLayoutPosition ;
 
     public WaypointsManager(Graph graph, ObjectProperty<MapViewParameters> property, ObservableList<Waypoint> waypoints, Consumer<String> consumer) {
+
         this.graph = graph;
         this.parameters = property;
         this.pane = new Pane();
@@ -41,10 +45,13 @@ public final class WaypointsManager {
         this.waypoints = waypoints;
         this.indexInWaypoints = 0 ;
 
-        this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> recreateWaypoints()));
-        this.parameters.addListener((observableValue, oldS, newS) -> replaceWaypoints());
+        //Ajout de listeners aux paramètres de fond de carte et à la liste des waypoints
+        installListeners();
 
+        //Laisser les gestionnaires d'évènement du fond de carte actifs malgré la superposition avec ceux des waypoints
         pane.setPickOnBounds(false);
+
+        //Création des marqueurs des waypoints initiaux passés en argument
         recreateWaypoints();
     }
 
@@ -67,12 +74,20 @@ public final class WaypointsManager {
         int closestNodeId = graph.nodeClosestTo(parameters.get().pointAt((int)x, (int)y).toPointCh(), 1000);
         try {
             Waypoint waypoint = new Waypoint(graph.nodePoint(closestNodeId), closestNodeId);
-            waypoints.add(waypoint);
-        } catch(IndexOutOfBoundsException o){
+            waypoints.add(waypoint); //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
+        }  catch(IndexOutOfBoundsException o){
             consumer.accept("Aucune route à proximité !");
         }
     }
 
+    /**
+     * Méthode permettant d'ajouter au panneau un nouveau marqueur SVG avec les bons attributs et
+     * d'y ajouter un observateur qui l'enlève à chaque clic sur ce dernier ainsi que des gestionnaires
+     * d'évènements permettant de le déplacer.
+     *
+     * @param x la position X dans le panneau du marqueur
+     * @param y la position Y dans le panneau du marqueur
+     */
     private void addToPane(double x, double y) {
 
         //Création des chemins SVG représentant les marqueurs
@@ -89,12 +104,8 @@ public final class WaypointsManager {
         else if (indexInWaypoints == waypoints.size() - 1) mark.getStyleClass().add("last");
         else mark.getStyleClass().add("middle");
 
-        mark.setOnMouseClicked(event -> {
-            if(event.isStillSincePress()) {
-                waypoints.remove(pane.getChildren().indexOf(mark)); //Appel à recreateWayPoints
-                pane.getChildren().remove(mark);
-            }
-        });
+        //Installation des gestionnaires d'évènement pour le déplacement et la suppression des marqueurs
+        installHandlers(mark);
 
         //Positionnement du marqueur sur le panneau
         mark.setLayoutX(x);
@@ -112,7 +123,76 @@ public final class WaypointsManager {
         }
     }
 
-    private void replaceWaypoints() {
+    /**
+     * Méthode replaçant les points de passages après un changement des paramètres de la carte, au drag ou au scroll
+     * de la souris. Elle utilise les anciens paramètres de la carte pour calculer l'ancienne position de chaque
+     * marqueur du panneau, puis y applique les méthodes viewX et viewY depuis les nouveaux paramètres de la carte
+     * pour avoir leur position mise à jour.
+     *
+     * @param oldS : les anciens paramètres de la carte
+     */
+    private void replaceWaypoints(MapViewParameters oldS) {
+        for (Node mark : pane.getChildren()) {
+            mark.setLayoutX(parameters.get().viewX(PointWebMercator.of(oldS.zoomLevel(),
+                         mark.getLayoutX() + oldS.x(), mark.getLayoutY() + oldS.y())));
+            mark.setLayoutY(parameters.get().viewY(PointWebMercator.of(oldS.zoomLevel(),
+                         mark.getLayoutX() + oldS.x(), mark.getLayoutY() + oldS.y())));
+        }
+    }
 
+    /**
+     * Méthode permettant d'installer les gestionnaires d'évènement sur le nœud mark afin
+     * de gérer la suppression du marqueur et son déplacement en fonction des actions de souris.
+     *
+     * @param mark le nœud sur lequel ajouter les gestionnaires d'évènement
+     */
+    private void installHandlers(Node mark){
+
+        //À chaque fois que la souris est cliquée sur un marqueur, suppression de ce dernier de la liste waypoints et du panneau
+        mark.setOnMouseClicked(event -> {
+            if(event.isStillSincePress()) {
+                waypoints.remove(pane.getChildren().indexOf(mark));
+                pane.getChildren().remove(mark);
+            }
+        });
+
+        //À chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur
+        mark.setOnMousePressed(event -> {
+            initialCursorPosition = new Point2D(event.getX(), event.getY());
+            initialLayoutPosition = new Point2D(mark.getLayoutX(), mark.getLayoutY());
+        });
+
+        //À chaque fois que la souris est décalée depuis un marqueur, mise à jour de la position de ce dernier en fonction
+        mark.setOnMouseDragged(event -> {
+            Point2D translation = initialCursorPosition.subtract(event.getX(), event.getY());
+            mark.setLayoutX(mark.getLayoutX() - translation.getX());
+            mark.setLayoutY(mark.getLayoutY() - translation.getY());
+        });
+
+        /* À chaque fois que la souris est relâchée après avoir été décalée depuis un marqueur, mise à jour du waypoint correspondant :
+        son pointCh et son closestNodeId correspondent désormais à la nouvelle position, ce qui entraîne une modification de la liste
+        waypoints et l'appel à la méthode recreateWaypoints(). Si aucun nœud n'existe, le waypoint n'est pas modifié et le marqueur est
+        simplement replacé à sa position initiale. */
+        mark.setOnMouseReleased(event -> {
+            if (!event.isStillSincePress()){
+                PointCh pointCh = parameters.get().pointAt((int)mark.getLayoutX(), (int)mark.getLayoutY()).toPointCh();
+                int closestNodeId = graph.nodeClosestTo(pointCh, 1000);
+                if(closestNodeId != -1)
+                    waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(graph.nodePoint(closestNodeId), closestNodeId));
+                else {
+                    consumer.accept("Aucune route à proximité !");
+                    mark.setLayoutX(initialLayoutPosition.getX());
+                    mark.setLayoutY(initialLayoutPosition.getY());
+                }
+            }});
+    }
+
+    /**
+     * Méthode permettant d'installer des listeners sur la liste des waypoints et sur les paramètres de
+     * fond de carte afin de recréer tous les waypoints et leur marqueur.
+     */
+    private void installListeners(){
+        this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> recreateWaypoints()));
+        this.parameters.addListener((observableValue, oldS, newS) -> replaceWaypoints(oldS));
     }
 }
