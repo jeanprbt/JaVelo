@@ -25,10 +25,10 @@ public final class BaseMapManager {
     private final Pane pane ;
     private final Canvas canvas ;
     private final TileManager tileManager ;
-    private boolean redrawNeeded ;
-    private ObjectProperty<MapViewParameters> parameters;
+    private final ObjectProperty<MapViewParameters> parameters;
     private final WaypointsManager waypointsManager ;
     private Point2D cursorPosition ;
+    private boolean redrawNeeded ;
 
     public BaseMapManager(TileManager tileManager, WaypointsManager waypointsManager, ObjectProperty<MapViewParameters> property){
 
@@ -52,10 +52,9 @@ public final class BaseMapManager {
         //Installation de tous les gestionnaires d'évènements
         installHandlers();
 
-        //Ajout de listeners aux paramètres de fond de carte et à la taille du canevas pour mettre à jour la carte en conséquence
-        this.parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
-        this.canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
-        this.canvas.heightProperty().addListener((observable, oldValue, newValue) -> redrawOnNextPulse());
+        /* Ajout de listeners aux paramètres de fond de carte et à la taille du
+        canevas pour mettre à jour la carte en conséquence */
+        installListeners();
     }
 
     /**
@@ -117,6 +116,7 @@ public final class BaseMapManager {
      * pour redimensionner les mapViewParameters en conséquence.
      */
     private void installHandlers() {
+
         //Gestion du zoom : ajout de +-1 au niveau de zoom à chaque scroll pour le rendre plus fluide
         pane.setOnScroll(event -> {
             PointWebMercator currentCursorPosition = PointWebMercator.of(parameters.get().zoomLevel(), parameters.get().x() + event.getX(), parameters.get().y() + event.getY());
@@ -129,9 +129,7 @@ public final class BaseMapManager {
         });
 
         //A chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur
-        pane.setOnMousePressed(event -> {
-            cursorPosition = new Point2D(event.getX(), event.getY());
-        });
+        pane.setOnMousePressed(event -> cursorPosition = new Point2D(event.getX(), event.getY()));
 
         //À chaque fois que la souris est décalée, mise à jour des mapViewParameters en fonction
         pane.setOnMouseDragged(event -> {
@@ -146,5 +144,11 @@ public final class BaseMapManager {
         pane.setOnMouseClicked(event -> {
             if (event.isStillSincePress()) this.waypointsManager.addWayPoint(event.getX(), event.getY());
         });
+    }
+
+    private void installListeners(){
+        this.parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        this.canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        this.canvas.heightProperty().addListener((observable, oldValue, newValue) -> redrawOnNextPulse());
     }
 }

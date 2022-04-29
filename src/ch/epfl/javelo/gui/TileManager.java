@@ -52,9 +52,9 @@ public final class TileManager {
         //Si la tuile n'est pas dans le cache mémoire, mais déjà dans le cache disque
         if(Files.exists(tilePath)) return getImageFromDisk(tilePath, tileId);
 
-        //Si la tuile n'est pas dans le cache mémoire ni dans le cache disque, téléchargement de la tuile depuis le serveur
+        /* Si la tuile n'est pas dans le cache mémoire ni dans le cache disque, téléchargement de la tuile depuis le serveur
+        et retour de cette dernière depuis le cache disque où elle vient d'être téléchargée. */
         downloadImageFromServer(tilePath, tileId);
-
         return getImageFromDisk(tilePath, tileId);
    }
 

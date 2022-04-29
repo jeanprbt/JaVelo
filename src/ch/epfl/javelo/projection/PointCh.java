@@ -1,5 +1,6 @@
 package ch.epfl.javelo.projection;
 
+import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.Preconditions;
 
 /**
@@ -30,7 +31,7 @@ public record PointCh(double e, double n) {
      * @return le carré de la distance en mètres séparant this de that
      */
     public double squaredDistanceTo(PointCh that) {
-        return Math.pow(that.e() - e, 2) + Math.pow(that.n() - n, 2);
+        return Math2.squaredNorm(that.e() - e, that.n() - n);
     }
 
 

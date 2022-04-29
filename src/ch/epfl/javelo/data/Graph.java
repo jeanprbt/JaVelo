@@ -74,7 +74,6 @@ public final class Graph {
         List<AttributeSet> attributeSetsList = new ArrayList<>();
         for (int i = 0; i < attributeSets.capacity(); i++) {
             attributeSetsList.add(new AttributeSet(attributeSets.get(i)));
-        }
 
         //Création du graphe total JaVelo
         return new Graph(new GraphNodes(nodesBuffer),

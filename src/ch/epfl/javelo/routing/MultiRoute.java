@@ -5,6 +5,7 @@ import ch.epfl.javelo.Preconditions;
 import ch.epfl.javelo.projection.PointCh;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,7 +57,7 @@ public final class MultiRoute implements Route {
     public List<Edge> edges() {
         List<Edge> edges = new ArrayList<>();
         for (Route segment : segments) edges.addAll(segment.edges());
-        return List.copyOf(edges);
+        return Collections.unmodifiableList(edges);
     }
 
     @Override
@@ -67,7 +68,7 @@ public final class MultiRoute implements Route {
                 points.remove(points.size() - 1);
             points.addAll(segment.points());
         }
-        return List.copyOf(points);
+        return Collections.unmodifiableList(points);
     }
 
     @Override
@@ -106,7 +107,7 @@ public final class MultiRoute implements Route {
         RoutePoint routePoint = RoutePoint.NONE;
         for (Route segment : segments) {
             RoutePoint closestPoint = segment.pointClosestTo(point);
-            routePoint = routePoint.min(closestPoint.point(), totalPosition + closestPoint.position(), closestPoint.distanceToReference());
+            routePoint = routePoint.min(closestPoint.withPositionShiftedBy(totalPosition));
             totalPosition += segment.length();
         }
         return routePoint;

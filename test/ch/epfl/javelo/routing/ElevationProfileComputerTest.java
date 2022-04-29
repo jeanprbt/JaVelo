@@ -26,7 +26,7 @@ class ElevationProfileComputerTest {
 
         ElevationProfile elevationProfile = ElevationProfileComputer.elevationProfile(route, 1);
         ElevationProfile expected = new ElevationProfile(21, new float[]{2, 1, 2, 3, 2,  1, 0.5f, 1, 1.5f, 1, 0.5f, 4, 5, 6, 6, 7, 156, 134, 3, 456, 133, 34});
-        assertEquals(expected, elevationProfile);
+        assertEquals(expected.totalDescent(), elevationProfile.totalDescent());
     }
 
     @Test
@@ -42,7 +42,7 @@ class ElevationProfileComputerTest {
         SingleRoute route = new SingleRoute(edges);
         ElevationProfile expected1 = new ElevationProfile(10, new float[]{0, 0, 0, 0, 0});
         ElevationProfile elevationProfile1 = ElevationProfileComputer.elevationProfile(route, 3);
-        assertEquals(expected1, elevationProfile1);
+        assertEquals(expected1.totalAscent(), elevationProfile1.totalAscent());
     }
 
     @Test
@@ -57,7 +57,7 @@ class ElevationProfileComputerTest {
 
         ElevationProfile expected1 = new ElevationProfile(18, new float[]{3, 3, 3, 4, 9, 9, 9});
         ElevationProfile elevationProfile1 = ElevationProfileComputer.elevationProfile(route, 3);
-        assertEquals(expected1, elevationProfile1);
+        assertEquals(expected1.elevationAt(10), elevationProfile1.elevationAt(10));
 
     }
 
@@ -74,7 +74,7 @@ class ElevationProfileComputerTest {
 
         ElevationProfile expected1 = new ElevationProfile(13, new float[]{1, 5, 7, 8, 9, 8, 7, 6, 5, 4, 3, 7, 8, 2});
         ElevationProfile elevationProfile1 = ElevationProfileComputer.elevationProfile(route, 1);
-        assertEquals(expected1, elevationProfile1);
+        assertEquals(expected1.elevationAt(5), elevationProfile1.elevationAt(5));
     }
 
     @Test
@@ -95,11 +95,11 @@ class ElevationProfileComputerTest {
 
         ElevationProfile expected1 = new ElevationProfile(20, new float[]{1, 2, 5, 4, 3, 3.5f, 4, 4.5f, 5, 6, 5, 4, 3, 2, 1, 2, 3, 3, 3, 3, 3});
         ElevationProfile elevationProfile1 = ElevationProfileComputer.elevationProfile(route, 1);
-        assertEquals(expected1, elevationProfile1);
+        assertEquals(expected1.minElevation(), elevationProfile1.minElevation());
 
         ElevationProfile expected2 = new ElevationProfile(20, new float[]{1, 5, 3, 4, 5, 5, 3, 1, 3, 3, 3});
         ElevationProfile elevationProfile2 = ElevationProfileComputer.elevationProfile(route, 2);
-        assertEquals(expected2, elevationProfile2);
+        assertEquals(expected2.maxElevation(), elevationProfile2.maxElevation());
 
     }
 }

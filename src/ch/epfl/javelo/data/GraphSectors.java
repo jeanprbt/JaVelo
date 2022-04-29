@@ -23,6 +23,7 @@ public record GraphSectors(ByteBuffer buffer) {
     private static final double SECTOR_WIDTH = SwissBounds.WIDTH / 128.0;
     private static final double SECTOR_HEIGHT = SwissBounds.HEIGHT / 128.0;
     private static final int LINE_SECTORS = 128;
+    private static final int LAST_SECTOR_INDEX_PER_LINE = 127 ;
 
     /**
      * Fonction qui retourne la liste de tous les secteurs ayant une intersection avec
@@ -39,10 +40,10 @@ public record GraphSectors(ByteBuffer buffer) {
         List<Sector> sectorsList = new ArrayList<>();
 
         //Détermination des coordonnées des secteurs correspondants aux bords du carré.
-        int xMin = (int) (Math2.clamp(0, (center.e() - distance - SwissBounds.MIN_E) / SECTOR_WIDTH, 127));
-        int xMax = (int) (Math2.clamp(0, (center.e() + distance - SwissBounds.MIN_E) / SECTOR_WIDTH, 127));
-        int yMin = (int) (Math2.clamp(0, (center.n() - distance - SwissBounds.MIN_N) / SECTOR_HEIGHT, 127));
-        int yMax = (int) (Math2.clamp(0, (center.n() + distance - SwissBounds.MIN_N) / SECTOR_HEIGHT, 127));
+        int xMin = (int) (Math2.clamp(0, (center.e() - distance - SwissBounds.MIN_E) / SECTOR_WIDTH, LAST_SECTOR_INDEX_PER_LINE));
+        int xMax = (int) (Math2.clamp(0, (center.e() + distance - SwissBounds.MIN_E) / SECTOR_WIDTH, LAST_SECTOR_INDEX_PER_LINE));
+        int yMin = (int) (Math2.clamp(0, (center.n() - distance - SwissBounds.MIN_N) / SECTOR_HEIGHT, LAST_SECTOR_INDEX_PER_LINE));
+        int yMax = (int) (Math2.clamp(0, (center.n() + distance - SwissBounds.MIN_N) / SECTOR_HEIGHT, LAST_SECTOR_INDEX_PER_LINE));
 
         //Récupération de tous les secteurs dont les coordonnées sont comprises entre les coordonnées calculées précédemment.
         for (int i = yMin; i <= yMax; i++) {
@@ -60,6 +61,5 @@ public record GraphSectors(ByteBuffer buffer) {
      * Enregistrement imbriqué permettant une représentation plus agréable à utiliser,
      * mais moins compacte, des secteurs.
      */
-    public record Sector(int startNodeId, int endNodeId) {
-    }
+    public record Sector(int startNodeId, int endNodeId) {}
 }

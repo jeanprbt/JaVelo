@@ -20,16 +20,6 @@ class FunctionsTest {
     }
 
     @Test
-    void functionsSampledThrowsWithLessThanTwoSamples() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Functions.sampled(new float[]{}, 1);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            Functions.sampled(new float[]{0}, 1);
-        });
-    }
-
-    @Test
     void functionsSampledWorksWhenEvaluatedCloseToXMax() {
         var rng = newRandom();
         var halfWidth = 5000;

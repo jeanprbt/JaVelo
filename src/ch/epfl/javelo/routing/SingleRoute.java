@@ -41,14 +41,12 @@ public final class SingleRoute implements Route {
 
     @Override
     public double length() {
-        double totalLength = 0;
-        for (Edge edge : edges) totalLength += edge.length();
-        return totalLength;
+        return positions[edges.size()];
     }
 
     @Override
     public List<Edge> edges() {
-        return new ArrayList<>(edges);
+        return edges;
     }
 
     @Override

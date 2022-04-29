@@ -68,7 +68,7 @@ public record AttributeSet(long bits) {
     public String toString() {
         StringJoiner string = new StringJoiner(",", "{", "}");
         for (Attribute a : Attribute.ALL) {
-            if (((1L << a.ordinal()) & bits) != 0) string.add(a.toString());
+            if (contains(a)) string.add(a.toString());
         }
         return string.toString();
     }

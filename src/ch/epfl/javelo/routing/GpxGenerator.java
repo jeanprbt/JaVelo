@@ -38,9 +38,11 @@ public class GpxGenerator {
         Document doc = newDocument();
         
         //La balise gpx
-        Element root = doc.createElementNS("http://www.topografix.com/GPX/1/1", "gpx");
+        Element root = doc.createElementNS("https://www.topografix.com/GPX/1/1", "gpx");
         doc.appendChild(root);
-        root.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xsi:schemaLocation", "http://www.topografix.com/GPX/1/1 " + "http://www.topografix.com/GPX/1/1/gpx.xsd");
+        root.setAttributeNS("https://www.w3.org/2001/XMLSchema-instance",
+                "xsi:schemaLocation",
+                "https://www.topografix.com/GPX/1/1 " + "https://www.topografix.com/GPX/1/1/gpx.xsd");
         root.setAttribute("version", "1.1");
         root.setAttribute("creator", "JaVelo");
 
@@ -56,7 +58,9 @@ public class GpxGenerator {
         //La balise rte
         Element rte = doc.createElement("rte");
         root.appendChild(rte);
-        addStartToGpx(doc, rte, route, profile);
+
+        //Ajout du point de départ au fichier
+        addStartToGpx(doc, rte, route);
         double position = 0;
 
         for (Edge edge : route.edges()) {
@@ -93,7 +97,7 @@ public class GpxGenerator {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.transform(new DOMSource(doc), new StreamResult(w));
         } catch (TransformerException e){
-            throw new Error(e); //Should never happen
+            throw new Error(e); //Ne va jamais arriver, permet d'éviter l'annotation throws ...
         }
     }
 
@@ -103,9 +107,8 @@ public class GpxGenerator {
      * @param doc le document GPX auquel ajouter le point de départ
      * @param rte la balise dans laquelle ajouter le point de départ
      * @param route l'itinéraire dont on veut ajouter le point de départ
-     * @param profile le profil de l'itinéraire dont on veut ajouter le point de départ
      */
-    private static void addStartToGpx(Document doc, Element rte, Route route, ElevationProfile profile){
+    private static void addStartToGpx(Document doc, Element rte, Route route){
         Element firstRtept = doc.createElement("rtept");
         PointCh startPoint = route.points().get(0);
         firstRtept.setAttribute("lat", "" + Math.toDegrees(startPoint.lat()));

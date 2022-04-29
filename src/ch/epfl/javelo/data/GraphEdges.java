@@ -24,6 +24,12 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
     private static final int OFFSET_ELEVATION = OFFSET_LENGTH + Short.BYTES;
     private static final int OFFSET_ATTRIBUTE_SET_ID = OFFSET_ELEVATION + Short.BYTES;
     private static final int EDGE_INTS = OFFSET_ATTRIBUTE_SET_ID + Short.BYTES;
+
+    private static final int OFFSET_FIRST_SAMPLE_ID = 0 ;
+    private static final int FIRST_SAMPLE_ID_LENGTH = 30 ;
+    private static final int OFFSET_PROFILE = 30 ;
+    private static final int PROFILE_LENGTH = 2 ;
+
     private static final int TYPE_2_SAMPLES = 2 ;
     private static final int TYPE_3_SAMPLES = 4 ;
 
@@ -45,8 +51,8 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return l'identité du nœud destination de l'arête donnée
      */
     public int targetNodeId(int edgeId) {
-        int nodeId = EDGE_INTS * edgeId + OFFSET_EDGE_DIRECTION_AND_ID;
-        return isInverted(edgeId) ? ~edgesBuffer.getInt(nodeId) : edgesBuffer.getInt(nodeId);
+        int nodeId = edgesBuffer.getInt(EDGE_INTS * edgeId + OFFSET_EDGE_DIRECTION_AND_ID);
+        return nodeId < 0 ? ~nodeId : nodeId ;
     }
 
     /**
@@ -76,7 +82,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return vrai ssi l'arête d'identité donnée possède un profil et faux sinon
      */
     public boolean hasProfile(int edgeId) {
-        return Bits.extractUnsigned(profileIds.get(edgeId), 30, 2) != 0;
+        return Bits.extractUnsigned(profileIds.get(edgeId), OFFSET_PROFILE, PROFILE_LENGTH) != 0;
     }
 
     /**
@@ -93,28 +99,34 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
 
         //Récupération des différentes données propres à l'arête d'identité edgeId : nb d'échantillons, type de profil et index du premier échantillon.
         float[] profileSamples = new float[1 + Math2.ceilDiv(Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_LENGTH)), ofInt(2))];
-        int profileType = Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
-        int firstSampleId = Bits.extractUnsigned(profileIds.get(edgeId), 0, 30);
+        int profileType = Bits.extractUnsigned(profileIds.get(edgeId), OFFSET_PROFILE, PROFILE_LENGTH);
+        int firstSampleId = Bits.extractUnsigned(profileIds.get(edgeId), OFFSET_FIRST_SAMPLE_ID, FIRST_SAMPLE_ID_LENGTH);
         profileSamples[0] = Q28_4.asFloat(Short.toUnsignedInt(elevations.get(firstSampleId)));
 
-        //Si le profil est de type 1 on retourne seulement les différentes altitudes, données au format 12.4, suivant le premier échantillon de l'arête.
-        if (profileType == 1)
-            for (int i = 1; i < profileSamples.length; i++)
-                profileSamples[i] = Q28_4.asFloat(Short.toUnsignedInt(elevations.get(firstSampleId + i)));
 
-        /* Si le profil est de type 2 ou 3, on cherche le nombre de différences d'altitudes (donc d'échantillons) empaquetées dans chaque short,
-        et on parcourt le nombre de shorts correspondant au nombre d'échantillons. À chaque itération on boucle sur le short étudié pour le diviser
-        afin de récupérer la différence d'altitude et d'ajouter un nouvel échantillon au tableau jusqu'à ce que celui-ci soit rempli. */
-        else {
-            float currentSample = profileSamples[0];
-            int samplesPerShort = profileType == 2 ? TYPE_2_SAMPLES : TYPE_3_SAMPLES, arrayIndex = 1;
-            for (int i = 1; i <= Math2.ceilDiv(profileSamples.length - 1, samplesPerShort); i++) {
-                short toExtract = elevations.get(firstSampleId + i);
-                for (int j = samplesPerShort - 1; j >= 0 && arrayIndex < profileSamples.length; j--) {
-                    currentSample += Q28_4.asFloat(Bits.extractSigned(toExtract, (16 / samplesPerShort) * j, (16 / samplesPerShort))); //8 ou 4 selon le profil
-                    profileSamples[arrayIndex++] = currentSample;
+        switch (profileType){
+            //Si le profil est de type 1 on retourne seulement les différentes altitudes, données au format 12.4, suivant le premier échantillon de l'arête.
+            case 1 :
+                for (int i = 1; i < profileSamples.length; i++)
+                    profileSamples[i] = Q28_4.asFloat(Short.toUnsignedInt(elevations.get(firstSampleId + i)));
+                break;
+
+            /* Si le profil est de type 2 ou 3, on cherche le nombre de différences d'altitudes (donc d'échantillons) empaquetées dans chaque short,
+            et on parcourt le nombre de shorts correspondant au nombre d'échantillons. À chaque itération on boucle sur le short étudié pour le diviser
+            afin de récupérer la différence d'altitude et d'ajouter un nouvel échantillon au tableau jusqu'à ce que celui-ci soit rempli. */
+            case 2 :
+            case 3 :
+                float currentSample = profileSamples[0];
+                int samplesPerShort = profileType == 2 ? TYPE_2_SAMPLES : TYPE_3_SAMPLES, arrayIndex = 1;
+                for (int i = 1; i <= Math2.ceilDiv(profileSamples.length - 1, samplesPerShort); i++) {
+                    short toExtract = elevations.get(firstSampleId + i);
+                    for (int j = samplesPerShort - 1; j >= 0 && arrayIndex < profileSamples.length; j--) {
+                        currentSample += Q28_4.asFloat(Bits.extractSigned(toExtract, (Short.SIZE / samplesPerShort) * j, (Short.SIZE / samplesPerShort))); //8 ou 4 selon le profil
+                        profileSamples[arrayIndex++] = currentSample;
+                    }
                 }
-            }
+                break;
+
         }
         return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
     }

@@ -17,6 +17,8 @@ public final class RouteComputer {
     private final Graph graph;
     private final CostFunction costFunction;
 
+    private final float ALREADY_HANDLED = Float.NEGATIVE_INFINITY ;
+
     /**
      * Constructeur public d'un planificateur d'itinéraire.
      */
@@ -47,7 +49,6 @@ public final class RouteComputer {
 
         int[] predecessors = new int[graph.nodeCount()];
         float[] distances = new float[graph.nodeCount()];
-        float[] straightDistances = new float[graph.nodeCount()];
 
         PriorityQueue<WeightedNode> toExplore = new PriorityQueue<>();
 
@@ -69,7 +70,7 @@ public final class RouteComputer {
             WeightedNode node = toExplore.remove();
 
             //Ignorance des nœuds que l'on a déjà traités
-            if (node.distance == Float.NEGATIVE_INFINITY) continue;
+            if (node.distance == ALREADY_HANDLED) continue;
 
             //Traitement de la fin de l'algorithme lorsqu'il atteint le nœud d'arrivée grâce à la méthode buildRoute()
             if (node.nodeId == endNodeId)
@@ -80,8 +81,8 @@ public final class RouteComputer {
             parcourue depuis le nœud de départ jusqu'à ce nœud avec la distance à vol d'oiseau entre ce nœud et le nœud d'arrivée */
             for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, i), nodePrimeId = graph.edgeTargetNodeId(edgeId);
-                straightDistances[nodePrimeId] = (float) graph.nodePoint(nodePrimeId).distanceTo(endPoint);
-                float d = (float) (node.distance - straightDistances[node.nodeId] + straightDistances[nodePrimeId]
+                float d = (float) (node.distance - graph.nodePoint(node.nodeId).distanceTo(endPoint)
+                        + graph.nodePoint(nodePrimeId).distanceTo(endPoint)
                         + costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId));
                 if (d < distances[nodePrimeId]) {
                     distances[nodePrimeId] = d;
@@ -91,7 +92,7 @@ public final class RouteComputer {
             }
 
             //Marquage des nœuds une fois traités
-            distances[node.nodeId] = Float.NEGATIVE_INFINITY;
+            distances[node.nodeId] = ALREADY_HANDLED;
         }
         return null;
     }

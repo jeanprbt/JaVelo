@@ -19,6 +19,7 @@ public final class Math2 {
      * @param x l'abscisse d'un point
      * @param y l'ordonnée d'un point
      * @return le plus petit entier supérieur ou égal à x / y
+     * @throws IllegalArgumentException si x est négatif ou y est négatif ou nul
      */
     public static int ceilDiv(int x, int y) {
         Preconditions.checkArgument(x >= 0 && y > 0);
@@ -46,6 +47,7 @@ public final class Math2 {
      * @param v   la valeur à limiter
      * @param max la borne max de l'intervalle
      * @return la valeur v limitée dans l'intervalle allant de min à max
+     * @throws IllegalArgumentException si min > max
      */
     public static int clamp(int min, int v, int max) {
         Preconditions.checkArgument(min <= max);
@@ -54,13 +56,17 @@ public final class Math2 {
     }
 
     /**
-     * La même fonction que celle précédente, mais prenant
-     * et retournant des double plutôt que des int.
+     * Fonction qui limite la valeur de v dans l'intervalle allant de min à max.
+     *
+     * @param min la borne min de l'intervalle
+     * @param v   la valeur à limiter
+     * @param max la borne max de l'intervalle
+     * @return la valeur v limitée dans l'intervalle allant de min à max
+     * @throws IllegalArgumentException si min > max
      */
     public static double clamp(double min, double v, double max) {
         Preconditions.checkArgument(min <= max);
-        if (v < min) return min;
-        else return Math.min(v, max);
+        return Math.min(Math.max(v, min), max);
     }
 
 
@@ -96,7 +102,7 @@ public final class Math2 {
      * @return la norme au carré du vecteur (uX, uY)
      */
     public static double squaredNorm(double uX, double uY) {
-        return Math.pow(uX, 2) + Math.pow(uY, 2);
+        return dotProduct(uX, uY, uX, uY);
     }
 
     /**

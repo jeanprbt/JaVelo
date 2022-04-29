@@ -65,7 +65,7 @@ public class EdgeTest {
 
 
         Graph graph = new Graph(nodes, sectors, edges, List.of());
-        assertEquals(expected, Edge.of(graph, 0, fromNodeId, toNodeId));
+        assertEquals(expected.length(), Edge.of(graph, 0, fromNodeId, toNodeId).length());
     }
 
     @Test

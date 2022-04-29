@@ -11,6 +11,4 @@ import ch.epfl.javelo.projection.PointCh;
  * @param wayPoint la position du point dans le système de coordonnées suisse
  * @param closestNodeId l'identité du nœud le plus proche du point de passage
  */
-public record Waypoint(PointCh wayPoint, int closestNodeId) {
-
-}
+public record Waypoint(PointCh wayPoint, int closestNodeId) {}

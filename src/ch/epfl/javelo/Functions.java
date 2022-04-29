@@ -1,6 +1,7 @@
 package ch.epfl.javelo;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -36,7 +37,7 @@ public final class Functions {
      */
     public static DoubleUnaryOperator sampled(float[] samples, double xMax) {
         Preconditions.checkArgument(samples.length >= 2 && xMax > 0);
-        return new Sampled(samples, xMax);
+        return new Sampled(Arrays.copyOf(samples, samples.length), xMax);
     }
 
     private final static record Constant(double y) implements DoubleUnaryOperator {
@@ -47,15 +48,6 @@ public final class Functions {
     }
 
     private final static record Sampled(float[] samples, double xMax) implements DoubleUnaryOperator {
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Sampled sampled = (Sampled) o;
-            return Double.compare(sampled.xMax, xMax) == 0 && Arrays.equals(samples, sampled.samples);
-        }
-
         @Override
         public double applyAsDouble(double operand) {
             if (operand < 0) return samples[0];
