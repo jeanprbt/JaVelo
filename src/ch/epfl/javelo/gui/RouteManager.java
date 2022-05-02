@@ -47,6 +47,7 @@ public final class RouteManager {
         parameters.addListener(((observable, oldValue, newValue) -> {
             if(newValue.zoomLevel() != oldValue.zoomLevel()) recreateRoute();
             else replaceRoute(oldValue);
+            replaceCircle();
         }));
 
 

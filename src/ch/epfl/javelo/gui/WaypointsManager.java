@@ -45,7 +45,7 @@ public final class WaypointsManager {
         this.pane = new Pane();
         this.consumer = consumer;
         this.waypoints = waypoints;
-        this.indexInWaypoints = 0 ;
+        this.indexInWaypoints = 0;
 
         //Ajout de listeners aux paramètres de fond de carte et à la liste des waypoints
         installListeners();

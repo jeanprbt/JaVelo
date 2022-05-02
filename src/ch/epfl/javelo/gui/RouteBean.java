@@ -66,6 +66,9 @@ public final class RouteBean {
     public DoubleProperty highlightedPositionProperty(){
         return highlightedPosition ;
     }
+    public double getHighlightedPosition() {
+        return highlightedPosition.get();
+    }
     public void setHighlightedPosition(double value){
         highlightedPosition.setValue(value);
     }
