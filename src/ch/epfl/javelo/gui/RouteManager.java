@@ -2,10 +2,9 @@ package ch.epfl.javelo.gui;
 
 import ch.epfl.javelo.projection.PointCh;
 import ch.epfl.javelo.projection.PointWebMercator;
-import javafx.beans.property.ObjectProperty;
+import ch.epfl.javelo.routing.RoutePoint;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.collections.ListChangeListener;
-import javafx.scene.Node;
+import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
@@ -25,7 +24,6 @@ public final class RouteManager {
     private final Polyline polyline ;
     private final RouteBean route ;
     private final ReadOnlyObjectProperty<MapViewParameters> parameters;
-    private final Consumer<String> consumer ;
 
     public RouteManager(RouteBean route, ReadOnlyObjectProperty<MapViewParameters> parameters, Consumer<String> consumer){
         this.circle = new Circle(5);
@@ -33,24 +31,35 @@ public final class RouteManager {
         this.pane = new Pane(polyline, circle);
         this.route = route ;
         this.parameters = parameters ;
-        this.consumer = consumer ;
 
+        circle.setVisible(false);
         circle.setId("highlight");
         polyline.setId("route");
         pane.setPickOnBounds(false);
 
         route.routeProperty().addListener((observable, oldValue, newValue) -> {
             recreateRoute();
+            replaceCircle();
         });
+
+        route.highlightedPositionProperty().addListener((observable, oldValue, newValue) -> replaceCircle());
 
         parameters.addListener(((observable, oldValue, newValue) -> {
             if(newValue.zoomLevel() != oldValue.zoomLevel()) recreateRoute();
             else replaceRoute(oldValue);
         }));
 
-        route.highlightedPositionProperty().addListener(((observable, oldValue, newValue) -> {
-            replaceCircle();
-        }));
+
+        circle.setOnMouseClicked(event -> {
+            Point2D clickInPane = pane.localToParent(circle.getCenterX(), circle.getCenterY());
+            PointWebMercator clickInMercator = parameters.get().pointAt((int)clickInPane.getX(), (int)clickInPane.getY());
+            RoutePoint clickInRoute = route.getRoute().pointClosestTo(clickInMercator.toPointCh());
+            int clickNodeId = route.getRoute().nodeClosestTo(route.getHighlightedPosition());
+            if (isNotAlreadyWaypoint(clickNodeId))
+                route.getWaypoints().add(route.getRoute().indexOfSegmentAt(route.getHighlightedPosition()) + 1,
+                                                new Waypoint(clickInRoute.point(), clickNodeId));
+            else consumer.accept("Un point de passage est déjà présent à cet endroit !");
+        });
     }
 
     /**
@@ -68,11 +77,10 @@ public final class RouteManager {
      */
     private void recreateRoute(){
         if(route.getRoute() == null)
-            setVisible(false);
+            polyline.setVisible(false);
         else {
-            setVisible(true);
+            polyline.setVisible(true);
             polyline.getPoints().clear();
-            pane.getChildren().remove(polyline);
             addToPane();
         }
     }
@@ -90,6 +98,21 @@ public final class RouteManager {
     }
 
     /**
+     * Méthode permettant de replacer le cercle et de gérer sa visibilité lorsque l'itinéraire ou les paramètres
+     * de fond de carte changent.
+     */
+    private void replaceCircle(){
+        if(route.getRoute() == null){
+            circle.setVisible(false);
+        } else {
+            circle.setVisible(true);
+            PointCh point = route.getRoute().pointAt(route.getHighlightedPosition());
+            circle.setCenterX(parameters.get().viewX(PointWebMercator.ofPointCh(point)));
+            circle.setCenterY(parameters.get().viewY(PointWebMercator.ofPointCh(point)));
+        }
+    }
+
+    /**
      * Méthode permettant d'ajouter au panneau une nouvelle polyLine correspondant
      * aux paramètres de carte et à l'itinéraire actuels.
      */
@@ -101,25 +124,18 @@ public final class RouteManager {
         }
         polyline.setLayoutX(-parameters.get().x());
         polyline.setLayoutY(-parameters.get().y());
-        pane.getChildren().add(polyline);
     }
-
-    private void replaceCircle(){
-        pane.getChildren().remove(circle);
-        PointCh pointCh = route.getRoute().pointAt(route.highlightedPositionProperty().get());
-        circle.setLayoutX(parameters.get().viewX(PointWebMercator.ofPointCh(pointCh)));
-        circle.setLayoutY(parameters.get().viewY(PointWebMercator.ofPointCh(pointCh)));
-        pane.getChildren().add(circle);
-    }
-
 
     /**
-     * Méthode permettant de rendre visible à la fois le cercle et la polyline.
+     * Méthode permettant de savoir si l'identité donnée correspond déjà à un point de passage existant.
      *
-     * @param b la valeur de visibilité voulue
+     * @param nodeId : l'identité du noeud dont on veut vérifier la disponibilité
+     * @return false s'il y a déjà un point de passage et true sinon
      */
-    private void setVisible(boolean b){
-        polyline.setVisible(b);
-        circle.setVisible(b);
+    private boolean isNotAlreadyWaypoint(int nodeId){
+        for (Waypoint waypoint : route.getWaypoints()) {
+            if(nodeId == waypoint.closestNodeId()) return false ;
+        }
+        return true ;
     }
 }

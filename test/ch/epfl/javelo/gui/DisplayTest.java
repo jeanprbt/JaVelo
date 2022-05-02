@@ -60,8 +60,8 @@ public final class DisplayTest extends Application {
 
         StackPane mainPane =
                 new StackPane(baseMapManager.pane(),
-                        waypointsManager.pane(),
-                        routeManager.pane());
+                        routeManager.pane(),
+                        waypointsManager.pane());
         mainPane.getStylesheets().add("map.css");
         primaryStage.setMinWidth(600);
         primaryStage.setMinHeight(300);

@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public final class RouteBean {
 
-    private ObservableList<Waypoint> waypoints ;
+    private final ObservableList<Waypoint> waypoints ;
     private final ObjectProperty<Route> route ;
     private final ObjectProperty<ElevationProfile> elevationProfile ;
     private final DoubleProperty highlightedPosition ;

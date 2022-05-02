@@ -7,9 +7,11 @@ import javafx.beans.property.ObjectProperty;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.SVGPath;
 
@@ -70,13 +72,16 @@ public final class WaypointsManager {
      * @param x la coordonnée X du point de passage
      * @param y la coordonnée Y du point de passage
      */
-    public void addWayPoint(double x, double y){
-        int closestNodeId = graph.nodeClosestTo(parameters.get().pointAt((int)x, (int)y).toPointCh(), 1000);
-        try {
-            Waypoint waypoint = new Waypoint(graph.nodePoint(closestNodeId), closestNodeId);
-            waypoints.add(waypoint); //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
-        } catch(IndexOutOfBoundsException o){
+    public void addWayPoint(double x, double y) {
+        PointCh point = parameters.get().pointAt((int) x, (int) y).toPointCh();
+        int closestNodeId = graph.nodeClosestTo(point, 500);
+        if (isAlreadyWaypoint(closestNodeId))
+            consumer.accept("Il y a déjà un point de passage à cet endroit !");
+        else if (closestNodeId == -1)
             consumer.accept("Aucune route à proximité !");
+        else {
+            Waypoint waypoint = new Waypoint(point, closestNodeId);
+            waypoints.add(waypoint); //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
         }
     }
 
@@ -181,8 +186,12 @@ public final class WaypointsManager {
             if (!event.isStillSincePress()){
                 PointCh pointCh = parameters.get().pointAt((int)mark.getLayoutX(), (int)mark.getLayoutY()).toPointCh();
                 int closestNodeId = graph.nodeClosestTo(pointCh, 1000);
-                if(closestNodeId != -1)
-                    waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(graph.nodePoint(closestNodeId), closestNodeId));
+                if(closestNodeId != -1 && !isAlreadyWaypoint(closestNodeId))
+                    waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(pointCh, closestNodeId));
+                else if (isAlreadyWaypoint(closestNodeId)){
+                    consumer.accept("Il y a déjà un point de passage à cet endroit !");
+                    recreateWaypoints();
+                }
                 else {
                     consumer.accept("Aucune route à proximité !");
                     recreateWaypoints();
@@ -197,5 +206,18 @@ public final class WaypointsManager {
     private void installListeners(){
         this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> recreateWaypoints()));
         this.parameters.addListener((observableValue, oldValue, newValue) -> replaceWaypoints(oldValue));
+    }
+
+    /**
+     * Méthode permettant de savoir si l'identité donnée correspond déjà à un point de passage existant.
+     *
+     * @param nodeId : l'identité du nœud dont on veut vérifier la disponibilité
+     * @return true s'il y a déjà un point de passage et false sinon
+     */
+    private boolean isAlreadyWaypoint(int nodeId){
+        for (Waypoint waypoint : waypoints) {
+            if(nodeId == waypoint.closestNodeId()) return true ;
+        }
+        return false ;
     }
 }
