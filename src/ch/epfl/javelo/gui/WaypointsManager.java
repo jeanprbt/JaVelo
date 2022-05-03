@@ -7,20 +7,13 @@ import javafx.beans.property.ObjectProperty;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.SVGPath;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Classe gérant l'interaction et l'affichage avec les points de passage.
@@ -35,10 +28,16 @@ public final class WaypointsManager {
     private final Pane pane ;
     private final Consumer<String> consumer;
     private final ObservableList<Waypoint> waypoints ;
-    private int indexInWaypoints ;
-    private Point2D initialCursorPosition ;
 
-    public WaypointsManager(Graph graph, ObjectProperty<MapViewParameters> property, ObservableList<Waypoint> waypoints, Consumer<String> consumer) {
+    private int indexInWaypoints ;
+    private Point2D cursorPosition;
+
+    private final int SEARCH_DISTANCE = 500 ;
+
+    public WaypointsManager(Graph graph,
+                            ObjectProperty<MapViewParameters> property,
+                            ObservableList<Waypoint> waypoints,
+                            Consumer<String> consumer) {
 
         this.graph = graph;
         this.parameters = property;
@@ -47,11 +46,11 @@ public final class WaypointsManager {
         this.waypoints = waypoints;
         this.indexInWaypoints = 0;
 
-        //Ajout de listeners aux paramètres de fond de carte et à la liste des waypoints
-        installListeners();
-
         //Laisser les gestionnaires d'évènement du fond de carte actifs malgré la superposition avec ceux des waypoints
         pane.setPickOnBounds(false);
+
+        //Ajout de listeners aux paramètres de fond de carte et à la liste des waypoints
+        installListeners();
 
         //Création des marqueurs des waypoints initiaux passés en argument
         recreateWaypoints();
@@ -72,18 +71,39 @@ public final class WaypointsManager {
      * @param x la coordonnée X du point de passage
      * @param y la coordonnée Y du point de passage
      */
-    public void addWayPoint(double x, double y) {
-        PointCh point = parameters.get().pointAt((int) x, (int) y).toPointCh();
-        int closestNodeId = graph.nodeClosestTo(point, 500);
-        if (isAlreadyWaypoint(closestNodeId))
+    public void addWaypoint(double x, double y) {
+
+        PointCh waypointPosition = parameters.get().pointAt((int) x, (int) y).toPointCh();
+        int closestNodeId = graph.nodeClosestTo(waypointPosition, SEARCH_DISTANCE);
+
+        if (isAlreadyWaypoint(waypoints, closestNodeId))
             consumer.accept("Il y a déjà un point de passage à cet endroit !");
         else if (closestNodeId == -1)
             consumer.accept("Aucune route à proximité !");
         else {
-            Waypoint waypoint = new Waypoint(point, closestNodeId);
-            waypoints.add(waypoint); //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
+            Waypoint waypoint = new Waypoint(waypointPosition, closestNodeId);
+            //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints :
+            waypoints.add(waypoint);
         }
     }
+
+    //---------------------------------------------- Static ----------------------------------------------//
+
+    /**
+     * Méthode statique permettant de savoir si l'identité donnée correspond déjà à un point de passage existant.
+     *
+     * @param nodeId : l'identité du nœud dont on veut vérifier la disponibilité
+     * @param waypoints : la liste des points de passage déjà existants
+     * @return true s'il y a déjà un point de passage et false sinon
+     */
+    public static boolean isAlreadyWaypoint(ObservableList<Waypoint> waypoints, int nodeId){
+        for (Waypoint waypoint : waypoints) {
+            if(nodeId == waypoint.closestNodeId()) return true ;
+        }
+        return false ;
+    }
+
+    //---------------------------------------------- Private ----------------------------------------------//
 
     /**
      * Méthode permettant, à chaque modification de la liste waypoints, de supprimer puis recréer tous les points de passage y
@@ -109,10 +129,11 @@ public final class WaypointsManager {
      */
     private void replaceWaypoints(MapViewParameters oldValue) {
         for (Node mark : pane.getChildren()) {
-            mark.setLayoutX(parameters.get().viewX(PointWebMercator.of(oldValue.zoomLevel(),
-                         mark.getLayoutX() + oldValue.x(), mark.getLayoutY() + oldValue.y())));
-            mark.setLayoutY(parameters.get().viewY(PointWebMercator.of(oldValue.zoomLevel(),
-                         mark.getLayoutX() + oldValue.x(), mark.getLayoutY() + oldValue.y())));
+            PointWebMercator oldMarkPosition = PointWebMercator.of(oldValue.zoomLevel(),
+                                                                oldValue.x() + mark.getLayoutX(),
+                                                                oldValue.y() + mark.getLayoutY());
+            mark.setLayoutX(parameters.get().viewX(oldMarkPosition));
+            mark.setLayoutY(parameters.get().viewY(oldMarkPosition));
         }
     }
 
@@ -147,7 +168,18 @@ public final class WaypointsManager {
         //Positionnement du marqueur sur le panneau
         mark.setLayoutX(x);
         mark.setLayoutY(y);
+
+        //Ajout du marqueur au panneau
         pane.getChildren().add(mark);
+    }
+
+    /**
+     * Méthode permettant d'installer des listeners sur la liste des waypoints et sur les paramètres de
+     * fond de carte afin de recréer tous les waypoints et leur marqueur si ces derniers changent.
+     */
+    private void installListeners(){
+        this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> recreateWaypoints()));
+        this.parameters.addListener((observableValue, oldValue, newValue) -> replaceWaypoints(oldValue));
     }
 
     /**
@@ -168,12 +200,12 @@ public final class WaypointsManager {
 
         //À chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur
         mark.setOnMousePressed(event -> {
-            initialCursorPosition = new Point2D(event.getX(), event.getY());
+            cursorPosition = new Point2D(event.getX(), event.getY());
         });
 
         //À chaque fois que la souris est décalée depuis un marqueur, mise à jour de la position de ce dernier en fonction
         mark.setOnMouseDragged(event -> {
-            Point2D translation = initialCursorPosition.subtract(event.getX(), event.getY());
+            Point2D translation = cursorPosition.subtract(event.getX(), event.getY());
             mark.setLayoutX(mark.getLayoutX() - translation.getX());
             mark.setLayoutY(mark.getLayoutY() - translation.getY());
         });
@@ -183,41 +215,22 @@ public final class WaypointsManager {
         waypoints et l'appel à la méthode recreateWaypoints(). Si aucun nœud n'existe, le waypoint n'est pas modifié et le marqueur est
         simplement replacé à sa position initiale. */
         mark.setOnMouseReleased(event -> {
-            if (!event.isStillSincePress()){
-                PointCh pointCh = parameters.get().pointAt((int)mark.getLayoutX(), (int)mark.getLayoutY()).toPointCh();
-                int closestNodeId = graph.nodeClosestTo(pointCh, 1000);
-                if(closestNodeId != -1 && !isAlreadyWaypoint(closestNodeId))
-                    waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(pointCh, closestNodeId));
-                else if (isAlreadyWaypoint(closestNodeId)){
+            if (!event.isStillSincePress()) {
+
+                PointCh pointCh = parameters.get().pointAt((int) mark.getLayoutX(), (int) mark.getLayoutY()).toPointCh();
+                int closestNodeId = graph.nodeClosestTo(pointCh, SEARCH_DISTANCE);
+
+                if (closestNodeId == -1){
+                    consumer.accept("Aucune route à proximité !");
+                    recreateWaypoints();
+                }
+                else if (isAlreadyWaypoint(waypoints, closestNodeId)){
                     consumer.accept("Il y a déjà un point de passage à cet endroit !");
                     recreateWaypoints();
                 }
                 else {
-                    consumer.accept("Aucune route à proximité !");
-                    recreateWaypoints();
+                    waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(pointCh, closestNodeId));
                 }
             }});
-    }
-
-    /**
-     * Méthode permettant d'installer des listeners sur la liste des waypoints et sur les paramètres de
-     * fond de carte afin de recréer tous les waypoints et leur marqueur.
-     */
-    private void installListeners(){
-        this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> recreateWaypoints()));
-        this.parameters.addListener((observableValue, oldValue, newValue) -> replaceWaypoints(oldValue));
-    }
-
-    /**
-     * Méthode permettant de savoir si l'identité donnée correspond déjà à un point de passage existant.
-     *
-     * @param nodeId : l'identité du nœud dont on veut vérifier la disponibilité
-     * @return true s'il y a déjà un point de passage et false sinon
-     */
-    private boolean isAlreadyWaypoint(int nodeId){
-        for (Waypoint waypoint : waypoints) {
-            if(nodeId == waypoint.closestNodeId()) return true ;
-        }
-        return false ;
     }
 }

@@ -32,8 +32,12 @@ public final class RouteBean {
         this.route = new SimpleObjectProperty<>();
         this.elevationProfile = new SimpleObjectProperty<>();
         this.highlightedPosition = new SimpleDoubleProperty();
-        this.cacheMemory = new LinkedHashMap<>(){
+
+        /* Cache mémoire permettant d'enregistrer les itinéraires simples déjà calculés, dans la limite de 100 itinéraires.
+        Cela permet de limiter le coût mémoire lors du recalcul d'itinéraire, qui est une opération parfois coûteuse */
+        this.cacheMemory = new LinkedHashMap<>() {
             final int MAX_ENTRIES = 100;
+
             @Override
             protected boolean removeEldestEntry(Map.Entry eldest) {
                 return size() > MAX_ENTRIES;
@@ -73,9 +77,21 @@ public final class RouteBean {
         highlightedPosition.setValue(value);
     }
 
+    //---------------------------------------------- Private ----------------------------------------------//
+
+    /**
+     * Méthode permettant, à chaque changement de la liste des points de passage, de recalculer l'itinéraire multiple
+     * fait de tous les itinéraires simples entre chaque paire de points de passage consécutifs dans la liste.
+     */
     private void recomputeRoute() {
+
         List<Route> segments = new ArrayList<>();
-        boolean segmentIsNull = false ;
+        boolean aSegmentIsNull = false ;
+
+        /* Parcours de la liste des waypoints : à chaque waypoint, création d'une paire entre celui-ci et le suivant et calcul
+        de l'itinéraire simple les séparant. Si tous les itinéraires simples ainsi calculés sont non nuls, création d'un
+        itinéraire multiple les rassemblant tous et ajout de celui-ci dans la propriété route. */
+
         for (int i = 0; i < waypoints.size() - 1; i++) {
             Pair<Integer, Integer> singleRoute = new Pair<>(waypoints.get(i).closestNodeId(), waypoints.get(i+1).closestNodeId());
             if(cacheMemory.containsKey(singleRoute)) {
@@ -90,6 +106,7 @@ public final class RouteBean {
                     segmentIsNull = true ;
                     route.set(null);
                     elevationProfile.set(null);
+                    break ;
                 }
             }
         }

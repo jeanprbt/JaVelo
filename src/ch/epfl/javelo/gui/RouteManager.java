@@ -26,41 +26,28 @@ public final class RouteManager {
     private final ReadOnlyObjectProperty<MapViewParameters> parameters;
 
     public RouteManager(RouteBean route, ReadOnlyObjectProperty<MapViewParameters> parameters, Consumer<String> consumer){
+
         this.circle = new Circle(5);
         this.polyline = new Polyline();
         this.pane = new Pane(polyline, circle);
         this.route = route ;
         this.parameters = parameters ;
 
+        //Le cercle est réglé invisible tant qu'aucun n'itinéraire n'apparaît sur la carte
         circle.setVisible(false);
+
+        //Ajout des identités au circle et la polyline pour les feuilles de style
         circle.setId("highlight");
         polyline.setId("route");
+
+        //Laisser les gestionnaires d'évènement du fond de carte actifs malgré la superposition avec ceux de l'itinéraire
         pane.setPickOnBounds(false);
 
-        route.routeProperty().addListener((observable, oldValue, newValue) -> {
-            recreateRoute();
-            replaceCircle();
-        });
+        //Ajout de listeners aux paramètres de fond de carte et à certains attributs du bean route
+        installListeners();
 
-        route.highlightedPositionProperty().addListener((observable, oldValue, newValue) -> replaceCircle());
-
-        parameters.addListener(((observable, oldValue, newValue) -> {
-            if(newValue.zoomLevel() != oldValue.zoomLevel()) recreateRoute();
-            else replaceRoute(oldValue);
-            replaceCircle();
-        }));
-
-
-        circle.setOnMouseClicked(event -> {
-            Point2D clickInPane = pane.localToParent(circle.getCenterX(), circle.getCenterY());
-            PointWebMercator clickInMercator = parameters.get().pointAt((int)clickInPane.getX(), (int)clickInPane.getY());
-            RoutePoint clickInRoute = route.getRoute().pointClosestTo(clickInMercator.toPointCh());
-            int clickNodeId = route.getRoute().nodeClosestTo(route.getHighlightedPosition());
-            if (isNotAlreadyWaypoint(clickNodeId))
-                route.getWaypoints().add(route.getRoute().indexOfSegmentAt(route.getHighlightedPosition()) + 1,
-                                                new Waypoint(clickInRoute.point(), clickNodeId));
-            else consumer.accept("Un point de passage est déjà présent à cet endroit !");
-        });
+        //Ajout du gestionnaire d'évènement pour le clic sur le cercle
+        installCircleHandler();
     }
 
     /**
@@ -71,6 +58,8 @@ public final class RouteManager {
     public Pane pane() {
         return pane ;
     }
+
+    //---------------------------------------------- Private ----------------------------------------------//
 
     /**
      * Méthode permettant d'afficher et de construire ou de rendre invisible
@@ -128,15 +117,43 @@ public final class RouteManager {
     }
 
     /**
-     * Méthode permettant de savoir si l'identité donnée correspond déjà à un point de passage existant.
-     *
-     * @param nodeId : l'identité du noeud dont on veut vérifier la disponibilité
-     * @return false s'il y a déjà un point de passage et true sinon
+     * Méthode permettant d'installer des listeners sur certains attributs du bean route et sur les paramètres de
+     * fond de carte pour mettre à jour l'itinéraire et sa position si ces derniers changent.
      */
-    private boolean isNotAlreadyWaypoint(int nodeId){
-        for (Waypoint waypoint : route.getWaypoints()) {
-            if(nodeId == waypoint.closestNodeId()) return false ;
-        }
-        return true ;
+    private void installListeners(){
+        this.route.highlightedPositionProperty().addListener((observable, oldValue, newValue) -> replaceCircle());
+
+        this.route.routeProperty().addListener((observable, oldValue, newValue) -> {
+            recreateRoute();
+            replaceCircle();
+        });
+
+        this.parameters.addListener(((observable, oldValue, newValue) -> {
+            if(newValue.zoomLevel() != oldValue.zoomLevel()) recreateRoute();
+            else replaceRoute(oldValue);
+            replaceCircle();
+        }));
+    }
+
+    /**
+     * Méthode permettant de gérer le clic sur le cercle : ajout d'un point de passage intermédiaire sur le nœud de
+     * l'itinéraire de plus proche ou déclenchement d'un message d'erreur si un point de passage y est déjà présent.
+     */
+    private void installCircleHandler(){
+
+        circle.setOnMouseClicked(event -> {
+
+            Point2D clickInPane = pane.localToParent(circle.getCenterX(), circle.getCenterY());
+            PointWebMercator clickInMercator = parameters.get().pointAt((int)clickInPane.getX(), (int)clickInPane.getY());
+            RoutePoint clickInRoute = route.getRoute().pointClosestTo(clickInMercator.toPointCh());
+
+            int clickNodeId = route.getRoute().nodeClosestTo(route.getHighlightedPosition());
+
+            if (WaypointsManager.isAlreadyWaypoint(route.getWaypoints(), clickNodeId))
+                consumer.accept("Un point de passage est déjà présent à cet endroit !");
+            else
+                route.getWaypoints().add(route.getRoute().indexOfSegmentAt(route.getHighlightedPosition()) + 1,
+                        new Waypoint(clickInRoute.point(), clickNodeId));
+        });
     }
 }

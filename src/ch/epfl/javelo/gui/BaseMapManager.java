@@ -49,12 +49,12 @@ public final class BaseMapManager {
             newS.addPreLayoutPulseListener(this::redrawIfNeeded);
         });
 
-        //Installation de tous les gestionnaires d'évènements
-        installHandlers();
-
-        /* Ajout de listeners aux paramètres de fond de carte et à la taille du
+         /* Ajout de listeners aux paramètres de fond de carte et à la taille du
         canevas pour mettre à jour la carte en conséquence */
         installListeners();
+
+        //Installation de tous les gestionnaires d'évènements
+        installHandlers();
     }
 
     /**
@@ -64,6 +64,16 @@ public final class BaseMapManager {
      */
     public Pane pane(){
        return pane;
+    }
+
+    //---------------------------------------------- Private ----------------------------------------------//
+
+    /**
+     * Méthode appelant le redessin de la carte sur le prochain battement.
+     */
+    private void redrawOnNextPulse() {
+        redrawNeeded = true;
+        Platform.requestNextPulse();
     }
 
     /**
@@ -80,12 +90,13 @@ public final class BaseMapManager {
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
 
         //Détermination des coordonnées des tuiles.
-        int xMin = (int)parameters.get().x() / TILE_WIDTH;
+        int xMin = (int) parameters.get().x() / TILE_WIDTH;
         int xMax = (int) Math.ceil(xMin + canvas.getWidth() / (double) TILE_WIDTH);
-        int yMin = (int)parameters.get().y() / TILE_HEIGHT;
+        int yMin = (int) parameters.get().y() / TILE_HEIGHT;
         int yMax = (int) Math.ceil(yMin + canvas.getHeight() / (double) TILE_HEIGHT);
 
-        //Récupération puis dessin des tuiles, et simplement absence de dessin si la tuile déclenche une IOException
+        /* Récupération puis dessin des tuiles, et simplement absence de dessin
+        si la récupération de la tuile déclenche une IOException */
         for (int i = yMin; i <= yMax; i++) {
             for (int j = xMin; j <= xMax; j++) {
                 TileId tileId = new TileId(parameters.get().zoomLevel(), j, i);
@@ -104,11 +115,13 @@ public final class BaseMapManager {
 
 
     /**
-     * Méthode appelant le redessin de la carte sur le prochain battement.
+     * Méthode permettant d'installer des listeners sur les paramètres de fond de carte et du canvas
+     * pour déclencher un redessin au prochain battement.
      */
-    private void redrawOnNextPulse() {
-        redrawNeeded = true;
-        Platform.requestNextPulse();
+    private void installListeners(){
+        this.parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        this.canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        this.canvas.heightProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
     }
 
     /**
@@ -117,11 +130,18 @@ public final class BaseMapManager {
      */
     private void installHandlers() {
 
+        final int MIN_ZOOM_LEVEL = 8 ;
+        final int MAX_ZOOM_LEVEL = 19 ;
+
         //À chaque fois que la souris est scrollée, ajout de +-1 au niveau de zoom à chaque scroll pour le rendre plus fluide
         pane.setOnScroll(event -> {
-            PointWebMercator currentCursorPosition = PointWebMercator.of(parameters.get().zoomLevel(), parameters.get().x() + event.getX(), parameters.get().y() + event.getY());
-            if(Math.abs(event.getDeltaY()) > 2) {
-                int newZoomLevel = Math2.clamp(8, parameters.get().zoomLevel() + (int) Math.signum(event.getDeltaY()), 19);
+            PointWebMercator currentCursorPosition = PointWebMercator.of(parameters.get().zoomLevel(),
+                                                                      parameters.get().x() + event.getX(),
+                                                                      parameters.get().y() + event.getY());
+            if(Math.abs(event.getDeltaY()) > 4) {
+                int newZoomLevel = Math2.clamp(MIN_ZOOM_LEVEL,
+                                            parameters.get().zoomLevel() + (int) Math.signum(event.getDeltaY()),
+                                               MAX_ZOOM_LEVEL);
                 double newX = currentCursorPosition.xAtZoomLevel(newZoomLevel) -  event.getX();
                 double newY = currentCursorPosition.yAtZoomLevel(newZoomLevel) - event.getY();
                 parameters.set(new MapViewParameters(newZoomLevel, newX, newY));
@@ -142,7 +162,7 @@ public final class BaseMapManager {
 
         //À chaque fois que la souris est cliquée, création d'un nouveau waypoint
         pane.setOnMouseClicked(event -> {
-            if (event.isStillSincePress()) this.waypointsManager.addWayPoint(event.getX(), event.getY());
+            if (event.isStillSincePress()) this.waypointsManager.addWaypoint(event.getX(), event.getY());
         });
     }
 
