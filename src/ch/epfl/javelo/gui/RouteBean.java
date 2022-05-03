@@ -27,7 +27,8 @@ public final class RouteBean {
     private final Map<Pair<Integer, Integer>, Route> cacheMemory ;
 
     public RouteBean(RouteComputer routeComputer) {
-        this.routeComputer = routeComputer ;
+
+        this.routeComputer = routeComputer;
         this.waypoints = FXCollections.observableArrayList();
         this.route = new SimpleObjectProperty<>();
         this.elevationProfile = new SimpleObjectProperty<>();
@@ -44,16 +45,17 @@ public final class RouteBean {
             }
         };
 
+        /* Vérification à chaque changement de la liste des points de passage qu'il y ait au moins deux points
+         dans la liste et appel de la méthode recomputeRoute() le cas échéant */
         this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> {
-            if(waypoints.size() < 2) {
+            if (waypoints.size() < 2) {
                 route.set(null);
                 elevationProfile.set(null);
-            } else {
-                recomputeRoute();
-             }}));
-        }
+            } else recomputeRoute();
+        }));
+    }
 
-    //Getter et Setter pour la propriété waypoints
+    //Getter pour la propriété waypoints
     public ObservableList<Waypoint> getWaypoints() {
         return waypoints;
     }
@@ -103,14 +105,14 @@ public final class RouteBean {
                     segments.add(temp);
                     cacheMemory.put(singleRoute, temp);
                 } else {
-                    segmentIsNull = true ;
+                    aSegmentIsNull = true ;
                     route.set(null);
                     elevationProfile.set(null);
                     break ;
                 }
             }
         }
-        if(!segmentIsNull) {
+        if(!aSegmentIsNull) {
             route.set(new MultiRoute(segments));
             elevationProfile.set(ElevationProfileComputer.elevationProfile(route.get(), 5));
         }

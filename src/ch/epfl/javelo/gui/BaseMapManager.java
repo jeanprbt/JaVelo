@@ -30,7 +30,9 @@ public final class BaseMapManager {
     private Point2D cursorPosition ;
     private boolean redrawNeeded ;
 
-    public BaseMapManager(TileManager tileManager, WaypointsManager waypointsManager, ObjectProperty<MapViewParameters> property){
+    public BaseMapManager(TileManager tileManager,
+                          WaypointsManager waypointsManager,
+                          ObjectProperty<MapViewParameters> property){
 
         this.canvas = new Canvas() ;
         this.pane = new Pane(canvas) ;
@@ -153,10 +155,9 @@ public final class BaseMapManager {
 
         //À chaque fois que la souris est décalée, mise à jour des mapViewParameters en fonction
         pane.setOnMouseDragged(event -> {
-            Point2D translation = cursorPosition.subtract(new Point2D(event.getX(), event.getY()));
-            parameters.set(new MapViewParameters(parameters.get().zoomLevel(),
-                    (int) (parameters.get().x() + translation.getX()),
-                    (int) (parameters.get().y() + translation.getY())));
+            Point2D translation = cursorPosition.subtract(event.getX(), event.getY());
+            parameters.set(parameters.get().withMinXY((int) (parameters.get().x() + translation.getX()),
+                                                      (int) (parameters.get().y() + translation.getY())));
             cursorPosition = new Point2D(event.getX(), event.getY());
         });
 
@@ -164,15 +165,5 @@ public final class BaseMapManager {
         pane.setOnMouseClicked(event -> {
             if (event.isStillSincePress()) this.waypointsManager.addWaypoint(event.getX(), event.getY());
         });
-    }
-
-    /**
-     * Méthode permettant d'installer des listeners sur les paramètres de fond de carte et du canvas
-     * pour déclencher un redessin au prochain battement.
-     */
-    private void installListeners(){
-        this.parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
-        this.canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
-        this.canvas.heightProperty().addListener((observable, oldValue, newValue) -> redrawOnNextPulse());
     }
 }

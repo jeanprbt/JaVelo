@@ -24,6 +24,7 @@ public final class RouteManager {
     private final Polyline polyline ;
     private final RouteBean route ;
     private final ReadOnlyObjectProperty<MapViewParameters> parameters;
+    private final Consumer<String> consumer;
 
     public RouteManager(RouteBean route, ReadOnlyObjectProperty<MapViewParameters> parameters, Consumer<String> consumer){
 
@@ -32,6 +33,7 @@ public final class RouteManager {
         this.pane = new Pane(polyline, circle);
         this.route = route ;
         this.parameters = parameters ;
+        this.consumer = consumer;
 
         //Le cercle est réglé invisible tant qu'aucun n'itinéraire n'apparaît sur la carte
         circle.setVisible(false);

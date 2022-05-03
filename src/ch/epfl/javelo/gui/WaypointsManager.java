@@ -106,8 +106,8 @@ public final class WaypointsManager {
     //---------------------------------------------- Private ----------------------------------------------//
 
     /**
-     * Méthode permettant, à chaque modification de la liste waypoints, de supprimer puis recréer tous les points de passage y
-     * figurant toujours avec leurs attributs mis à jour (arrivée, départ ou intermédiaire).
+     * Méthode permettant, à chaque modification de la liste waypoints, de supprimer puis recréer tous les
+     * points de passage y figurant toujours avec leurs attributs mis à jour (arrivée, départ ou intermédiaire).
      */
     private void recreateWaypoints() {
         pane.getChildren().clear();
@@ -210,10 +210,10 @@ public final class WaypointsManager {
             mark.setLayoutY(mark.getLayoutY() - translation.getY());
         });
 
-        /* À chaque fois que la souris est relâchée après avoir été décalée depuis un marqueur, mise à jour du waypoint correspondant :
-        son pointCh et son closestNodeId correspondent désormais à la nouvelle position, ce qui entraîne une modification de la liste
-        waypoints et l'appel à la méthode recreateWaypoints(). Si aucun nœud n'existe, le waypoint n'est pas modifié et le marqueur est
-        simplement replacé à sa position initiale. */
+        /* À chaque fois que la souris est relâchée après avoir été décalée depuis un marqueur, mise à jour du waypoint
+         correspondant : son pointCh et son closestNodeId correspondent désormais à la nouvelle position, ce qui entraîne
+         une modification de la liste waypoints et l'appel à la méthode recreateWaypoints(). Si aucun nœud n'existe,
+         le waypoint n'est pas modifié et le marqueur est simplement replacé à sa position initiale. */
         mark.setOnMouseReleased(event -> {
             if (!event.isStillSincePress()) {
 
