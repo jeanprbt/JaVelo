@@ -7,7 +7,6 @@ import ch.epfl.javelo.routing.CostFunction;
 import ch.epfl.javelo.routing.RouteComputer;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,8 +16,6 @@ import javafx.stage.Stage;
 
 import java.nio.file.Path;
 import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public final class DisplayTest extends Application {
     public static void main(String[] args) { launch(args); }
