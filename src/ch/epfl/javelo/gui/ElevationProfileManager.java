@@ -228,16 +228,23 @@ public final class ElevationProfileManager {
             labels.getChildren().add(label);
         }
 
-        double start = (elevationProfile.get().maxElevation() % eleStepWorld) *
+        double offset = (elevationProfile.get().maxElevation() % eleStepWorld) *
                         rectangle.get().getHeight() /
                         (elevationProfile.get().maxElevation() - elevationProfile.get().minElevation());
-        for (double i = start; i < rectangle.get().getHeight() ; i += eleStepScreen) {
-            path.getElements().add(new MoveTo(0, i));
-            path.getElements().add(new LineTo(rectangle.get().getWidth(), i));
-            Text label = new Text();
+        for (double i = 0; i < rectangle.get().getHeight() / eleStepScreen; i++) {
+
+            path.getElements().add(new MoveTo(0, i * eleStepScreen + offset));
+            path.getElements().add(new LineTo(rectangle.get().getWidth(), i * eleStepScreen + offset));
+
+            Text label = new Text(String.valueOf((int) (elevationProfile.get().maxElevation() - (elevationProfile.get().maxElevation() % eleStepWorld) - i * eleStepWorld)));
             label.textOriginProperty().set(VPos.CENTER);
-            label.setLayoutX(i + label.getWrappingWidth() + 2);
+            label.setFont(Font.font("Avenir", 10));
+            label.getStyleClass().add("grid_label");
+            label.getStyleClass().add("vertical");
+            label.setLayoutX(-label.prefWidth(0) - 2);
+            label.setLayoutY(i * eleStepScreen + offset);
             labels.getChildren().add(label);
+            
         }
 
         labels.setLayoutX(insets.getLeft());
