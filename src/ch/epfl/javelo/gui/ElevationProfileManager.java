@@ -11,11 +11,15 @@ import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.*;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Transform;
+
+import static java.lang.Double.NaN;
 
 
 /**
@@ -31,7 +35,8 @@ public final class ElevationProfileManager {
     private final Line line ;
     private final Path path ;
     private final Group labels ;
-    private final Pane borderPane ;
+    private final VBox vBox ;
+    private final BorderPane borderPane ;
 
     private final ReadOnlyObjectProperty<ElevationProfile> elevationProfile ;
     private final ReadOnlyDoubleProperty highlightedPosition ;
@@ -40,6 +45,7 @@ public final class ElevationProfileManager {
 
     private final ChangeListener<Rectangle2D> listener ;
     private final ObjectProperty<Rectangle2D> rectangle ;
+    private final DoubleProperty mousePositionOnProfile ;
 
     private ObjectProperty<Transform> worldToScreen;
     private ObjectProperty<Transform> screenToWorld;
@@ -58,7 +64,8 @@ public final class ElevationProfileManager {
         this.path = new Path();
         this.labels = new Group();
         this.pane = new Pane(polygon, line, path, labels);
-        this.borderPane = new BorderPane(pane);
+        this.vBox = new VBox();
+        this.borderPane = new BorderPane();
         this.rectangle = new SimpleObjectProperty<>();
         this.insets = new Insets(10, 10, 20, 40);
 
@@ -67,6 +74,7 @@ public final class ElevationProfileManager {
 
         this.listener = (o, newS, oldS) -> setUpLine();
         this.rectangle.addListener(listener);
+        this.mousePositionOnProfile = new SimpleDoubleProperty();
 
         this.pane.widthProperty().addListener((o, newS, oldS) -> {
             if(pane.getWidth() >= insets.getLeft() + insets.getRight() && pane.getHeight() >= insets.getTop() + insets.getBottom()) {
@@ -86,9 +94,31 @@ public final class ElevationProfileManager {
             }
         });
 
+        this.elevationProfile.addListener((o, newS, oldS) -> {
+            modifyStats();
+        });
+
+        this.pane.setOnMouseMoved(event -> {
+            if(event.getX() < insets.getLeft() ||
+               event.getX() > rectangle.get().getWidth() + insets.getLeft() ||
+               event.getY() < insets.getTop() ||
+               event.getY() > rectangle.get().getHeight() + insets.getTop()) mousePositionOnProfile.set(NaN);
+            else mousePositionOnProfile.set((int) screenToWorld.get().transform(event.getX(), 0).getX());
+        });
+
+        this.pane.setOnMouseExited(event -> {
+            mousePositionOnProfile.set(NaN);
+        });
+
+        borderPane.setCenter(pane);
+        borderPane.setBottom(vBox);
+
         polygon.setId("profile");
         path.setId("grid");
+        vBox.setId("profile_data");
         borderPane.getStylesheets().add("elevation_profile.css");
+
+        modifyStats();
     }
 
     /**
@@ -100,8 +130,8 @@ public final class ElevationProfileManager {
         return borderPane ;
     }
 
-    public ReadOnlyIntegerProperty mousePositionOnProfileProperty() {
-        return null;
+    public ReadOnlyDoubleProperty mousePositionOnProfileProperty() {
+        return mousePositionOnProfile ;
     }
 
     //---------------------------------------------- Private ----------------------------------------------//
@@ -159,6 +189,7 @@ public final class ElevationProfileManager {
     private void recreateGrid() {
 
         path.getElements().clear();
+        labels.getChildren().clear();
 
         int posStepWorld = POS_STEPS[POS_STEPS.length - 1];
         int eleStepWorld = ELE_STEPS[ELE_STEPS.length - 1];
@@ -183,14 +214,18 @@ public final class ElevationProfileManager {
         double posStepScreen = stepsScreen.getX();
         double eleStepScreen = stepsScreen.getY() ;
 
-        for (double i = 0; i < rectangle.get().getWidth(); i+= posStepScreen) {
-            path.getElements().add(new MoveTo(i, 0));
-            path.getElements().add(new LineTo(i, rectangle.get().getHeight()));
-            Text label = new Text(String.valueOf(screenToWorld.get().transform(i, 0).getX()/1000));
-            label.textOriginProperty().set(VPos.TOP);
-            label.setLayoutX(-label.prefWidth(0) / 2);
-            labels.getChildren().add(label);
+        for (double i = 0; i < rectangle.get().getWidth()/posStepScreen; i++) {
+            path.getElements().add(new MoveTo(i * posStepScreen, 0));
+            path.getElements().add(new LineTo(i * posStepScreen, rectangle.get().getHeight()));
 
+            Text label = new Text(String.valueOf((int) i * posStepWorld / 1000));
+            label.textOriginProperty().set(VPos.TOP);
+            label.setFont(Font.font("Avenir", 10));
+            label.getStyleClass().add("grid_label");
+            label.getStyleClass().add("horizontal");
+            label.setLayoutX(i * posStepScreen - label.prefWidth(0)/2);
+            label.setLayoutY(rectangle.get().getHeight());
+            labels.getChildren().add(label);
         }
 
         double start = (elevationProfile.get().maxElevation() % eleStepWorld) *
@@ -205,6 +240,8 @@ public final class ElevationProfileManager {
             labels.getChildren().add(label);
         }
 
+        labels.setLayoutX(insets.getLeft());
+        labels.setLayoutY(insets.getTop());
         path.setLayoutX(insets.getLeft());
         path.setLayoutY(insets.getTop());
 
@@ -227,5 +264,21 @@ public final class ElevationProfileManager {
         line.endYProperty().bind(Bindings.select(rectangle, "maxY"));
         line.visibleProperty().bind(highlightedPosition.greaterThanOrEqualTo(0));
         rectangle.removeListener(listener);
+    }
+
+    /**
+     * Méthode privée permettant de changer les statistiques affichées sous le profil à chaque changement de ce dernier.
+     */
+    private void modifyStats() {
+        Text text = new Text(String.format("Longueur : %.1f km" +
+                                           "     Montée : %.0f m" +
+                                           "     Descente : %.0f m" +
+                                           "     Altitude : de %.0f m à %.0f m",
+                                            elevationProfile.get().length() / 1000,
+                                            elevationProfile.get().totalAscent(),
+                                            elevationProfile.get().totalDescent(),
+                                            elevationProfile.get().minElevation(),
+                                            elevationProfile.get().maxElevation()));
+        vBox.getChildren().add(text);
     }
 }

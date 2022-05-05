@@ -25,7 +25,7 @@ public class ElevationDisplayTest extends Application {
         Route route = routeComputer
                 .bestRouteBetween(159049, 117669);
         ElevationProfile profile = ElevationProfileComputer
-                .elevationProfile(route, 50);
+                .elevationProfile(route, 100);
 
         ObjectProperty<ElevationProfile> profileProperty =
                 new SimpleObjectProperty<>(profile);
