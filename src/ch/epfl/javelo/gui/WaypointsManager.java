@@ -52,9 +52,6 @@ public final class WaypointsManager {
 
         //Ajout de listeners aux paramètres de fond de carte et à la liste des waypoints
         installListeners();
-
-        //Création des marqueurs des waypoints initiaux passés en argument
-        recreateWaypoints();
     }
 
     /**
@@ -109,7 +106,7 @@ public final class WaypointsManager {
      * Méthode permettant, à chaque modification de la liste waypoints, de supprimer puis recréer tous les
      * points de passage y figurant toujours avec leurs attributs mis à jour (arrivée, départ ou intermédiaire).
      */
-    private void recreateWaypoints() {
+    private void updateWaypoints() {
         pane.getChildren().clear();
         indexInWaypoints = 0 ;
         for (Waypoint waypoint : waypoints) {
@@ -178,8 +175,8 @@ public final class WaypointsManager {
      * fond de carte afin de recréer tous les waypoints et leur marqueur si ces derniers changent.
      */
     private void installListeners(){
-        this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> recreateWaypoints()));
-        this.parameters.addListener((observableValue, oldValue, newValue) -> replaceWaypoints(oldValue));
+        waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> updateWaypoints()));
+        parameters.addListener((observableValue, oldValue, newValue) -> replaceWaypoints(oldValue));
     }
 
     /**
@@ -222,11 +219,11 @@ public final class WaypointsManager {
 
                 if (closestNodeId == -1){
                     consumer.accept("Aucune route à proximité !");
-                    recreateWaypoints();
+                    updateWaypoints();
                 }
                 else if (isAlreadyWaypoint(waypoints, closestNodeId)){
                     consumer.accept("Il y a déjà un point de passage à cet endroit !");
-                    recreateWaypoints();
+                    updateWaypoints();
                 }
                 else {
                     waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(pointCh, closestNodeId));

@@ -34,12 +34,12 @@ public final class BaseMapManager {
                           WaypointsManager waypointsManager,
                           ObjectProperty<MapViewParameters> property){
 
-        this.canvas = new Canvas() ;
-        this.pane = new Pane(canvas) ;
-        this.redrawNeeded = true ;
+        canvas = new Canvas() ;
+        pane = new Pane(canvas) ;
+        redrawNeeded = true ;
         this.tileManager = tileManager ;
         this.waypointsManager = waypointsManager;
-        this.parameters = property ;
+        parameters = property ;
 
         //Redimensionnement automatique du canevas en fonction du panneau qui le contient
         canvas.widthProperty().bind(pane.widthProperty());
@@ -55,7 +55,7 @@ public final class BaseMapManager {
         canevas pour mettre à jour la carte en conséquence */
         installListeners();
 
-        //Installation de tous les gestionnaires d'évènements
+        //Installation de tous les gestionnaires d'évènement
         installHandlers();
     }
 
@@ -121,13 +121,13 @@ public final class BaseMapManager {
      * pour déclencher un redessin au prochain battement.
      */
     private void installListeners(){
-        this.parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
-        this.canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
-        this.canvas.heightProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        canvas.heightProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
     }
 
     /**
-     * Méthode permettant d'installer les gestionnaires d'évènements sur les différentes actions possibles de la souris
+     * Méthode privée permettant d'installer les gestionnaires d'évènement sur les différentes actions possibles de la souris
      * pour redimensionner les mapViewParameters en conséquence.
      */
     private void installHandlers() {
@@ -163,7 +163,7 @@ public final class BaseMapManager {
 
         //À chaque fois que la souris est cliquée, création d'un nouveau waypoint
         pane.setOnMouseClicked(event -> {
-            if (event.isStillSincePress()) this.waypointsManager.addWaypoint(event.getX(), event.getY());
+            if (event.isStillSincePress()) waypointsManager.addWaypoint(event.getX(), event.getY());
         });
     }
 }

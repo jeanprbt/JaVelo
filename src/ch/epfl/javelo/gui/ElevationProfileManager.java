@@ -3,7 +3,6 @@ package ch.epfl.javelo.gui;
 import ch.epfl.javelo.routing.ElevationProfile;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
-import javafx.beans.value.ChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
@@ -50,7 +49,8 @@ public final class ElevationProfileManager {
             { 1000, 2000, 5000, 10_000, 25_000, 50_000, 100_000 };
     private static final int[] ELE_STEPS =
             { 5, 10, 20, 25, 50, 100, 200, 250, 500, 1_000 };
-
+    private static final int MIN_SCREEN_SPACING_HORIZONTAL = 50;
+    private static final int MIN_SCREEN_SPACING_VERTICAL = 25;
 
     public ElevationProfileManager(ReadOnlyObjectProperty<ElevationProfile> elevationProfile,
                                    ReadOnlyDoubleProperty highlightedPosition) {
@@ -143,8 +143,8 @@ public final class ElevationProfileManager {
     }
 
     /**
-     * Méthode privée permettant de calculer la transformation affine passant des coordonnées du monde réel au panneau graphique,
-     * appelée à chaque changement de la taille du panneau.
+     * Méthode privée permettant de calculer les transformations affines passant des coordonnées du monde réel à celles
+     * du panneau graphique et son inverse, appelée à chaque changement de la taille du panneau ou du profil.
      */
     private void updateTransform() {
 
@@ -168,7 +168,8 @@ public final class ElevationProfileManager {
     }
 
     /**
-     * Méthode privée permettant de mettre à jour la taille du rectangle contenant le profil lorsque la taille du panneau change.
+     * Méthode privée permettant de mettre à jour la taille du rectangle contenant le profil lorsque la taille du panneau
+     * ou elevationProfile change.
      */
     private void updateRectangle (){
         double rectangleWidth = pane.getWidth() - insets.getRight() - insets.getLeft() ;
@@ -177,7 +178,7 @@ public final class ElevationProfileManager {
     }
 
     /**
-     * Méthode privée permettant de mettre à jour la grille.
+     * Méthode privée permettant de mettre à jour la grille lorsque la taille du panneau ou le profil change.
      */
     private void updateGrid() {
         
@@ -226,30 +227,11 @@ public final class ElevationProfileManager {
             labels.getChildren().add(label);
         }
 
+        //Positionnement de la grille et des étiquettes sur leur panneau parent
         labels.setLayoutX(insets.getLeft());
         labels.setLayoutY(insets.getTop());
         path.setLayoutX(insets.getLeft());
         path.setLayoutY(insets.getTop());
-
-
-
-
-    }
-
-    /**
-     * Méthode privée permettant de lier les propriétés de la ligne à celle de la position mise en évidence et
-     * du rectangle bleu, puis permettant de retirer le listener l'appelant de la liste des listeners du rectangle
-     * une fois ces réglages effectués.
-     */
-    private void setUpLine() {
-        line.layoutXProperty().bind(Bindings.createDoubleBinding(
-                () -> highlightedPosition.get() * (rectangle.get().getWidth() / elevationProfile.get().length()) + insets.getLeft(),
-                highlightedPosition, rectangle)
-        );
-        line.startYProperty().bind(Bindings.select(rectangle, "minY"));
-        line.endYProperty().bind(Bindings.select(rectangle, "maxY"));
-        line.visibleProperty().bind(highlightedPosition.greaterThanOrEqualTo(0));
-        rectangle.removeListener(listener);
     }
 
     /**
