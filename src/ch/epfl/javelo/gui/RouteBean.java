@@ -29,16 +29,16 @@ public final class RouteBean {
     public RouteBean(RouteComputer routeComputer) {
 
         this.routeComputer = routeComputer;
-        this.waypoints = FXCollections.observableArrayList();
-        this.route = new SimpleObjectProperty<>();
-        this.elevationProfile = new SimpleObjectProperty<>();
-        this.highlightedPosition = new SimpleDoubleProperty();
+
+        waypoints = FXCollections.observableArrayList();
+        route = new SimpleObjectProperty<>();
+        elevationProfile = new SimpleObjectProperty<>();
+        highlightedPosition = new SimpleDoubleProperty();
 
         /* Cache mémoire permettant d'enregistrer les itinéraires simples déjà calculés, dans la limite de 100 itinéraires.
         Cela permet de limiter le coût mémoire lors du recalcul d'itinéraire, qui est une opération parfois coûteuse */
-        this.cacheMemory = new LinkedHashMap<>() {
+        cacheMemory = new LinkedHashMap<>() {
             final int MAX_ENTRIES = 100;
-
             @Override
             protected boolean removeEldestEntry(Map.Entry eldest) {
                 return size() > MAX_ENTRIES;
@@ -47,7 +47,7 @@ public final class RouteBean {
 
         /* Vérification à chaque changement de la liste des points de passage qu'il y ait au moins deux points
          dans la liste et appel de la méthode recomputeRoute() le cas échéant */
-        this.waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> {
+        waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> {
             if (waypoints.size() < 2) {
                 route.set(null);
                 elevationProfile.set(null);
@@ -82,7 +82,7 @@ public final class RouteBean {
     //---------------------------------------------- Private ----------------------------------------------//
 
     /**
-     * Méthode permettant, à chaque changement de la liste des points de passage, de recalculer l'itinéraire multiple
+     * Méthode privée permettant, à chaque changement de la liste des points de passage, de recalculer l'itinéraire multiple
      * fait de tous les itinéraires simples entre chaque paire de points de passage consécutifs dans la liste.
      */
     private void recomputeRoute() {

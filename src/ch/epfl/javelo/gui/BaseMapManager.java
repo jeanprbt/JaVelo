@@ -79,7 +79,7 @@ public final class BaseMapManager {
     }
 
     /**
-     * Méthode rééffectuant le dessin si et seulement si redrawNeeded est vrai.
+     * Méthode privéve rééffectuant le dessin de la carte si et seulement si redrawNeeded est vrai.
      */
     private void redrawIfNeeded() {
         if (!redrawNeeded) return;
@@ -117,7 +117,7 @@ public final class BaseMapManager {
 
 
     /**
-     * Méthode permettant d'installer des listeners sur les paramètres de fond de carte et du canvas
+     * Méthode privée permettant d'installer des listeners sur les paramètres de fond de carte et du canvas
      * pour déclencher un redessin au prochain battement.
      */
     private void installListeners(){

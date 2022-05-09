@@ -40,11 +40,12 @@ public final class WaypointsManager {
                             Consumer<String> consumer) {
 
         this.graph = graph;
-        this.parameters = property;
-        this.pane = new Pane();
         this.consumer = consumer;
         this.waypoints = waypoints;
-        this.indexInWaypoints = 0;
+
+        parameters = property;
+        pane = new Pane();
+        indexInWaypoints = 0;
 
         //Laisser les gestionnaires d'évènement du fond de carte actifs malgré la superposition avec ceux des waypoints
         pane.setPickOnBounds(false);
@@ -82,8 +83,7 @@ public final class WaypointsManager {
             consumer.accept("Aucune route à proximité !");
         else {
             Waypoint waypoint = new Waypoint(waypointPosition, closestNodeId);
-            //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints :
-            waypoints.add(waypoint);
+            waypoints.add(waypoint);  //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
         }
     }
 
@@ -174,7 +174,7 @@ public final class WaypointsManager {
     }
 
     /**
-     * Méthode permettant d'installer des listeners sur la liste des waypoints et sur les paramètres de
+     * Méthode privée permettant d'installer des listeners sur la liste des waypoints et sur les paramètres de
      * fond de carte afin de recréer tous les waypoints et leur marqueur si ces derniers changent.
      */
     private void installListeners(){
@@ -183,7 +183,7 @@ public final class WaypointsManager {
     }
 
     /**
-     * Méthode permettant d'installer les gestionnaires d'évènement sur le nœud mark afin
+     * Méthode privée permettant d'installer les gestionnaires d'évènement sur le nœud mark afin
      * de gérer la suppression du marqueur et son déplacement en fonction des actions de souris.
      *
      * @param mark le nœud sur lequel ajouter les gestionnaires d'évènement

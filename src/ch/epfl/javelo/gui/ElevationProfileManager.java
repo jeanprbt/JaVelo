@@ -19,9 +19,6 @@ import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Transform;
 
-import static java.lang.Double.NaN;
-
-
 /**
  * Classe gérant l'interaction et l'affichage avec le profil en long de l'itinéraire.
  *
@@ -30,25 +27,24 @@ import static java.lang.Double.NaN;
  */
 public final class ElevationProfileManager {
 
-    private final Polygon polygon ;
-    private final Pane pane ;
-    private final Line line ;
-    private final Path path ;
-    private final Group labels ;
-    private final VBox vBox ;
-    private final BorderPane borderPane ;
-
     private final ReadOnlyObjectProperty<ElevationProfile> elevationProfile ;
     private final ReadOnlyDoubleProperty highlightedPosition ;
 
     private final Insets insets ;
 
-    private final ChangeListener<Rectangle2D> listener ;
-    private final ObjectProperty<Rectangle2D> rectangle ;
-    private final DoubleProperty mousePositionOnProfile ;
+    private final Polygon polygon ;
+    private final Line line ;
+    private final Path path ;
+    private final Group labels ;
+    private final Pane pane ;
+    private final VBox vBox ;
+    private final BorderPane borderPane ;
 
-    private ObjectProperty<Transform> worldToScreen;
-    private ObjectProperty<Transform> screenToWorld;
+    private final DoubleProperty mousePositionOnProfile ;
+    private final ObjectProperty<Rectangle2D> rectangle ;
+
+    private final ObjectProperty<Transform> worldToScreen;
+    private final ObjectProperty<Transform> screenToWorld;
 
     private static final int[] POS_STEPS =
             { 1000, 2000, 5000, 10_000, 25_000, 50_000, 100_000 };
@@ -57,68 +53,53 @@ public final class ElevationProfileManager {
 
 
     public ElevationProfileManager(ReadOnlyObjectProperty<ElevationProfile> elevationProfile,
-                                   ReadOnlyDoubleProperty highlightedPosition) throws NonInvertibleTransformException {
+                                   ReadOnlyDoubleProperty highlightedPosition) {
 
-        this.polygon = new Polygon();
-        this.line = new Line();
-        this.path = new Path();
-        this.labels = new Group();
-        this.pane = new Pane(polygon, line, path, labels);
-        this.vBox = new VBox();
-        this.borderPane = new BorderPane();
-        this.rectangle = new SimpleObjectProperty<>();
-        this.insets = new Insets(10, 10, 20, 40);
 
         this.elevationProfile = elevationProfile ;
         this.highlightedPosition = highlightedPosition ;
 
-        this.listener = (o, newS, oldS) -> setUpLine();
-        this.rectangle.addListener(listener);
-        this.mousePositionOnProfile = new SimpleDoubleProperty();
+        //Paddings entre les bords du rectangle contenant le profil et ceux de son panneau parent
+        insets = new Insets(10, 10, 20, 40);
 
-        this.pane.widthProperty().addListener((o, newS, oldS) -> {
-            if(pane.getWidth() >= insets.getLeft() + insets.getRight() && pane.getHeight() >= insets.getTop() + insets.getBottom()) {
-                resizeRectangle();
-                computeTransform();
-                recreateProfile();
-                recreateGrid();
-            }
-        });
+        //Nœuds JavaFX servant à la représentation du profil, de la grille, de la ligne et des éléments textuels
+        polygon = new Polygon();
+        line = new Line();
+        path = new Path();
+        labels = new Group();
+        pane = new Pane(polygon, line, path, labels);
+        vBox = new VBox();
+        borderPane = new BorderPane(pane, null, null, vBox, null);
 
-        this.pane.heightProperty().addListener((o, newS, oldS) -> {
-            if(pane.getWidth() >= insets.getLeft() + insets.getRight() && pane.getHeight() >= insets.getTop() + insets.getBottom()) {
-                resizeRectangle();
-                computeTransform();
-                recreateProfile();
-                recreateGrid();
-            }
-        });
+        //Rectangle contenant le profil
+        rectangle = new SimpleObjectProperty<>();
 
-        this.elevationProfile.addListener((o, newS, oldS) -> {
-            modifyStats();
-        });
+        /* Propriété contenant la position de la souris le long du profil en mètres, initialisée à -1 pour garantir
+        l'invisibilité de la ligne au lancement de la fenêtre si le curseur n'est pas sur le panneau */
+        mousePositionOnProfile = new SimpleDoubleProperty(-1);
 
-        this.pane.setOnMouseMoved(event -> {
-            if(event.getX() < insets.getLeft() ||
-               event.getX() > rectangle.get().getWidth() + insets.getLeft() ||
-               event.getY() < insets.getTop() ||
-               event.getY() > rectangle.get().getHeight() + insets.getTop()) mousePositionOnProfile.set(NaN);
-            else mousePositionOnProfile.set((int) screenToWorld.get().transform(event.getX(), 0).getX());
-        });
+        /* Transformations affines permettant de passer du système de coordonnées du monde réel à celui de la fenêtre graphique,
+        initialisées comme des transformations affines vides afin de pouvoir leur lier la ligne avant même de leur donner une valeur */
+        worldToScreen = new SimpleObjectProperty<>(new Affine());
+        screenToWorld = new SimpleObjectProperty<>(new Affine());
 
-        this.pane.setOnMouseExited(event -> {
-            mousePositionOnProfile.set(NaN);
-        });
-
-        borderPane.setCenter(pane);
-        borderPane.setBottom(vBox);
-
+        //Ajout des identités et feuilles de style au profil, à la grille, aux statistiques et au panneau global
         polygon.setId("profile");
         path.setId("grid");
         vBox.setId("profile_data");
         borderPane.getStylesheets().add("elevation_profile.css");
 
-        modifyStats();
+        //Création des liens entre la ligne, la position de la souris sur le profil et les dimensions du rectangle contenant le profil
+        installLine();
+
+        //Installation des listeners
+        installListeners();
+
+        //Installation des gestionnaires d'évènement
+        installHandlers();
+
+        //TODO virer cette ligne
+        updateStats();
     }
 
     /**
@@ -136,18 +117,27 @@ public final class ElevationProfileManager {
 
     //---------------------------------------------- Private ----------------------------------------------//
 
-    private void recreateProfile() {
+    /**
+     * Méthode privée permettant de mettre à jour le profil affiché lorsque la taille du panneau ou elevationProfile change
+     */
+    private void updateProfile() {
+
         polygon.getPoints().clear();
 
+        //Point du polygone en bas à gauche
         Point2D startPoint = worldToScreen.get().transform(0, elevationProfile.get().minElevation());
         polygon.getPoints().addAll(startPoint.getX(), startPoint.getY());
 
-        double rate = elevationProfile.get().length() / rectangle.get().getWidth();
-        for (double x = 0; x < elevationProfile.get().length() ; x += rate) {
-            Point2D pointToAdd = worldToScreen.get().transform(x, elevationProfile.get().elevationAt(x));
-            polygon.getPoints().addAll((double) Math.round(pointToAdd.getX()), pointToAdd.getY());
+        //Distance correspondant dans le monde réel à une unité JavaFX sur l'écran.
+        double stepWorld = elevationProfile.get().length() / rectangle.get().getWidth();
+
+        //Tous les poins hauts du polygone correspondant à toutes les élévations
+        for (double x = 0; x <= rectangle.get().getWidth() ; x++) {
+            Point2D pointToAdd = worldToScreen.get().transform(x * stepWorld, elevationProfile.get().elevationAt(x * stepWorld));
+            polygon.getPoints().addAll(pointToAdd.getX(), pointToAdd.getY());
         }
 
+        //Point du polygone en bas à droite
         Point2D endPoint = worldToScreen.get().transform(elevationProfile.get().length(), elevationProfile.get().minElevation());
         polygon.getPoints().addAll(endPoint.getX(), endPoint.getY());
     }
@@ -156,19 +146,22 @@ public final class ElevationProfileManager {
      * Méthode privée permettant de calculer la transformation affine passant des coordonnées du monde réel au panneau graphique,
      * appelée à chaque changement de la taille du panneau.
      */
-    private void computeTransform() {
+    private void updateTransform() {
 
+        //Facteurs de mise à l'échelle
         double scaleXFactor = rectangle.get().getWidth() / elevationProfile.get().length();
-        double scaleYFactor = - rectangle.get().getHeight() / (elevationProfile.get().maxElevation() - elevationProfile.get().minElevation());
+        double scaleYFactor = -rectangle.get().getHeight() / (elevationProfile.get().maxElevation() - elevationProfile.get().minElevation());
 
+        //Création d'une instance de Affine et ajout des transformations nécessaires
         Affine affine = new Affine();
         affine.prependTranslation(0, -elevationProfile.get().maxElevation());
         affine.prependScale(scaleXFactor, scaleYFactor);
         affine.prependTranslation(insets.getLeft(), insets.getTop());
 
+        //Traitement de la NonInvertibleTransformException, qui ne doit jamais arriver car la transformation est toujours inversible
+        worldToScreen.set(affine);
         try {
-            worldToScreen = new SimpleObjectProperty<>(affine);
-            screenToWorld = new SimpleObjectProperty<>(worldToScreen.get().createInverse());
+            screenToWorld.set(worldToScreen.get().createInverse());
         } catch (NonInvertibleTransformException e) {
             throw new Error(e); // Cas ne devant jamais arriver
         }
@@ -177,7 +170,7 @@ public final class ElevationProfileManager {
     /**
      * Méthode privée permettant de mettre à jour la taille du rectangle contenant le profil lorsque la taille du panneau change.
      */
-    private void resizeRectangle (){
+    private void updateRectangle (){
         double rectangleWidth = pane.getWidth() - insets.getRight() - insets.getLeft() ;
         double rectangleHeight = pane.getHeight() - insets.getBottom() - insets.getTop() ;
         rectangle.set(new Rectangle2D(insets.getLeft(), insets.getTop(), rectangleWidth, rectangleHeight));
@@ -186,65 +179,51 @@ public final class ElevationProfileManager {
     /**
      * Méthode privée permettant de mettre à jour la grille.
      */
-    private void recreateGrid() {
-
+    private void updateGrid() {
+        
         path.getElements().clear();
         labels.getChildren().clear();
 
-        int posStepWorld = POS_STEPS[POS_STEPS.length - 1];
-        int eleStepWorld = ELE_STEPS[ELE_STEPS.length - 1];
+        //Calcul des espacements minimaux entre les lignes et les colonnes dans le monde réel, en mètres
+        int horizontalSpacingWorld = findOptimalSpacing(POS_STEPS, MIN_SCREEN_SPACING_HORIZONTAL, true);
+        int verticalSpacingWorld = findOptimalSpacing(ELE_STEPS, MIN_SCREEN_SPACING_VERTICAL, false);
 
-        for (int i = 0; i < POS_STEPS.length - 1; i++) {
-            double posStepScreen = POS_STEPS[i] * rectangle.get().getWidth() / elevationProfile.get().length();
-            if (posStepScreen >= 50){
-                posStepWorld = POS_STEPS[i];
-                break;
-            }
-        }
+        //Calcul des espacements minimaux entre les lignes et les colonnes à l'écran, en unités JavaFX
+        double horizontalSpacingScreen = worldToScreen.get().deltaTransform(horizontalSpacingWorld, 0).getX() ;
+        double verticalSpacingScreen = worldToScreen.get().deltaTransform(0, -verticalSpacingWorld).getY() ;
 
-        for (int i = 0; i < ELE_STEPS.length - 1; i++) {
-            double eleStepScreen = ELE_STEPS[i] * rectangle.get().getHeight() / (elevationProfile.get().maxElevation() - elevationProfile.get().minElevation());
-            if (eleStepScreen >= 25){
-                eleStepWorld = ELE_STEPS[i];
-                break;
-            }
-        }
+        //Création des colonnes verticales espacées de la distance calculée précédemment et ajout des étiquettes correspondantes
+        for (double i = 0; i < rectangle.get().getWidth()/horizontalSpacingScreen; i++) {
 
-        Point2D stepsScreen = worldToScreen.get().deltaTransform(posStepWorld, -eleStepWorld);
-        double posStepScreen = stepsScreen.getX();
-        double eleStepScreen = stepsScreen.getY() ;
+            path.getElements().add(new MoveTo(i * horizontalSpacingScreen, 0));
+            path.getElements().add(new LineTo(i * horizontalSpacingScreen, rectangle.get().getHeight()));
 
-        for (double i = 0; i < rectangle.get().getWidth()/posStepScreen; i++) {
-            path.getElements().add(new MoveTo(i * posStepScreen, 0));
-            path.getElements().add(new LineTo(i * posStepScreen, rectangle.get().getHeight()));
+            Text label = createLabel(String.valueOf((int) i * horizontalSpacingWorld / 1000),
+                           "horizontal",
+                                     rectangle.get().getHeight(),
+                                     VPos.TOP);
 
-            Text label = new Text(String.valueOf((int) i * posStepWorld / 1000));
-            label.textOriginProperty().set(VPos.TOP);
-            label.setFont(Font.font("Avenir", 10));
-            label.getStyleClass().add("grid_label");
-            label.getStyleClass().add("horizontal");
-            label.setLayoutX(i * posStepScreen - label.prefWidth(0)/2);
-            label.setLayoutY(rectangle.get().getHeight());
+            label.setLayoutX(-label.prefWidth(0) / 2 + i * horizontalSpacingScreen);
             labels.getChildren().add(label);
         }
 
-        double offset = (elevationProfile.get().maxElevation() % eleStepWorld) *
-                        rectangle.get().getHeight() /
-                        (elevationProfile.get().maxElevation() - elevationProfile.get().minElevation());
-        for (double i = 0; i < rectangle.get().getHeight() / eleStepScreen; i++) {
+        //Calcul du multiple de l'élévation optimale le plus proche de l'élévation maximale du profil
+        double offset = worldToScreen.get().deltaTransform(0, -elevationProfile.get().maxElevation() % verticalSpacingWorld).getY();
 
-            path.getElements().add(new MoveTo(0, i * eleStepScreen + offset));
-            path.getElements().add(new LineTo(rectangle.get().getWidth(), i * eleStepScreen + offset));
+        //Création des lignes horizontales espacées de la distance calculée précédemment et ajout des étiquettes correspondantes
+        for (double i = 0; i < rectangle.get().getHeight() / verticalSpacingScreen; i++) {
 
-            Text label = new Text(String.valueOf((int) (elevationProfile.get().maxElevation() - (elevationProfile.get().maxElevation() % eleStepWorld) - i * eleStepWorld)));
-            label.textOriginProperty().set(VPos.CENTER);
-            label.setFont(Font.font("Avenir", 10));
-            label.getStyleClass().add("grid_label");
-            label.getStyleClass().add("vertical");
+            path.getElements().add(new MoveTo(0, i * verticalSpacingScreen + offset));
+            path.getElements().add(new LineTo(rectangle.get().getWidth(), i * verticalSpacingScreen + offset));
+
+            Text label = createLabel(String.valueOf((int) (elevationProfile.get().maxElevation() -
+                                    (elevationProfile.get().maxElevation() % verticalSpacingWorld) - i * verticalSpacingWorld)),
+                            "vertical",
+                            i * verticalSpacingScreen + offset,
+                                     VPos.CENTER);
+
             label.setLayoutX(-label.prefWidth(0) - 2);
-            label.setLayoutY(i * eleStepScreen + offset);
             labels.getChildren().add(label);
-            
         }
 
         labels.setLayoutX(insets.getLeft());
@@ -276,7 +255,8 @@ public final class ElevationProfileManager {
     /**
      * Méthode privée permettant de changer les statistiques affichées sous le profil à chaque changement de ce dernier.
      */
-    private void modifyStats() {
+    private void updateStats() {
+        vBox.getChildren().clear();
         Text text = new Text(String.format("Longueur : %.1f km" +
                                            "     Montée : %.0f m" +
                                            "     Descente : %.0f m" +
@@ -287,5 +267,111 @@ public final class ElevationProfileManager {
                                             elevationProfile.get().minElevation(),
                                             elevationProfile.get().maxElevation()));
         vBox.getChildren().add(text);
+    }
+
+    /**
+     * Méthode privée permettant de mettre à jour tous les composants du profil.
+     */
+    private void update(){
+        updateRectangle();
+        updateTransform();
+        updateProfile();
+        updateGrid();
+    }
+
+    /**
+     * Méthode privée permettant, lors de la mise à jour de la grille, de calculer l'espacement optimal entre
+     * deux lignes / colonnes en termes de mètres dans le monde réel pour leur laisser au moins min unités JavaFX
+     * d'espace à l'écran.
+     *
+     * @param spacings le tableau des différents espacements possibles dans le monde réel
+     * @param min l'espacement minimum à l'écran entre deux lignes / colonnes, en unités JaaFX
+     * @param horizontal à true si l'on cherche l'espacement entre les colonnes, et false si l'on cherche celui des lignes
+     * @return l'espacement optimal entre deux lignes / colonnes en termes de mètres dans le monde réel
+     */
+    private int findOptimalSpacing(int[] spacings, int min, boolean horizontal){
+        int stepWorld = spacings[spacings.length - 1];
+        for (int i = 0; i < spacings.length - 1; i++) {
+            double stepScreen = horizontal ?  worldToScreen.get().deltaTransform(spacings[i], 0).getX() :
+                                              worldToScreen.get().deltaTransform(0, -spacings[i]).getY();
+            if (stepScreen >= min) {
+                stepWorld = spacings[i];
+                break ;
+            }
+        }
+        return stepWorld ;
+    }
+
+    /**
+     * Méthode privée permettant de créer les étiquettes affichant les informations de la grille.
+     *
+     * @param content la valeur que prend l'étiquette
+     * @param styleClass la classe de style à donner à l'étiquette
+     * @param yPosition la position verticale à donner à l'étiquette
+     * @param vPos le point considéré comme l'origine de l'étiquette
+     * @return l'étiquette ainsi créée, stylisée et positionnée
+     */
+    private Text createLabel(String content, String styleClass, double yPosition, VPos vPos){
+        Text label = new Text(content);
+        label.textOriginProperty().set(vPos);
+        label.setFont(Font.font("Avenir", 10));
+        label.getStyleClass().add("grid_label");
+        label.getStyleClass().add(styleClass);
+        label.setLayoutY(yPosition);
+        return label ;
+    }
+
+    /**
+     * Méthode privée permettant de lier les propriétés de la ligne à celles
+     * de la position mise en évidence et du rectangle bleu.
+     */
+    private void installLine() {
+        line.layoutXProperty().bind(Bindings.createDoubleBinding(
+                () -> worldToScreen.get().transform(highlightedPosition.get(),0).getX(),
+                highlightedPosition, worldToScreen)
+        );
+        line.startYProperty().bind(Bindings.select(rectangle, "minY"));
+        line.endYProperty().bind(Bindings.select(rectangle, "maxY"));
+        line.visibleProperty().bind(highlightedPosition.greaterThanOrEqualTo(0));
+    }
+
+    /**
+     * Méthode privée permettant d'installer des listeners sur le panneau afin de mettre à jour le profil
+     * lorsque ses dimensions changent et sur le profil en lui-même afin de tout recréer lorsqu'il change.
+     */
+    private void installListeners() {
+
+        //Ajout de listener sur la largeur du panneau contenant le profil afin de tout recalculer si cette dernière change
+        pane.widthProperty().addListener((o, newS, oldS) -> {
+            if(pane.getWidth() >  insets.getLeft() + insets.getRight() && pane.getHeight() > insets.getTop() + insets.getBottom())
+                update();
+        });
+
+        /* Ajout de listener sur la hauteur du panneau contenant le profil afin de tout recalculer si cette dernière change,
+        en testant que la taille du panneau est assez grande pour pouvoir tout réafficher. */
+        pane.heightProperty().addListener((o, newS, oldS) -> {
+            if(pane.getWidth() > insets.getLeft() + insets.getRight() && pane.getHeight() > insets.getTop() + insets.getBottom())
+                update();
+        });
+
+        //Ajout d'un listener sur le profil afin de tout recréer lorsque celui-ci est modifié
+        elevationProfile.addListener((o, newS, oldS) -> {
+            update();
+            updateStats();
+        });
+    }
+
+    /**
+     * Méthode privée permettant d'installer les gestionnaires d'évènement pour les actions de la souris sur le rectangle contenant
+     * le profil afin d'ajuster la propriété contenant la position de la souris sur le profil en conséquence.
+     */
+    private void installHandlers() {
+        pane.setOnMouseMoved(event -> {
+            if(rectangle.get().contains(event.getX(), event.getY()))
+                mousePositionOnProfile.set((int) screenToWorld.get().transform(event.getX(), 0).getX());
+            else mousePositionOnProfile.set(Double.NaN);
+        });
+
+        pane.setOnMouseExited(event -> mousePositionOnProfile.set(Double.NaN));
     }
 }

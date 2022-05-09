@@ -28,9 +28,10 @@ public final class RouteManager {
 
     public RouteManager(RouteBean route, ReadOnlyObjectProperty<MapViewParameters> parameters, Consumer<String> consumer){
 
-        this.circle = new Circle(5);
-        this.polyline = new Polyline();
-        this.pane = new Pane(polyline, circle);
+        circle = new Circle(5);
+        polyline = new Polyline();
+        pane = new Pane(polyline, circle);
+
         this.route = route ;
         this.parameters = parameters ;
         this.consumer = consumer;
@@ -64,10 +65,10 @@ public final class RouteManager {
     //---------------------------------------------- Private ----------------------------------------------//
 
     /**
-     * Méthode permettant d'afficher et de construire ou de rendre invisible
+     * Méthode privée permettant d'afficher et de construire ou de rendre invisible
      * la polyLine correspondant à l'itinéraire donné par la propriété route.
      */
-    private void recreateRoute(){
+    private void updateRoute(){
         if(route.getRoute() == null)
             polyline.setVisible(false);
         else {
@@ -78,7 +79,7 @@ public final class RouteManager {
     }
 
     /**
-     * Méthode replaçant la polyline après un changement des paramètres x ou y de la carte, au drag de la souris.
+     * Méthode privée replaçant la polyline après un changement des paramètres x ou y de la carte, au drag de la souris.
      * Elle utilise les anciens paramètres de la carte pour calculer l'ancienne position de l'itinéraire, puis y applique
      * les méthodes viewX et viewY depuis les nouveaux paramètres de la carte pour avoir sa position mise à jour.
      *
@@ -90,10 +91,10 @@ public final class RouteManager {
     }
 
     /**
-     * Méthode permettant de replacer le cercle et de gérer sa visibilité lorsque l'itinéraire ou les paramètres
+     * Méthode privée permettant de replacer le cercle et de gérer sa visibilité lorsque l'itinéraire ou les paramètres
      * de fond de carte changent.
      */
-    private void replaceCircle(){
+    private void updateCircle(){
         if(route.getRoute() == null){
             circle.setVisible(false);
         } else {
@@ -105,7 +106,7 @@ public final class RouteManager {
     }
 
     /**
-     * Méthode permettant d'ajouter au panneau une nouvelle polyLine correspondant
+     * Méthode privée permettant d'ajouter au panneau une nouvelle polyLine correspondant
      * aux paramètres de carte et à l'itinéraire actuels.
      */
     private void addToPane() {
@@ -119,30 +120,29 @@ public final class RouteManager {
     }
 
     /**
-     * Méthode permettant d'installer des listeners sur certains attributs du bean route et sur les paramètres de
+     * Méthode privée permettant d'installer des listeners sur certains attributs du bean route et sur les paramètres de
      * fond de carte pour mettre à jour l'itinéraire et sa position si ces derniers changent.
      */
     private void installListeners(){
-        this.route.highlightedPositionProperty().addListener((observable, oldValue, newValue) -> replaceCircle());
+        route.highlightedPositionProperty().addListener((observable, oldValue, newValue) -> updateCircle());
 
-        this.route.routeProperty().addListener((observable, oldValue, newValue) -> {
-            recreateRoute();
-            replaceCircle();
+        route.routeProperty().addListener((observable, oldValue, newValue) -> {
+            updateRoute();
+            updateCircle();
         });
 
-        this.parameters.addListener(((observable, oldValue, newValue) -> {
-            if(newValue.zoomLevel() != oldValue.zoomLevel()) recreateRoute();
+        parameters.addListener(((observable, oldValue, newValue) -> {
+            if(newValue.zoomLevel() != oldValue.zoomLevel()) updateRoute();
             else replaceRoute(oldValue);
-            replaceCircle();
+            updateCircle();
         }));
     }
 
     /**
-     * Méthode permettant de gérer le clic sur le cercle : ajout d'un point de passage intermédiaire sur le nœud de
+     * Méthode privée permettant de gérer le clic sur le cercle : ajout d'un point de passage intermédiaire sur le nœud de
      * l'itinéraire de plus proche ou déclenchement d'un message d'erreur si un point de passage y est déjà présent.
      */
     private void installCircleHandler(){
-
         circle.setOnMouseClicked(event -> {
 
             Point2D clickInPane = pane.localToParent(circle.getCenterX(), circle.getCenterY());
