@@ -52,7 +52,7 @@ public final class DisplayTest extends Application {
                         waypointsManager,
                         mapViewParametersP);
         RouteManager routeManager =
-                new RouteManager(routeBean, mapViewParametersP, errorConsumer);
+                new RouteManager(routeBean, mapViewParametersP);
 
 
         StackPane mainPane =

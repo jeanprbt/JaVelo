@@ -9,8 +9,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
 
-import java.util.function.Consumer;
-
 /**
  * Classe gérant une partie de l'interaction et l'affichage avec l'itinéraire.
  *
@@ -24,9 +22,8 @@ public final class RouteManager {
     private final Polyline polyline ;
     private final RouteBean route ;
     private final ReadOnlyObjectProperty<MapViewParameters> parameters;
-    private final Consumer<String> consumer;
 
-    public RouteManager(RouteBean route, ReadOnlyObjectProperty<MapViewParameters> parameters, Consumer<String> consumer){
+    public RouteManager(RouteBean route, ReadOnlyObjectProperty<MapViewParameters> parameters){
 
         circle = new Circle(5);
         polyline = new Polyline();
@@ -34,7 +31,6 @@ public final class RouteManager {
 
         this.route = route ;
         this.parameters = parameters ;
-        this.consumer = consumer;
 
         //Le cercle est réglé invisible tant qu'aucun n'itinéraire n'apparaît sur la carte
         circle.setVisible(false);
@@ -140,7 +136,7 @@ public final class RouteManager {
 
     /**
      * Méthode privée permettant de gérer le clic sur le cercle : ajout d'un point de passage intermédiaire sur le nœud de
-     * l'itinéraire de plus proche ou déclenchement d'un message d'erreur si un point de passage y est déjà présent.
+     * l'itinéraire de plus proche.
      */
     private void installCircleHandler(){
         circle.setOnMouseClicked(event -> {
@@ -151,11 +147,8 @@ public final class RouteManager {
 
             int clickNodeId = route.getRoute().nodeClosestTo(route.getHighlightedPosition());
 
-            if (WaypointsManager.isAlreadyWaypoint(route.getWaypoints(), clickNodeId))
-                consumer.accept("Un point de passage est déjà présent à cet endroit !");
-            else
-                route.getWaypoints().add(route.getRoute().indexOfSegmentAt(route.getHighlightedPosition()) + 1,
-                        new Waypoint(clickInRoute.point(), clickNodeId));
+            route.getWaypoints().add(route.indexOfNonEmptySegmentAt(route.getHighlightedPosition()) + 1,
+                                     new Waypoint(clickInRoute.point(), clickNodeId));
         });
     }
 }

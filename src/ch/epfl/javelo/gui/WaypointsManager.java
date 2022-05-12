@@ -27,6 +27,7 @@ public final class WaypointsManager {
     private final ObjectProperty<MapViewParameters> parameters ;
     private final Pane pane ;
     private final ObservableList<Waypoint> waypoints ;
+    private final Consumer<String> consumer ;
 
     private int indexInWaypoints ;
     private Point2D cursorPosition;
@@ -40,6 +41,7 @@ public final class WaypointsManager {
 
         this.graph = graph;
         this.waypoints = waypoints;
+        this.consumer = consumer;
 
         parameters = property;
         pane = new Pane();
@@ -157,7 +159,7 @@ public final class WaypointsManager {
      */
     private void installListeners(){
         waypoints.addListener((ListChangeListener<? super Waypoint>) (c -> updateWaypoints()));
-        parameters.addListener((observableValue, oldValue, newValue) -> replaceWaypoints(oldValue));
+        parameters.addListener((o, oldS, newS) -> replaceWaypoints(oldS));
     }
 
     /**
@@ -177,9 +179,7 @@ public final class WaypointsManager {
         });
 
         //À chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur
-        mark.setOnMousePressed(event -> {
-            cursorPosition = new Point2D(event.getX(), event.getY());
-        });
+        mark.setOnMousePressed(event -> cursorPosition = new Point2D(event.getX(), event.getY()));
 
         //À chaque fois que la souris est décalée depuis un marqueur, mise à jour de la position de ce dernier en fonction
         mark.setOnMouseDragged(event -> {

@@ -124,9 +124,9 @@ public final class BaseMapManager {
      * pour déclencher un redessin au prochain battement.
      */
     private void installListeners(){
-        parameters.addListener((observable, oldS, newS) -> redrawOnNextPulse());
-        canvas.widthProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
-        canvas.heightProperty().addListener((observable, oldS, newS) -> redrawOnNextPulse());
+        parameters.addListener((o, oldS, newS) -> redrawOnNextPulse());
+        canvas.widthProperty().addListener((o, oldS, newS) -> redrawOnNextPulse());
+        canvas.heightProperty().addListener((o, oldS, newS) -> redrawOnNextPulse());
     }
 
     /**

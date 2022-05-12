@@ -160,7 +160,7 @@ public final class ElevationProfileManager {
         affine.prependScale(scaleXFactor, scaleYFactor);
         affine.prependTranslation(insets.getLeft(), insets.getTop());
 
-        //Traitement de la NonInvertibleTransformException, qui ne doit jamais arriver car la transformation est toujours inversible
+        //Traitement de la NonInvertibleTransformException qui ne doit jamais arriver, car la transformation est toujours inversible
         worldToScreen.set(affine);
         try {
             screenToWorld.set(worldToScreen.get().createInverse());
@@ -328,16 +328,14 @@ public final class ElevationProfileManager {
     private void installListeners() {
 
         //Ajout de listener sur la largeur du panneau contenant le profil afin de tout recalculer si cette dernière change
-        pane.widthProperty().addListener((o, newS, oldS) -> {
-            if(pane.getWidth() >  insets.getLeft() + insets.getRight() && pane.getHeight() > insets.getTop() + insets.getBottom())
-                update();
+        pane.widthProperty().addListener((o, oldS, newS) -> {
+            update();
         });
 
         /* Ajout de listener sur la hauteur du panneau contenant le profil afin de tout recalculer si cette dernière change,
         en testant que la taille du panneau est assez grande pour pouvoir tout réafficher. */
-        pane.heightProperty().addListener((o, newS, oldS) -> {
-            if(pane.getWidth() > insets.getLeft() + insets.getRight() && pane.getHeight() > insets.getTop() + insets.getBottom())
-                update();
+        pane.heightProperty().addListener((o, oldS, newS) -> {
+            update();
         });
 
         //Ajout d'un listener sur le profil afin de tout recréer lorsque celui-ci est modifié
