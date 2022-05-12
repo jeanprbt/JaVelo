@@ -83,21 +83,6 @@ public final class Graph {
     }
 
     /**
-     * Méthode privée permettant de mapper un fichier et de le retourner en ByteBuffer.
-     *
-     * @param path le chemin d'accès au fichier
-     * @return le ByteBuffer correspondant au fichier "mappé"
-     * @throws IOException en cas d'erreur d'entrée/sortie, par ex. si l'un des fichiers n'existe pas
-     */
-    private static ByteBuffer mappedBuffer(Path path) throws IOException {
-        ByteBuffer mappedBuffer;
-        try (FileChannel channel = FileChannel.open(path)) {
-            mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-        }
-        return mappedBuffer;
-    }
-
-    /**
      * Fonction retournant le nombre de nœuds dans le graphe.
      *
      * @return le nombre de nœuds dans le graphe
@@ -235,4 +220,22 @@ public final class Graph {
         float[] samples = edges.profileSamples(edgeId);
         return Functions.sampled(samples, edges.length(edgeId));
     }
+
+    //---------------------------------------------- Private ----------------------------------------------//
+
+    /**
+     * Méthode privée permettant de mapper un fichier et de le retourner en ByteBuffer.
+     *
+     * @param path le chemin d'accès au fichier
+     * @return le ByteBuffer correspondant au fichier "mappé"
+     * @throws IOException en cas d'erreur d'entrée/sortie, par ex. si l'un des fichiers n'existe pas
+     */
+    private static ByteBuffer mappedBuffer(Path path) throws IOException {
+        ByteBuffer mappedBuffer;
+        try (FileChannel channel = FileChannel.open(path)) {
+            mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+        }
+        return mappedBuffer;
+    }
+
 }

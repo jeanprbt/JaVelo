@@ -27,6 +27,8 @@ public final class TileManager {
     public TileManager(Path diskCachePath, String tileServerName){
         this.diskCachePath = diskCachePath ;
         this.tileServerName = tileServerName ;
+
+        //TODO faire ça en une ligne
         this.cacheMemory = new LinkedHashMap<>(100, 0.75f, true) {
             private static final int MAX_ENTRIES = 100;
             @Override

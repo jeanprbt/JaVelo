@@ -97,9 +97,6 @@ public final class ElevationProfileManager {
 
         //Installation des gestionnaires d'évènement
         installHandlers();
-
-        //TODO virer cette ligne
-        updateStats();
     }
 
     /**
@@ -111,6 +108,11 @@ public final class ElevationProfileManager {
         return borderPane ;
     }
 
+    /**
+     * Méthode retournant une propriété en lecture seule contenant la position de la souris sur le profil.
+     *
+     * @return la propriété en lecture seule contenant la position de la souris sur le profil, en mètres.
+     */
     public ReadOnlyDoubleProperty mousePositionOnProfileProperty() {
         return mousePositionOnProfile ;
     }
@@ -255,10 +257,12 @@ public final class ElevationProfileManager {
      * Méthode privée permettant de mettre à jour tous les composants du profil.
      */
     private void update(){
-        updateRectangle();
-        updateTransform();
-        updateProfile();
-        updateGrid();
+        if(pane.getWidth() >= insets.getLeft() + insets.getRight() && pane.getHeight() >= insets.getTop() + insets.getBottom()) {
+            updateRectangle();
+            updateTransform();
+            updateProfile();
+            updateGrid();
+        }
     }
 
     /**
@@ -337,9 +341,11 @@ public final class ElevationProfileManager {
         });
 
         //Ajout d'un listener sur le profil afin de tout recréer lorsque celui-ci est modifié
-        elevationProfile.addListener((o, newS, oldS) -> {
-            update();
-            updateStats();
+        elevationProfile.addListener((o, oldS, newS) -> {
+            if(newS != null){
+                updateStats();
+                update();
+            }
         });
     }
 

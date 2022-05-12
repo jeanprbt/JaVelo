@@ -37,6 +37,7 @@ public final class RouteBean {
 
         /* Cache mémoire permettant d'enregistrer les itinéraires simples déjà calculés, dans la limite de 100 itinéraires.
         Cela permet de limiter le coût mémoire lors du recalcul d'itinéraire, qui est une opération parfois coûteuse */
+        //TODO faire ça en une ligne
         cacheMemory = new LinkedHashMap<>() {
             final int MAX_ENTRIES = 100;
             @Override
@@ -68,6 +69,14 @@ public final class RouteBean {
         return route.get();
     }
 
+    //Getter spour la propriété contenant le profil et sa valeur
+    public ReadOnlyObjectProperty<ElevationProfile> elevationProfileProperty(){
+        return elevationProfile ;
+    }
+    public ElevationProfile getElevationProfile(){
+        return elevationProfile.get();
+    }
+
     //Getters et setter pour la propriété highlightedPosition et sa valeur
     public DoubleProperty highlightedPositionProperty(){
         return highlightedPosition ;
@@ -77,6 +86,23 @@ public final class RouteBean {
     }
     public void setHighlightedPosition(double value){
         highlightedPosition.setValue(value);
+    }
+
+    /**
+     * Méthode permettant l'index du segment contenant la position passée en argument sur l'itinéraire, en ne prenant
+     * pas en compte les segments vides (deux points de passage non consécutifs au même endroit, pour les boucles par ex.).
+     *
+     * @param position la position sur l'itinéraire dont on veut l'index du segment la contenant
+     * @return l'index du segment contenant la position passée en argument en ignorant les segments vides
+     */
+    public int indexOfNonEmptySegmentAt(double position) {
+        int index = route.get().indexOfSegmentAt(position);
+        for (int i = 0; i <= index; i += 1) {
+            int n1 = waypoints.get(i).closestNodeId();
+            int n2 = waypoints.get(i + 1).closestNodeId();
+            if (n1 == n2) index += 1;
+        }
+        return index;
     }
 
     //---------------------------------------------- Private ----------------------------------------------//
@@ -96,6 +122,10 @@ public final class RouteBean {
 
         for (int i = 0; i < waypoints.size() - 1; i++) {
             Pair<Integer, Integer> singleRoute = new Pair<>(waypoints.get(i).closestNodeId(), waypoints.get(i+1).closestNodeId());
+
+            //Si deux points de passage successifs sont associés au même nœud, aucune tentative de calcul d'itinéraire n'est faite
+            if(singleRoute.firstElement.equals(singleRoute.secondElement)) continue;
+
             if(cacheMemory.containsKey(singleRoute)) {
                 segments.add(cacheMemory.get(singleRoute));
             }
@@ -112,9 +142,9 @@ public final class RouteBean {
                 }
             }
         }
-        if(!aSegmentIsNull) {
+        if(!aSegmentIsNull && !segments.isEmpty()) {
             route.set(new MultiRoute(segments));
-            elevationProfile.set(ElevationProfileComputer.elevationProfile(route.get(), 5));
+            elevationProfile.set(ElevationProfileComputer.elevationProfile(route.get(), 50));
         }
     }
 

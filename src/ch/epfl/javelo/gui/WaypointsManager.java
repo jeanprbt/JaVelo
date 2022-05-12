@@ -26,7 +26,6 @@ public final class WaypointsManager {
     private final Graph graph;
     private final ObjectProperty<MapViewParameters> parameters ;
     private final Pane pane ;
-    private final Consumer<String> consumer;
     private final ObservableList<Waypoint> waypoints ;
 
     private int indexInWaypoints ;
@@ -40,7 +39,6 @@ public final class WaypointsManager {
                             Consumer<String> consumer) {
 
         this.graph = graph;
-        this.consumer = consumer;
         this.waypoints = waypoints;
 
         parameters = property;
@@ -74,30 +72,13 @@ public final class WaypointsManager {
         PointCh waypointPosition = parameters.get().pointAt((int) x, (int) y).toPointCh();
         int closestNodeId = graph.nodeClosestTo(waypointPosition, SEARCH_DISTANCE);
 
-        if (isAlreadyWaypoint(waypoints, closestNodeId))
-            consumer.accept("Il y a déjà un point de passage à cet endroit !");
-        else if (closestNodeId == -1)
-            consumer.accept("Aucune route à proximité !");
+        if (closestNodeId == -1) {
+            consumer.accept("Aucune route à proximité");
+        }
         else {
             Waypoint waypoint = new Waypoint(waypointPosition, closestNodeId);
             waypoints.add(waypoint);  //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
         }
-    }
-
-    //---------------------------------------------- Static ----------------------------------------------//
-
-    /**
-     * Méthode statique permettant de savoir si l'identité donnée correspond déjà à un point de passage existant.
-     *
-     * @param nodeId : l'identité du nœud dont on veut vérifier la disponibilité
-     * @param waypoints : la liste des points de passage déjà existants
-     * @return true s'il y a déjà un point de passage et false sinon
-     */
-    public static boolean isAlreadyWaypoint(ObservableList<Waypoint> waypoints, int nodeId){
-        for (Waypoint waypoint : waypoints) {
-            if(nodeId == waypoint.closestNodeId()) return true ;
-        }
-        return false ;
     }
 
     //---------------------------------------------- Private ----------------------------------------------//
@@ -220,12 +201,7 @@ public final class WaypointsManager {
                 if (closestNodeId == -1){
                     consumer.accept("Aucune route à proximité !");
                     updateWaypoints();
-                }
-                else if (isAlreadyWaypoint(waypoints, closestNodeId)){
-                    consumer.accept("Il y a déjà un point de passage à cet endroit !");
-                    updateWaypoints();
-                }
-                else {
+                } else {
                     waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(pointCh, closestNodeId));
                 }
             }});

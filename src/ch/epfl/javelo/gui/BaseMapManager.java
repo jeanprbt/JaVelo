@@ -5,6 +5,7 @@ import ch.epfl.javelo.gui.TileManager.TileId;
 import ch.epfl.javelo.projection.PointWebMercator;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -22,10 +23,11 @@ import java.io.IOException;
  */
 public final class BaseMapManager {
 
-    private final Pane pane ;
-    private final Canvas canvas ;
     private final TileManager tileManager ;
     private final ObjectProperty<MapViewParameters> parameters;
+
+    private final Pane pane ;
+    private final Canvas canvas ;
     private final WaypointsManager waypointsManager ;
     private Point2D cursorPosition ;
     private boolean redrawNeeded ;
@@ -34,11 +36,12 @@ public final class BaseMapManager {
                           WaypointsManager waypointsManager,
                           ObjectProperty<MapViewParameters> property){
 
+        this.tileManager = tileManager ;
+        this.waypointsManager = waypointsManager;
+
         canvas = new Canvas() ;
         pane = new Pane(canvas) ;
         redrawNeeded = true ;
-        this.tileManager = tileManager ;
-        this.waypointsManager = waypointsManager;
         parameters = property ;
 
         //Redimensionnement automatique du canevas en fonction du panneau qui le contient
@@ -79,7 +82,7 @@ public final class BaseMapManager {
     }
 
     /**
-     * Méthode privéve rééffectuant le dessin de la carte si et seulement si redrawNeeded est vrai.
+     * Méthode privée rééffectuant le dessin de la carte si et seulement si redrawNeeded est vrai.
      */
     private void redrawIfNeeded() {
         if (!redrawNeeded) return;
@@ -135,19 +138,24 @@ public final class BaseMapManager {
         final int MIN_ZOOM_LEVEL = 8 ;
         final int MAX_ZOOM_LEVEL = 19 ;
 
-        //À chaque fois que la souris est scrollée, ajout de +-1 au niveau de zoom à chaque scroll pour le rendre plus fluide
+
+        //À chaque fois que la souris est scrollée, ajout de +-1 au niveau de zoom actuel
+        SimpleLongProperty minScrollTime = new SimpleLongProperty();
         pane.setOnScroll(event -> {
+            if (event.getDeltaY() == 0d) return;
+            long currentTime = System.currentTimeMillis();
+            if (currentTime < minScrollTime.get()) return;
+            minScrollTime.set(currentTime + 200);
+            int zoomDelta = (int) Math.signum(event.getDeltaY());
+
             PointWebMercator currentCursorPosition = PointWebMercator.of(parameters.get().zoomLevel(),
                                                                       parameters.get().x() + event.getX(),
                                                                       parameters.get().y() + event.getY());
-            if(Math.abs(event.getDeltaY()) > 4) {
-                int newZoomLevel = Math2.clamp(MIN_ZOOM_LEVEL,
-                                            parameters.get().zoomLevel() + (int) Math.signum(event.getDeltaY()),
-                                               MAX_ZOOM_LEVEL);
-                double newX = currentCursorPosition.xAtZoomLevel(newZoomLevel) -  event.getX();
-                double newY = currentCursorPosition.yAtZoomLevel(newZoomLevel) - event.getY();
-                parameters.set(new MapViewParameters(newZoomLevel, newX, newY));
-            }
+
+            int newZoomLevel = Math2.clamp(MIN_ZOOM_LEVEL, parameters.get().zoomLevel() + zoomDelta, MAX_ZOOM_LEVEL);
+            double newX = currentCursorPosition.xAtZoomLevel(newZoomLevel) -  event.getX();
+            double newY = currentCursorPosition.yAtZoomLevel(newZoomLevel) - event.getY();
+            parameters.set(new MapViewParameters(newZoomLevel, newX, newY));
         });
 
         //À chaque fois que la souris est pressée, enregistrement de la position actuelle du curseur

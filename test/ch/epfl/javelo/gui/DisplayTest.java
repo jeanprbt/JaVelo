@@ -22,8 +22,8 @@ public final class DisplayTest extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Graph graph = Graph.loadFrom(Path.of("lausanne"));
-        Path cacheBasePath = Path.of("resources/tiles/");
+        Graph graph = Graph.loadFrom(Path.of("javelo-data"));
+        Path cacheBasePath = Path.of("osm-cache");
         String tileServerHost = "tile.openstreetmap.org";
         TileManager tileManager =
                 new TileManager(cacheBasePath, tileServerHost);
@@ -37,7 +37,7 @@ public final class DisplayTest extends Application {
                 FXCollections.observableArrayList(
                         new Waypoint(new PointCh(2532697, 1152350), 159049),
                         new Waypoint(new PointCh(2538659, 1154350), 117669));
-        Consumer<String> errorConsumer = new ErrorConsumer();
+        ErrorManager errorManager = new ErrorManager();
 
         RouteBean routeBean = new RouteBean(new RouteComputer(graph, costFunction));
         routeBean.setHighlightedPosition(1000);
@@ -46,7 +46,7 @@ public final class DisplayTest extends Application {
                 new WaypointsManager(graph,
                         mapViewParametersP,
                         routeBean.getWaypoints(),
-                        errorConsumer);
+                        errorManager::displayError);
         BaseMapManager baseMapManager =
                 new BaseMapManager(tileManager,
                         waypointsManager,
@@ -58,7 +58,8 @@ public final class DisplayTest extends Application {
         StackPane mainPane =
                 new StackPane(baseMapManager.pane(),
                         routeManager.pane(),
-                        waypointsManager.pane());
+                        waypointsManager.pane(),
+                        errorManager.pane());
         mainPane.getStylesheets().add("map.css");
         primaryStage.setMinWidth(600);
         primaryStage.setMinHeight(300);
