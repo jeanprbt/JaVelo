@@ -23,6 +23,8 @@ public final class RouteBean {
     private final RouteComputer routeComputer ;
     private final Map<Pair<Integer, Integer>, Route> cacheMemory ;
 
+    private static final int MAX_ENTRIES = 20 ;
+
     public RouteBean(RouteComputer routeComputer) {
 
         this.routeComputer = routeComputer;

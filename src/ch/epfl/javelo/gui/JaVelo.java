@@ -53,7 +53,7 @@ public final class JaVelo extends Application {
                                                              .then(map.mousePositionOnRouteProperty())
                                                              .otherwise(profile.mousePositionOnProfileProperty()));
 
-
+        //Création du splitPane qui contiendra la carte annotée et le profil
         SplitPane splitPane = new SplitPane(map.pane());
         splitPane.setOrientation(Orientation.VERTICAL);
         SplitPane.setResizableWithParent(profile.pane(), false);

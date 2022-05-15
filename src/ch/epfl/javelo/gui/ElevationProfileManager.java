@@ -215,9 +215,9 @@ public final class ElevationProfileManager {
 
         //Création des lignes horizontales espacées de la distance calculée précédemment et ajout des étiquettes correspondantes
         for (double i = 0; i < rectangle.get().getHeight() / verticalSpacingScreen; i++) {
-
-            path.getElements().add(new MoveTo(0, i * verticalSpacingScreen + offset));
-            path.getElements().add(new LineTo(rectangle.get().getWidth(), i * verticalSpacingScreen + offset));
+            if(i * verticalSpacingScreen + offset <= rectangle.get().getHeight()) {
+                path.getElements().add(new MoveTo(0, i * verticalSpacingScreen + offset));
+                path.getElements().add(new LineTo(rectangle.get().getWidth(), i * verticalSpacingScreen + offset));
 
                 Text label = createLabel(String.valueOf((int) (elevationProfile.get().maxElevation() -
                                 (elevationProfile.get().maxElevation() % verticalSpacingWorld) - i * verticalSpacingWorld)),

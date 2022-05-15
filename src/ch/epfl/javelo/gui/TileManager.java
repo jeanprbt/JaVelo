@@ -24,6 +24,8 @@ public final class TileManager {
     private final String tileServerName ;
     private final Map<TileId, Image> cacheMemory ;
 
+    private static final int MAX_ENTRIES = 100;
+
     public TileManager(Path diskCachePath, String tileServerName){
         this.diskCachePath = diskCachePath ;
         this.tileServerName = tileServerName ;
