@@ -74,9 +74,9 @@ public final class ElevationProfileManager {
         //Rectangle contenant le profil
         rectangle = new SimpleObjectProperty<>();
 
-        /* Propriété contenant la position de la souris le long du profil en mètres, initialisée à -1 pour garantir
+        /* Propriété contenant la position de la souris le long du profil en mètres, initialisée à NaN pour garantir
         l'invisibilité de la ligne au lancement de la fenêtre si le curseur n'est pas sur le panneau */
-        mousePositionOnProfile = new SimpleDoubleProperty(-1);
+        mousePositionOnProfile = new SimpleDoubleProperty(Double.NaN);
 
         /* Transformations affines permettant de passer du système de coordonnées du monde réel à celui de la fenêtre graphique,
         initialisées comme des transformations affines vides afin de pouvoir leur lier la ligne avant même de leur donner une valeur */
@@ -219,14 +219,15 @@ public final class ElevationProfileManager {
             path.getElements().add(new MoveTo(0, i * verticalSpacingScreen + offset));
             path.getElements().add(new LineTo(rectangle.get().getWidth(), i * verticalSpacingScreen + offset));
 
-            Text label = createLabel(String.valueOf((int) (elevationProfile.get().maxElevation() -
-                                    (elevationProfile.get().maxElevation() % verticalSpacingWorld) - i * verticalSpacingWorld)),
-                            "vertical",
-                            i * verticalSpacingScreen + offset,
-                                     VPos.CENTER);
+                Text label = createLabel(String.valueOf((int) (elevationProfile.get().maxElevation() -
+                                (elevationProfile.get().maxElevation() % verticalSpacingWorld) - i * verticalSpacingWorld)),
+                        "vertical",
+                        i * verticalSpacingScreen + offset,
+                        VPos.CENTER);
 
-            label.setLayoutX(-label.prefWidth(0) - 2);
-            labels.getChildren().add(label);
+                label.setLayoutX(-label.prefWidth(0) - 2);
+                labels.getChildren().add(label);
+            }
         }
 
         //Positionnement de la grille et des étiquettes sur leur panneau parent

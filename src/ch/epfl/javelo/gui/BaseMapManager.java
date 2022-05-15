@@ -171,7 +171,9 @@ public final class BaseMapManager {
 
         //À chaque fois que la souris est cliquée, création d'un nouveau waypoint
         pane.setOnMouseClicked(event -> {
-            if (event.isStillSincePress()) waypointsManager.addWaypoint(event.getX(), event.getY());
+            if (event.isStillSincePress()) {
+                waypointsManager.addWaypoint(event.getX(), event.getY());
+            }
         });
     }
 }

@@ -133,6 +133,7 @@ public final class Graph {
      * @return l'identité du nœud le plus proche du point donné à la distance maximale donnée ou -1
      */
     public int nodeClosestTo(PointCh point, double searchDistance) {
+
         //Initialisation de closestNodeId à -1 pour retourner cette valeur si aucun nœud ne correspond aux critères donnés.
         int closestNodeId = -1;
 

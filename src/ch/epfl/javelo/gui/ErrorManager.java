@@ -19,20 +19,20 @@ import javafx.util.Duration;
  */
 public final class ErrorManager {
 
-    private final Pane pane ;
+    private final StackPane pane ;
     private final VBox vBox ;
 
     private SequentialTransition sequentialTransition ;
 
     public ErrorManager(){
+        sequentialTransition = new SequentialTransition();
 
         vBox = new VBox();
-        pane = new Pane(vBox);
-
-
-        sequentialTransition = new SequentialTransition();
-        pane.setMouseTransparent(true);
         vBox.getStylesheets().add("error.css");
+
+        //Utilisation d'un StackPane afin que les propriétés CSS s'appliquent correctement sur la vBox
+        pane = new StackPane(vBox);
+        pane.setMouseTransparent(true);
     }
 
     /**
@@ -52,16 +52,11 @@ public final class ErrorManager {
      */
     public void displayError(String message){
 
+        //Ajout du texte au panneau
         vBox.getChildren().clear();
         vBox.getChildren().add(new Text(message));
 
-        System.out.println("largeur panneau : " + pane.getWidth());
-        System.out.println("hauteur panneau : " + pane.getHeight());
-
-        System.out.println("largeur vBox : " + vBox.getWidth());
-        System.out.println("hauteur vBox : " + pane.getHeight());
-
-
+        //Lancement de la transition et du bip sonore
         displayTransitionsAndBeep(vBox);
     }
 
@@ -91,12 +86,10 @@ public final class ErrorManager {
         //Transition intermédiaire : laisser le panneau visible durant 2 secondes
         PauseTransition pauseTransition = new PauseTransition(Duration.seconds(2));
 
-        //Si une animation est lancée alors qu'une autre est déja en cours, interruption de cette dernière
+        //Si une animation est lancée alors qu'une autre est déjà en cours, interruption de cette dernière
         if(sequentialTransition.statusProperty().get() == Animation.Status.RUNNING){
             sequentialTransition.stop();
         }
-
-
 
         //Lancement de l'animation
         sequentialTransition = new SequentialTransition(fadeTransition1, pauseTransition, fadeTransition2);

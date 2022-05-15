@@ -26,3 +26,5 @@ hs_err_pid*
 javelo.kml
 /out/*
 *.png
+*.bin
+*.gpx

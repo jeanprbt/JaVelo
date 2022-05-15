@@ -91,7 +91,7 @@ public final class RouteManager {
      * de fond de carte changent.
      */
     private void updateCircle(){
-        if(route.getRoute() == null){
+        if(route.getRoute() == null || Double.isNaN(route.getHighlightedPosition())){
             circle.setVisible(false);
         } else {
             circle.setVisible(true);

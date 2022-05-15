@@ -51,13 +51,12 @@ public final class Functions {
         @Override
         public double applyAsDouble(double operand) {
             if (operand < 0) return samples[0];
-            else if (operand >= xMax) return samples[samples.length - 1];
-            else {
-                double spacing = xMax / (samples.length - 1);
-                double proportion = (operand % spacing) / spacing;
-                int minBorn = (int) (operand / spacing);
-                return Math2.interpolate(samples[minBorn], samples[minBorn + 1], proportion);
-            }
+            if (operand >= xMax) return samples[samples.length - 1];
+
+            double spacing = xMax / (samples.length - 1);
+            double proportion = (operand % spacing) / spacing;
+            int minBorn = (int) Math2.clamp(0, operand / spacing, samples.length - 2) ;
+            return Math2.interpolate(samples[minBorn], samples[minBorn + 1], proportion);
         }
     }
 }

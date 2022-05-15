@@ -6,6 +6,7 @@ import ch.epfl.javelo.routing.CostFunction;
 import ch.epfl.javelo.routing.GpxGenerator;
 import ch.epfl.javelo.routing.RouteComputer;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -29,39 +30,42 @@ public final class JaVelo extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Graph graph = Graph.loadFrom(Path.of("javelo-data"));
+
+        //Création des éléments indispensables à la création des différents gestionnaires graphiques
         Path cacheBasePath = Path.of("osm-cache");
         String tileServerHost = "tile.openstreetmap.org";
-
         TileManager tileManager = new TileManager(cacheBasePath, tileServerHost);
-        CostFunction costFunction = new CityBikeCF(graph);
 
+        Graph graph = Graph.loadFrom(Path.of("javelo-data"));
+        CostFunction costFunction = new CityBikeCF(graph);
         RouteBean routeBean = new RouteBean(new RouteComputer(graph, costFunction));
 
+        //Création des gestionnaires graphiques
         ErrorManager errorManager = new ErrorManager();
         AnnotatedMapManager map = new AnnotatedMapManager(graph, tileManager, routeBean, errorManager::displayError);
         ElevationProfileManager profile = new ElevationProfileManager(routeBean.elevationProfileProperty(),
-                routeBean.highlightedPositionProperty());
+                                                                      routeBean.highlightedPositionProperty());
 
+        /* Lien entre la position mise en évidence et :
+                - la position de la souris sur l'itinéraire si celle-ci est >= 0
+                - la position de la souris sur le profil sinon  */
+        routeBean.highlightedPositionProperty().bind(Bindings.when(map.mousePositionOnRouteProperty().greaterThanOrEqualTo(0))
+                                                             .then(map.mousePositionOnRouteProperty())
+                                                             .otherwise(profile.mousePositionOnProfileProperty()));
 
 
         SplitPane splitPane = new SplitPane(map.pane());
         splitPane.setOrientation(Orientation.VERTICAL);
         SplitPane.setResizableWithParent(profile.pane(), false);
 
-
-        routeBean.routeProperty().addListener((o, oldS, newS) -> {
-            if (newS == null){
-                splitPane.getItems().remove(profile.pane());
-            }
-            if (oldS == null && newS != null) {
-                splitPane.getItems().add(profile.pane());
-            }
-        });
-
-
+        //Création de la barre de menus permettant d'exporter l'itinéraire au format GPX
         MenuItem menuItem = new MenuItem("Exporter GPX");
-        menuItem.setDisable(routeBean.getRoute() == null);
+        Menu menu = new Menu("Fichier");
+        menu.getItems().add(menuItem);
+        MenuBar menuBar = new MenuBar(menu);
+        menuBar.setUseSystemMenuBar(true);
+
+        //Paramétrage de l'action à effectuer lors du clic sur le sous-menu
         menuItem.setOnAction(event -> {
             try {
                 GpxGenerator.writeGpx(Path.of("javelo.gpx"), routeBean.getRoute(), routeBean.getElevationProfile());
@@ -70,19 +74,26 @@ public final class JaVelo extends Application {
             }
         });
 
-        Menu menu = new Menu("Fichier");
-        menu.getItems().add(menuItem);
+        //Autoriser ou non le sous-menu export GPX en fonction de son existence
+        menuItem.disableProperty().bind(Bindings.isNull(routeBean.routeProperty()));
 
-        MenuBar menuBar = new MenuBar(menu);
-        menuBar.setUseSystemMenuBar(true);
+        //Listener sur l'itinéraire pour ajouter ou retirer le profil en long du panneau principal en fonction de son existence
+        routeBean.routeProperty().addListener((o, oldS, newS) -> {
+            if (newS == null)
+                splitPane.getItems().remove(profile.pane());
+            if (oldS == null && newS != null)
+                splitPane.getItems().add(profile.pane());
+        });
 
-        StackPane mainPane = new StackPane(splitPane, menuBar, errorManager.pane());
+        /* Création du panneau principal de la scène contenant le splitPane avec la carte annotée et le profil,
+        le gestionnaire graphique d'erreurs et la barre de menus  */
+        StackPane mainPane = new StackPane(splitPane, errorManager.pane(), menuBar);
 
+        //Lancement de la scène
         stage.setMinWidth(MINIMUM_WINDOW_WIDTH);
         stage.setMinHeight(MINIMUM_WINDOW_HEIGHT);
         stage.setTitle("Javelo");
         stage.setScene(new Scene(mainPane));
         stage.show();
-
     }
 }

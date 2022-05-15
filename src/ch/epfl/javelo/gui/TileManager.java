@@ -27,15 +27,7 @@ public final class TileManager {
     public TileManager(Path diskCachePath, String tileServerName){
         this.diskCachePath = diskCachePath ;
         this.tileServerName = tileServerName ;
-
-        //TODO faire ça en une ligne
-        this.cacheMemory = new LinkedHashMap<>(100, 0.75f, true) {
-            private static final int MAX_ENTRIES = 100;
-            @Override
-            protected boolean removeEldestEntry(Map.Entry eldest) {
-                return size() > MAX_ENTRIES;
-            }
-        };
+        this.cacheMemory = new LinkedHashMap<>(100, 0.75f, true);
     }
 
     /**
@@ -70,6 +62,8 @@ public final class TileManager {
      */
    private Image getImageFromDisk(Path tilePath, TileId tileId) throws IOException{
        try(InputStream is = new FileInputStream(tilePath.toString())){
+           //Contrôle du grossissement du cache mémoire en supprimant son élément le plus ancien
+           if(cacheMemory.size() > MAX_ENTRIES) cacheMemory.remove(cacheMemory.keySet().iterator().next());
            cacheMemory.put(tileId, new Image(is));
            return cacheMemory.get(tileId);
        }

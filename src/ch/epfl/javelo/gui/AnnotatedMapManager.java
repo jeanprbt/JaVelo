@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 public final class AnnotatedMapManager {
 
     private final StackPane mainPane ;
-
     private final DoubleProperty mousePositionOnRoute ;
     private final ObjectProperty<Point2D> currentCursorPosition ;
     private final ObjectProperty<MapViewParameters> parameters ;
@@ -32,52 +31,59 @@ public final class AnnotatedMapManager {
         final int INITIAL_ZOOM_LEVEL = 12 ;
         final int INITIAL_X = 543200 ;
         final int INITIAL_Y = 370650 ;
-        final double EARTH_CIRCUMFERENCE_EQUATOR = 40_075_016.686 ;
-        final int BASE_ZOOM = 8 ;
-
-
-        MapViewParameters mapViewParameters =
-                new MapViewParameters(INITIAL_ZOOM_LEVEL, INITIAL_X, INITIAL_Y);
-        ObjectProperty<MapViewParameters> mapViewParametersProperty =
-                new SimpleObjectProperty<>(mapViewParameters);
-
-        WaypointsManager waypointsManager = new WaypointsManager(graph, mapViewParametersProperty, route.getWaypoints(), consumer);
-        BaseMapManager baseMapManager = new BaseMapManager(tileManager, waypointsManager, mapViewParametersProperty);
-        RouteManager routeManager  = new RouteManager(route, mapViewParametersProperty);
-
-        mainPane = new StackPane(baseMapManager.pane(),
-                             routeManager.pane(),
-                             waypointsManager.pane());
+        final int MAX_DISTANCE_CURSOR = 15 ;
 
         mousePositionOnRoute = new SimpleDoubleProperty();
         currentCursorPosition = new SimpleObjectProperty<>();
-        parameters = mapViewParametersProperty ;
+
+        //Création des paramètres de fond de carte initiaux
+        MapViewParameters mapViewParameters = new MapViewParameters(INITIAL_ZOOM_LEVEL, INITIAL_X, INITIAL_Y);
+        parameters = new SimpleObjectProperty<>(mapViewParameters);
+
+        //Création des gestionnaires graphiques permettant d'avoir un panneau final contenant tous les sous-panneaux
+        WaypointsManager waypointsManager = new WaypointsManager(graph, parameters, route.getWaypoints(), consumer);
+        BaseMapManager baseMapManager = new BaseMapManager(tileManager, waypointsManager,parameters);
+        RouteManager routeManager  = new RouteManager(route, parameters);
+        mainPane = new StackPane(baseMapManager.pane(),
+                                 routeManager.pane(),
+                                 waypointsManager.pane());
+
+        /* Ajout des gestionnaires d'évènement sur le panneau pour mettre à jour la position du curseur et celle de la souris
+        sur l'itinéraire en conséquence */
+        mainPane.setOnMouseMoved(event -> currentCursorPosition.set(new Point2D(event.getX(), event.getY())));
+        mainPane.setOnMouseExited(event -> currentCursorPosition.set(null));
+
+
+        /* Création du lien entre la position de souris sur le profil et :
+                - la position du curseur
+                - les paramètres de fond de carte
+                - l'itinéraire */
+        mousePositionOnRoute.bind(Bindings.createDoubleBinding(
+                () -> {
+                    /* Si l'itinéraire est nul ou la souris n'est pas dans le panneau,
+                     la position de la souris sur l'itinéraire est nulle (Double.NaN) */
+                    if (route.getRoute() == null || currentCursorPosition.get() == null) return Double.NaN;
+
+                    //Calcul du pointCh correspondant à la position de la souris
+                    PointCh cursor = parameters.get().pointAt((int) currentCursorPosition.get().getX(),
+                                                              (int) currentCursorPosition.get().getY()).toPointCh();
+
+                    //Calcul du point de l'itinéraire le plus proche de la position de la souris et de son équivalent en Web Mercator
+                    RoutePoint closestRoutePoint =  route.getRoute().pointClosestTo(cursor);
+                    PointWebMercator closestPointMercator = PointWebMercator.ofPointCh(closestRoutePoint.point());
+
+                    //Conversion du point le plus proche en termes de pixels dans l'écran
+                    Point2D closestPoint2D = new Point2D(parameters.get().viewX(closestPointMercator),
+                                                         parameters.get().viewY(closestPointMercator));
+
+                    //Comparaison de la distance entre le curseur et l'itinéraire
+                    if(currentCursorPosition.get().distance(closestPoint2D) <= MAX_DISTANCE_CURSOR)
+                        return closestRoutePoint.position();
+                    return Double.NaN;
+
+                }, currentCursorPosition, parameters, route.routeProperty()));
 
         mainPane.getStylesheets().add("map.css");
-
-        currentCursorPosition.addListener((o, oldS, newS) -> {
-            if(route.getRoute() != null) {
-                PointCh cursor = parameters.get().pointAt((int) newS.getX(),
-                        (int) newS.getY()).toPointCh();
-
-                RoutePoint closestRoutePoint = route.getRoute().pointClosestTo(cursor);
-
-                double scaleFactor = EARTH_CIRCUMFERENCE_EQUATOR *
-                        Math.cos(closestRoutePoint.point().lat()) /
-                        Math.scalb(1, BASE_ZOOM + parameters.get().zoomLevel());
-
-                if (closestRoutePoint.distanceToReference() / scaleFactor < 15)
-                    mousePositionOnRoute.set(closestRoutePoint.position());
-            }
-        });
-
-
-        mainPane.setOnMouseMoved(event -> {
-            currentCursorPosition.set(new Point2D(event.getX(), event.getY()));
-        });
-
-        mainPane.setOnMouseExited(event -> mousePositionOnRoute.set(Double.NaN));
-
     }
 
     /**
@@ -97,7 +103,4 @@ public final class AnnotatedMapManager {
     public ReadOnlyDoubleProperty mousePositionOnRouteProperty(){
         return mousePositionOnRoute ;
     }
-
-    //---------------------------------------------- Private ----------------------------------------------//
-
 }

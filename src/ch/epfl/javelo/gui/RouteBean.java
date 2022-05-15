@@ -6,10 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Classe regroupant les propriétés relatives aux points de passage et à l'itinéraire correspondant.
@@ -37,14 +34,7 @@ public final class RouteBean {
 
         /* Cache mémoire permettant d'enregistrer les itinéraires simples déjà calculés, dans la limite de 100 itinéraires.
         Cela permet de limiter le coût mémoire lors du recalcul d'itinéraire, qui est une opération parfois coûteuse */
-        //TODO faire ça en une ligne
-        cacheMemory = new LinkedHashMap<>() {
-            final int MAX_ENTRIES = 100;
-            @Override
-            protected boolean removeEldestEntry(Map.Entry eldest) {
-                return size() > MAX_ENTRIES;
-            }
-        };
+        cacheMemory = new LinkedHashMap<>(20, 0.75f, true);
 
         /* Vérification à chaque changement de la liste des points de passage qu'il y ait au moins deux points
          dans la liste et appel de la méthode recomputeRoute() le cas échéant */
@@ -69,7 +59,7 @@ public final class RouteBean {
         return route.get();
     }
 
-    //Getter spour la propriété contenant le profil et sa valeur
+    //Getters pour la propriété contenant le profil et sa valeur
     public ReadOnlyObjectProperty<ElevationProfile> elevationProfileProperty(){
         return elevationProfile ;
     }
@@ -119,20 +109,20 @@ public final class RouteBean {
         /* Parcours de la liste des waypoints : à chaque waypoint, création d'une paire entre celui-ci et le suivant et calcul
         de l'itinéraire simple les séparant. Si tous les itinéraires simples ainsi calculés sont non nuls, création d'un
         itinéraire multiple les rassemblant tous et ajout de celui-ci dans la propriété route. */
-
         for (int i = 0; i < waypoints.size() - 1; i++) {
             Pair<Integer, Integer> singleRoute = new Pair<>(waypoints.get(i).closestNodeId(), waypoints.get(i+1).closestNodeId());
 
             //Si deux points de passage successifs sont associés au même nœud, aucune tentative de calcul d'itinéraire n'est faite
             if(singleRoute.firstElement.equals(singleRoute.secondElement)) continue;
 
-            if(cacheMemory.containsKey(singleRoute)) {
+            if(cacheMemory.containsKey(singleRoute))
                 segments.add(cacheMemory.get(singleRoute));
-            }
             else {
                 Route temp = routeComputer.bestRouteBetween(singleRoute.firstElement, singleRoute.secondElement);
                 if(temp != null) {
                     segments.add(temp);
+                    //Contrôle du grossissement du cache mémoire en supprimant son élément le plus ancien
+                    if(cacheMemory.size() > MAX_ENTRIES) cacheMemory.remove(cacheMemory.keySet().iterator().next());
                     cacheMemory.put(singleRoute, temp);
                 } else {
                     aSegmentIsNull = true ;
@@ -146,6 +136,7 @@ public final class RouteBean {
             route.set(new MultiRoute(segments));
             elevationProfile.set(ElevationProfileComputer.elevationProfile(route.get(), 50));
         }
+
     }
 
     /**
