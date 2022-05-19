@@ -32,11 +32,12 @@ public final class ElevationProfileComputer {
         float[] elevationSamples = new float[(int) Math.ceil(route.length() / maxStepLength) + 1];
 
         //L'espacement entre les échantillons compte tenu de maxStepLength et de la longueur de l'itinéraire
-        double stepLength = route.length() / (elevationSamples.length - 1);
+        double stepLength = route.length() / (elevationSamples.length - 1.0);
 
         //Remplissage du tableau, en comptant les éventuels NaN
         for (int i = 0; i < elevationSamples.length; i++)
             elevationSamples[i] = (float) route.elevationAt(i * stepLength);
+
 
         //Recherche du nombre d'éléments invalides au début et à la fin du tableau
         int startInvalids = invalidElements(elevationSamples, false);

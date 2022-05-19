@@ -72,15 +72,16 @@ public final class WaypointsManager {
     public void addWaypoint(double x, double y) {
 
         PointCh waypointPosition = parameters.get().pointAt((int) x, (int) y).toPointCh();
-        int closestNodeId = graph.nodeClosestTo(waypointPosition, SEARCH_DISTANCE);
+        if(waypointPosition != null) {
+            int closestNodeId = graph.nodeClosestTo(waypointPosition, SEARCH_DISTANCE);
 
-        if (closestNodeId == -1) {
-            consumer.accept("Aucune route à proximité");
-        }
-        else {
-            Waypoint waypoint = new Waypoint(waypointPosition, closestNodeId);
-            waypoints.add(waypoint);  //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
-        }
+            if (closestNodeId == -1) {
+                consumer.accept("Aucune route à proximité");
+            } else {
+                Waypoint waypoint = new Waypoint(waypointPosition, closestNodeId);
+                waypoints.add(waypoint);  //Appel à recreateWaypoints() pour la gestion graphique grâce à l'observateur sur waypoints
+            }
+        } else consumer.accept("La recherche d'itinéraire est limitée à la Suisse");
     }
 
     //---------------------------------------------- Private ----------------------------------------------//
@@ -196,14 +197,16 @@ public final class WaypointsManager {
             if (!event.isStillSincePress()) {
 
                 PointCh pointCh = parameters.get().pointAt((int) mark.getLayoutX(), (int) mark.getLayoutY()).toPointCh();
-                int closestNodeId = graph.nodeClosestTo(pointCh, SEARCH_DISTANCE);
-
-                if (closestNodeId == -1){
-                    consumer.accept("Aucune route à proximité !");
-                    updateWaypoints();
-                } else {
-                    waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(pointCh, closestNodeId));
-                }
-            }});
+                if(pointCh != null) {
+                    int closestNodeId = graph.nodeClosestTo(pointCh, SEARCH_DISTANCE);
+                    if (closestNodeId == -1){
+                        consumer.accept("Aucune route à proximité !");
+                        updateWaypoints();
+                    } else {
+                        waypoints.set(pane.getChildren().indexOf(mark), new Waypoint(pointCh, closestNodeId));
+                    }
+                } else consumer.accept("La recherche d'itinéraire est limitée à la Suisse");
+            }
+        });
     }
 }

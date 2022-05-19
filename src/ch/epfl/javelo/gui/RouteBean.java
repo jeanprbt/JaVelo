@@ -24,6 +24,7 @@ public final class RouteBean {
     private final Map<Pair<Integer, Integer>, Route> cacheMemory ;
 
     private static final int MAX_ENTRIES = 20 ;
+    private static final int MAX_STEP_LENGTH = 5 ;
 
     public RouteBean(RouteComputer routeComputer) {
 
@@ -136,7 +137,7 @@ public final class RouteBean {
         }
         if(!aSegmentIsNull && !segments.isEmpty()) {
             route.set(new MultiRoute(segments));
-            elevationProfile.set(ElevationProfileComputer.elevationProfile(route.get(), 50));
+            elevationProfile.set(ElevationProfileComputer.elevationProfile(route.get(), MAX_STEP_LENGTH));
         }
 
     }

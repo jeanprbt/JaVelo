@@ -67,6 +67,7 @@ public final class AnnotatedMapManager {
                     //Calcul du pointCh correspondant à la position de la souris
                     PointCh cursor = parameters.get().pointAt((int) currentCursorPosition.get().getX(),
                                                               (int) currentCursorPosition.get().getY()).toPointCh();
+                    if(cursor == null) return Double.NaN ;
 
                     //Calcul du point de l'itinéraire le plus proche de la position de la souris et de son équivalent en Web Mercator
                     RoutePoint closestRoutePoint =  route.getRoute().pointClosestTo(cursor);

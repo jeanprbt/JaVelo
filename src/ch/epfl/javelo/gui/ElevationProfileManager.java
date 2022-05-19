@@ -255,7 +255,8 @@ public final class ElevationProfileManager {
     }
 
     /**
-     * Méthode privée permettant de mettre à jour tous les composants du profil.
+     * Méthode privée permettant de mettre à jour tous les composants du profil, si le panneau est assez grand pour accueillir
+     * un nouvel affichage du profil.
      */
     private void update(){
         if(pane.getWidth() >= insets.getLeft() + insets.getRight() && pane.getHeight() >= insets.getTop() + insets.getBottom()) {
@@ -329,15 +330,10 @@ public final class ElevationProfileManager {
     private void installListeners() {
 
         //Ajout de listener sur la largeur du panneau contenant le profil afin de tout recalculer si cette dernière change
-        pane.widthProperty().addListener((o, oldS, newS) -> {
-            update();
-        });
+        pane.widthProperty().addListener((o, oldS, newS) -> update());
 
-        /* Ajout de listener sur la hauteur du panneau contenant le profil afin de tout recalculer si cette dernière change,
-        en testant que la taille du panneau est assez grande pour pouvoir tout réafficher. */
-        pane.heightProperty().addListener((o, oldS, newS) -> {
-            update();
-        });
+        //Ajout de listener sur la hauteur du panneau contenant le profil afin de tout recalculer si cette dernière change
+        pane.heightProperty().addListener((o, oldS, newS) -> update());
 
         //Ajout d'un listener sur le profil afin de tout recréer lorsque celui-ci est modifié
         elevationProfile.addListener((o, oldS, newS) -> {

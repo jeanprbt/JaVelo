@@ -13,6 +13,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import java.io.IOException;
@@ -46,13 +47,6 @@ public final class JaVelo extends Application {
         ElevationProfileManager profile = new ElevationProfileManager(routeBean.elevationProfileProperty(),
                                                                       routeBean.highlightedPositionProperty());
 
-        /* Lien entre la position mise en évidence et :
-                - la position de la souris sur l'itinéraire si celle-ci est >= 0
-                - la position de la souris sur le profil sinon  */
-        routeBean.highlightedPositionProperty().bind(Bindings.when(map.mousePositionOnRouteProperty().greaterThanOrEqualTo(0))
-                                                             .then(map.mousePositionOnRouteProperty())
-                                                             .otherwise(profile.mousePositionOnProfileProperty()));
-
         //Création du splitPane qui contiendra la carte annotée et le profil
         SplitPane splitPane = new SplitPane(map.pane());
         splitPane.setOrientation(Orientation.VERTICAL);
@@ -63,7 +57,6 @@ public final class JaVelo extends Application {
         Menu menu = new Menu("Fichier");
         menu.getItems().add(menuItem);
         MenuBar menuBar = new MenuBar(menu);
-        menuBar.setUseSystemMenuBar(true);
 
         //Paramétrage de l'action à effectuer lors du clic sur le sous-menu
         menuItem.setOnAction(event -> {
@@ -74,7 +67,15 @@ public final class JaVelo extends Application {
             }
         });
 
-        //Autoriser ou non le sous-menu export GPX en fonction de son existence
+        /* Lien entre la position mise en évidence et :
+            - la position de la souris sur l'itinéraire si celle-ci est >= 0
+            - la position de la souris sur le profil sinon  */
+        routeBean.highlightedPositionProperty().bind(Bindings.when(map.mousePositionOnRouteProperty().greaterThanOrEqualTo(0))
+                                                             .then(map.mousePositionOnRouteProperty())
+                                                             .otherwise(profile.mousePositionOnProfileProperty()));
+
+
+        // Lien entre la possibilité de cliquer sur le sous-menu "Export GPX" et l'existence d'un itinéraire
         menuItem.disableProperty().bind(Bindings.isNull(routeBean.routeProperty()));
 
         //Listener sur l'itinéraire pour ajouter ou retirer le profil en long du panneau principal en fonction de son existence
@@ -85,9 +86,13 @@ public final class JaVelo extends Application {
                 splitPane.getItems().add(profile.pane());
         });
 
-        /* Création du panneau principal de la scène contenant le splitPane avec la carte annotée et le profil,
-        le gestionnaire graphique d'erreurs et la barre de menus  */
-        StackPane mainPane = new StackPane(splitPane, errorManager.pane(), menuBar);
+        /* Création du panneau central de la scène, un stackPane avec
+        la carte annotée, le profil et le gestionnaire graphique d'erreurs */
+        StackPane stackPane = new StackPane(splitPane, errorManager.pane()) ;
+
+
+        //Création du panneau principal contenant le panneau central et la barre des menus sur le bord supérieur.
+        BorderPane mainPane = new BorderPane(stackPane, menuBar, null, null, null);
 
         //Lancement de la scène
         stage.setMinWidth(MINIMUM_WINDOW_WIDTH);

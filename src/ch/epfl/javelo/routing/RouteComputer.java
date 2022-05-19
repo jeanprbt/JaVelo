@@ -108,15 +108,18 @@ public final class RouteComputer {
     private SingleRoute buildRoute(int startNodeId, int endNodeId, int[] predecessors) {
         List<Edge> edges = new ArrayList<>();
         int nodeId = endNodeId;
+        int previousNodeId = predecessors[nodeId];
         while (nodeId != startNodeId) {
-            //À chaque tour de boucle, recherche de l'arête sortante du nœud étudié arrivant à son prédécesseur
-            for (int i = 0; i < graph.nodeOutDegree(nodeId); i++) {
-                int edgeId = graph.nodeOutEdgeId(nodeId, i);
-                if (graph.edgeTargetNodeId(edgeId) == predecessors[nodeId]) {
-                    edges.add(Edge.of(graph, edgeId, predecessors[nodeId], nodeId));
-                    nodeId = predecessors[nodeId];
+            //À chaque tour de boucle, recherche de l'arête sortante du prédécesseur arrivant au nœud étudié.
+            for (int i = 0; i < graph.nodeOutDegree(previousNodeId); i++) {
+                int edgeId = graph.nodeOutEdgeId(previousNodeId, i) ;
+                if (graph.edgeTargetNodeId(edgeId) == nodeId) {
+                    edges.add(Edge.of(graph,edgeId, previousNodeId, nodeId));
+                    break ;
                 }
             }
+            nodeId = previousNodeId;
+            previousNodeId = predecessors[previousNodeId];
         }
         //Inversion des arêtes, car l'itinéraire a été construit en partant de la fin
         Collections.reverse(edges);

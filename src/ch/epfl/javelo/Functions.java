@@ -1,16 +1,17 @@
 package ch.epfl.javelo;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 
-/**
+/*
  * Classe fournissant des méthodes pour créer des fonctions mathématiques définies
  * des réels vers les réels, c'est-à-dire R → R.
  *
  * @author Jean Perbet (341418)
  * @author Cassio Manuguerra (346232)
  */
+
+
 public final class Functions {
 
     private Functions() {}
@@ -21,6 +22,7 @@ public final class Functions {
      * @param y la valeur de la fonction constante
      * @return la fonction constante qui retourne toujours y
      */
+
     public static DoubleUnaryOperator constant(double y) {
         return new Constant(y);
     }
@@ -35,6 +37,8 @@ public final class Functions {
      * @return la fonction obtenue par interpolation linéaire des échantillons samples entre 0 et xMax
      * @throws IllegalArgumentException lorsque samples a moins de deux éléments ou lorsque xMax est négatif ou nul
      */
+
+
     public static DoubleUnaryOperator sampled(float[] samples, double xMax) {
         Preconditions.checkArgument(samples.length >= 2 && xMax > 0);
         return new Sampled(Arrays.copyOf(samples, samples.length), xMax);
