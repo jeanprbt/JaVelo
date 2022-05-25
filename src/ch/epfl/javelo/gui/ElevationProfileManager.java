@@ -52,6 +52,7 @@ public final class ElevationProfileManager {
 
     private static final int MIN_SCREEN_SPACING_HORIZONTAL = 50;
     private static final int MIN_SCREEN_SPACING_VERTICAL = 25;
+    private static final double MOUSE_ILLEGAL_VALUE = Double.NaN;
 
     public ElevationProfileManager(ReadOnlyObjectProperty<ElevationProfile> elevationProfile,
                                    ReadOnlyDoubleProperty highlightedPosition) {
@@ -354,9 +355,9 @@ public final class ElevationProfileManager {
         pane.setOnMouseMoved(event -> {
             if(rectangle.get().contains(event.getX(), event.getY()))
                 mousePositionOnProfile.set((int) screenToWorld.get().transform(event.getX(), 0).getX());
-            else mousePositionOnProfile.set(Double.NaN);
+            else mousePositionOnProfile.set(MOUSE_ILLEGAL_VALUE);
         });
 
-        pane.setOnMouseExited(event -> mousePositionOnProfile.set(Double.NaN));
+        pane.setOnMouseExited(event -> mousePositionOnProfile.set(MOUSE_ILLEGAL_VALUE));
     }
 }

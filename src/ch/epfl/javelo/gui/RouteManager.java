@@ -20,6 +20,7 @@ public final class RouteManager {
     private final Pane pane ;
     private final Circle circle ;
     private final Polyline polyline ;
+
     private final RouteBean route ;
     private final ReadOnlyObjectProperty<MapViewParameters> parameters;
 

@@ -90,7 +90,6 @@ public final class RouteComputer {
                     toExplore.add(new WeightedNode(nodePrimeId, distances[nodePrimeId]));
                 }
             }
-
             //Marquage des nœuds une fois traités
             distances[node.nodeId] = ALREADY_HANDLED;
         }

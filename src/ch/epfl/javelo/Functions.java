@@ -44,6 +44,8 @@ public final class Functions {
         return new Sampled(Arrays.copyOf(samples, samples.length), xMax);
     }
 
+    //---------------------------------------------- Private ----------------------------------------------//
+
     private final static record Constant(double y) implements DoubleUnaryOperator {
         @Override
         public double applyAsDouble(double operand) {

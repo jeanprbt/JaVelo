@@ -196,7 +196,6 @@ public final class WaypointsManager {
          le waypoint n'est pas modifié et le marqueur est simplement replacé à sa position initiale. */
         mark.setOnMouseReleased(event -> {
             if (!event.isStillSincePress()) {
-
                 PointCh pointCh = parameters.get().pointAt((int) mark.getLayoutX(), (int) mark.getLayoutY()).toPointCh();
                 if(pointCh != null) {
                     int closestNodeId = graph.nodeClosestTo(pointCh, SEARCH_DISTANCE);

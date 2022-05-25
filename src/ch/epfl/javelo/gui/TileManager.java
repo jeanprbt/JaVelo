@@ -29,7 +29,7 @@ public final class TileManager {
     public TileManager(Path diskCachePath, String tileServerName){
         this.diskCachePath = diskCachePath ;
         this.tileServerName = tileServerName ;
-        this.cacheMemory = new LinkedHashMap<>(100, 0.75f, true);
+        this.cacheMemory = new LinkedHashMap<>(MAX_ENTRIES, 0.75f, true);
     }
 
     /**
@@ -84,7 +84,10 @@ public final class TileManager {
      * @throws IOException en cas d'erreur avec les fichiers
      */
    private void downloadImageFromServer(Path tilePath, TileId tileId) throws IOException {
-       URL u = new URL("https://" + tileServerName + "/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png");
+       URL u = new URL("https://" + tileServerName + "/"
+                        + tileId.zoomLevel + "/"
+                        + tileId.x + "/"
+                        + tileId.y + ".png");
        URLConnection c = u.openConnection();
        c.setRequestProperty("User-Agent", "JaVelo");
        Files.createDirectories(Path.of(diskCachePath + "/" + tileId.zoomLevel + "/" + tileId.x + "/"));

@@ -142,6 +142,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
         return Short.toUnsignedInt(edgesBuffer.getShort(EDGE_INTS * edgeId + OFFSET_ATTRIBUTE_SET_ID));
     }
 
+    //---------------------------------------------- Private ----------------------------------------------//
 
     /**
      * Fonction privée permettant d'inverser un tableau d'échantillons dans le cas
