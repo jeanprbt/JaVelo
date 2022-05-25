@@ -3,6 +3,7 @@ package ch.epfl.javelo.gui;
 import ch.epfl.javelo.data.Graph;
 import ch.epfl.javelo.projection.PointCh;
 import ch.epfl.javelo.projection.PointWebMercator;
+import ch.epfl.javelo.projection.SwissBounds;
 import ch.epfl.javelo.routing.RoutePoint;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
@@ -71,6 +72,7 @@ public final class AnnotatedMapManager {
 
                     //Calcul du point de l'itinéraire le plus proche de la position de la souris et de son équivalent en Web Mercator
                     RoutePoint closestRoutePoint =  route.getRoute().pointClosestTo(cursor);
+
                     PointWebMercator closestPointMercator = PointWebMercator.ofPointCh(closestRoutePoint.point());
 
                     //Conversion du point le plus proche en termes de pixels dans l'écran

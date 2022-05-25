@@ -156,6 +156,9 @@ public final class ElevationProfileManager {
         double scaleXFactor = rectangle.get().getWidth() / elevationProfile.get().length();
         double scaleYFactor = -rectangle.get().getHeight() / (elevationProfile.get().maxElevation() - elevationProfile.get().minElevation());
 
+        //Vérification de la possibilité d'inverser la transformation
+        if(scaleYFactor == 0) return ;
+
         //Création d'une instance de Affine et ajout des transformations nécessaires
         Affine affine = new Affine();
         affine.prependTranslation(0, -elevationProfile.get().maxElevation());
