@@ -89,6 +89,8 @@ public final class ElevationProfile {
         return Functions.sampled(elevationSamples, length).applyAsDouble(position);
     }
 
+    //---------------------------------------------- Private ----------------------------------------------//
+
     /**
      * Méthode privée retournant une classe statistique comprenant toutes les
      * valeurs contenues dans le tableau passé en paramètre.

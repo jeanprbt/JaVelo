@@ -21,7 +21,6 @@ public final class ErrorManager {
 
     private final StackPane pane ;
     private final VBox vBox ;
-
     private SequentialTransition sequentialTransition ;
 
     public ErrorManager(){

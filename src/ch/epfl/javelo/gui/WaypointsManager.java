@@ -24,12 +24,13 @@ import java.util.function.Consumer;
 public final class WaypointsManager {
 
     private final Graph graph;
-    private final ObjectProperty<MapViewParameters> parameters ;
-    private final Pane pane ;
     private final ObservableList<Waypoint> waypoints ;
     private final Consumer<String> consumer ;
 
+    private final ObjectProperty<MapViewParameters> parameters ;
+    private final Pane pane ;
     private int indexInWaypoints ;
+
     private Point2D cursorPosition;
 
     private final int SEARCH_DISTANCE = 500 ;

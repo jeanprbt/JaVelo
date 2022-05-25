@@ -49,6 +49,7 @@ public final class ElevationProfileManager {
             { 1000, 2000, 5000, 10_000, 25_000, 50_000, 100_000 };
     private static final int[] ELE_STEPS =
             { 5, 10, 20, 25, 50, 100, 200, 250, 500, 1_000 };
+
     private static final int MIN_SCREEN_SPACING_HORIZONTAL = 50;
     private static final int MIN_SCREEN_SPACING_VERTICAL = 25;
 
@@ -76,7 +77,7 @@ public final class ElevationProfileManager {
 
         /* Propriété contenant la position de la souris le long du profil en mètres, initialisée à NaN pour garantir
         l'invisibilité de la ligne au lancement de la fenêtre si le curseur n'est pas sur le panneau */
-        mousePositionOnProfile = new SimpleDoubleProperty(Double.NaN);
+        mousePositionOnProfile = new SimpleDoubleProperty(MOUSE_ILLEGAL_VALUE);
 
         /* Transformations affines permettant de passer du système de coordonnées du monde réel à celui de la fenêtre graphique,
         initialisées comme des transformations affines vides afin de pouvoir leur lier la ligne avant même de leur donner une valeur */
@@ -211,7 +212,8 @@ public final class ElevationProfileManager {
         }
 
         //Calcul du multiple de l'élévation optimale le plus proche de l'élévation maximale du profil
-        double offset = worldToScreen.get().deltaTransform(0, -elevationProfile.get().maxElevation() % verticalSpacingWorld).getY();
+        double offset = worldToScreen.get().deltaTransform(0, -elevationProfile.get().maxElevation()
+                                                                    % verticalSpacingWorld).getY();
 
         //Création des lignes horizontales espacées de la distance calculée précédemment et ajout des étiquettes correspondantes
         for (double i = 0; i < rectangle.get().getHeight() / verticalSpacingScreen; i++) {
@@ -223,7 +225,7 @@ public final class ElevationProfileManager {
                                 (elevationProfile.get().maxElevation() % verticalSpacingWorld) - i * verticalSpacingWorld)),
                         "vertical",
                         i * verticalSpacingScreen + offset,
-                        VPos.CENTER);
+                                 VPos.CENTER);
 
                 label.setLayoutX(-label.prefWidth(0) - 2);
                 labels.getChildren().add(label);

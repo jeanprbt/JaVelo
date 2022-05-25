@@ -37,25 +37,25 @@ public class GpxGenerator {
         //Création de l'embryon de document constitué des éléments gpx, metadata et name
         Document doc = newDocument();
         
-        //La balise gpx
+        //Ajout de la balise gpx
         Element root = doc.createElementNS("https://www.topografix.com/GPX/1/1", "gpx");
         doc.appendChild(root);
         root.setAttributeNS("https://www.w3.org/2001/XMLSchema-instance",
-                "xsi:schemaLocation",
-                "https://www.topografix.com/GPX/1/1 " + "https://www.topografix.com/GPX/1/1/gpx.xsd");
+                            "xsi:schemaLocation",
+                                   "https://www.topografix.com/GPX/1/1 " + "https://www.topografix.com/GPX/1/1/gpx.xsd");
         root.setAttribute("version", "1.1");
         root.setAttribute("creator", "JaVelo");
 
-        //La balise metadata
+        //Ajout de la balise metadata
         Element metadata = doc.createElement("metadata");
         root.appendChild(metadata);
 
-        //La balise name
+        //Ajout de la balise name
         Element name = doc.createElement("name");
         metadata.appendChild(name);
         name.setTextContent("Route JaVelo");
 
-        //La balise rte
+        //Ajout de la balise rte
         Element rte = doc.createElement("rte");
         root.appendChild(rte);
 
@@ -63,7 +63,9 @@ public class GpxGenerator {
         addStartToGpx(doc, rte, route);
         double position = 0;
 
+        //Parcours de toutes les arêtes pour compléter le document GPX
         for (Edge edge : route.edges()) {
+            
             //Création de la balise rtept (route point)
             Element rtept = doc.createElement("rtept");
             rtept.setAttribute("lat", "" + Math.toDegrees(edge.toPoint().lat()));
@@ -76,7 +78,6 @@ public class GpxGenerator {
             ele.setTextContent("" + profile.elevationAt(position));
             rtept.appendChild(ele);
         }
-
         return doc ;
     }
 
@@ -109,11 +110,14 @@ public class GpxGenerator {
      * @param route l'itinéraire dont on veut ajouter le point de départ
      */
     private static void addStartToGpx(Document doc, Element rte, Route route){
+        //Balise rtept
         Element firstRtept = doc.createElement("rtept");
         PointCh startPoint = route.points().get(0);
         firstRtept.setAttribute("lat", "" + Math.toDegrees(startPoint.lat()));
         firstRtept.setAttribute("lon", "" + Math.toDegrees(startPoint.lon()));
         rte.appendChild(firstRtept);
+        
+        //Balise ele
         Element ele = doc.createElement("ele");
         ele.setTextContent("" + route.elevationAt(0));
         firstRtept.appendChild(ele);

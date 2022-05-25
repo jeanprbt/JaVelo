@@ -23,8 +23,6 @@ public final class AnnotatedMapManager {
 
     private final StackPane mainPane ;
     private final DoubleProperty mousePositionOnRoute ;
-    private final ObjectProperty<Point2D> currentCursorPosition ;
-    private final ObjectProperty<MapViewParameters> parameters ;
 
     public AnnotatedMapManager(Graph graph, TileManager tileManager, RouteBean route, Consumer<String> consumer){
 
@@ -34,11 +32,13 @@ public final class AnnotatedMapManager {
         final int MAX_DISTANCE_CURSOR = 15 ;
 
         mousePositionOnRoute = new SimpleDoubleProperty();
-        currentCursorPosition = new SimpleObjectProperty<>();
+
+        //Propriété contenant constamment la position de la souris sur la carte au survol
+        ObjectProperty<Point2D> currentCursorPosition = new SimpleObjectProperty<>();
 
         //Création des paramètres de fond de carte initiaux
         MapViewParameters mapViewParameters = new MapViewParameters(INITIAL_ZOOM_LEVEL, INITIAL_X, INITIAL_Y);
-        parameters = new SimpleObjectProperty<>(mapViewParameters);
+        ObjectProperty<MapViewParameters> parameters = new SimpleObjectProperty<>(mapViewParameters);
 
         //Création des gestionnaires graphiques permettant d'avoir un panneau final contenant tous les sous-panneaux
         WaypointsManager waypointsManager = new WaypointsManager(graph, parameters, route.getWaypoints(), consumer);

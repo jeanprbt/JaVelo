@@ -35,6 +35,7 @@ public final class RouteComputer {
      * @throws IllegalArgumentException si le nœud de départ et d'arrivée sont identiques
      */
     public Route bestRouteBetween(int startNodeId, int endNodeId) {
+
         Preconditions.checkArgument(startNodeId != endNodeId);
         float ALREADY_HANDLED = Float.NEGATIVE_INFINITY;
 

@@ -24,13 +24,14 @@ import java.io.IOException;
 public final class BaseMapManager {
 
     private final TileManager tileManager ;
+    private final WaypointsManager waypointsManager ;
+
+    private final Canvas canvas ;
+    private final Pane pane ;
+    private boolean redrawNeeded ;
     private final ObjectProperty<MapViewParameters> parameters;
 
-    private final Pane pane ;
-    private final Canvas canvas ;
-    private final WaypointsManager waypointsManager ;
     private Point2D cursorPosition ;
-    private boolean redrawNeeded ;
 
     public BaseMapManager(TileManager tileManager,
                           WaypointsManager waypointsManager,

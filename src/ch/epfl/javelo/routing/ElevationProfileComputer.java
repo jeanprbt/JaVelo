@@ -60,6 +60,8 @@ public final class ElevationProfileComputer {
         return new ElevationProfile(route.length(), elevationSamples);
     }
 
+    //---------------------------------------------- Private ----------------------------------------------//
+
     /**
      * Méthode privée permettant de remplacer dans le tableau elevationSamples les valeurs valant Float.NaN
      * par des valeurs calculées par interpolation linéaire entre leurs voisins valides les plus proches : le

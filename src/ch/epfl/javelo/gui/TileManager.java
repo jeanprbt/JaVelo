@@ -37,10 +37,15 @@ public final class TileManager {
      *
      * @param tileId l'identité de la tuile dont on cherche l'image
      * @return l'image correspondant à la tuile tileId
+     * @throws IOException en cas d'erreur avec les fichiers
      */
-   public Image imageForTileAt(TileId tileId) throws IOException{
+   public Image imageForTileAt(TileId tileId) throws IOException {
 
-        Path tilePath = Path.of(diskCachePath.toString() + "/" + tileId.zoomLevel + "/" + tileId.x + "/" + tileId.y + ".png") ;
+       //Chemin où stocker ou récupérer la tuile si celle-ci n'est pas dans le cache mémoire
+        Path tilePath = Path.of(diskCachePath.toString() + "/"
+                                     + tileId.zoomLevel + "/"
+                                     + tileId.x + "/"
+                                     + tileId.y + ".png") ;
 
         //Si la tuile est déjà dans le cache mémoire
         if(cacheMemory.containsKey(tileId)) return cacheMemory.get(tileId);
