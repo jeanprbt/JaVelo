@@ -1,3 +1,6 @@
+# Cache dir for OSM tiles
+/osm-cache/
+
 # Compiled class file
 *.class
 
@@ -22,9 +25,11 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-.idea/JaVelo.iml
-javelo.kml
+# Intellij files
+/.idea/
 /out/*
+
+# Misc
+javelo.kml
 *.png
-*.bin
 *.gpx

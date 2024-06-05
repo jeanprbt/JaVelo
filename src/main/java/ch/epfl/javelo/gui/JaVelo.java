@@ -37,7 +37,7 @@ public final class JaVelo extends Application {
         String tileServerHost = "tile.openstreetmap.org";
         TileManager tileManager = new TileManager(cacheBasePath, tileServerHost);
 
-        Graph graph = Graph.loadFrom(Path.of("javelo-data"));
+        Graph graph = Graph.loadFrom(Path.of("ch_west"));
         CostFunction costFunction = new CityBikeCF(graph);
         RouteBean routeBean = new RouteBean(new RouteComputer(graph, costFunction));
 
