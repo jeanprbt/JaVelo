@@ -1,6 +1,15 @@
 # Cache dir for OSM tiles
 /osm-cache/
 
+# Gradle files
+/.gradle/
+
+# MAC OS files
+.DS_Store
+
+# Build files
+/build/
+
 # Compiled class file
 *.class
 

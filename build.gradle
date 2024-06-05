@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = "ch.epfl.javelo.gui.JaVelo"
+}
+
+sourceSets {
+    sourceSets {
+        main {
+            java {
+                srcDirs = ['src/main/']
+            }
+            resources {
+                srcDirs = ['src/resources']
+
+            }
+        }
+        test {
+            java {
+                srcDirs = ['src/test']
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.openjfx:javafx-controls:22.0.1'
+    implementation 'org.openjfx:javafx-fxml:22.0.1'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+javafx {
+    version = "22.0.1"
+    modules = [ 'javafx.controls']
+}
+
+test {
+    useJUnitPlatform()
+}
