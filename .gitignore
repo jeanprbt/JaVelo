@@ -42,5 +42,5 @@ hs_err_pid*
 
 # Misc
 javelo.kml
-*.png
 *.gpx
+bin/

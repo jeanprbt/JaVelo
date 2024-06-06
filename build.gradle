@@ -18,23 +18,6 @@ application {
     mainClass = 'ch.epfl.javelo.Launcher'
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs 'src/main/java'
-        }
-        resources {
-            srcDirs "src/main/resources"
-        }
-    }
-    test {
-        java {
-            srcDirs 'src/test/java'
-        }
-
-    }
-}
-
 dependencies {
     implementation 'org.openjfx:javafx-controls:22.0.1'
     testImplementation platform('org.junit:junit-bom:5.10.0')
