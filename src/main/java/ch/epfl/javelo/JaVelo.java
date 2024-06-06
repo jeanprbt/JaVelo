@@ -1,6 +1,11 @@
-package ch.epfl.javelo.gui;
+package ch.epfl.javelo;
 
 import ch.epfl.javelo.data.Graph;
+import ch.epfl.javelo.gui.AnnotatedMapManager;
+import ch.epfl.javelo.gui.ElevationProfileManager;
+import ch.epfl.javelo.gui.ErrorManager;
+import ch.epfl.javelo.gui.RouteBean;
+import ch.epfl.javelo.gui.TileManager;
 import ch.epfl.javelo.routing.CityBikeCF;
 import ch.epfl.javelo.routing.CostFunction;
 import ch.epfl.javelo.routing.GpxGenerator;
@@ -21,7 +26,9 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public final class JaVelo extends Application {
 
@@ -36,7 +43,10 @@ public final class JaVelo extends Application {
     public void start(Stage stage) throws Exception {
 
         //Création des éléments indispensables à la création des différents gestionnaires graphiques
-        Path cacheBasePath = Path.of("osm-cache");
+        Path cacheBasePath = Paths.get(System.getProperty("user.home"), ".javelo-cache");
+        if (!Files.exists(cacheBasePath)) {
+            Files.createDirectories(cacheBasePath);
+        }
         String tileServerHost = "tile.openstreetmap.org";
         TileManager tileManager = new TileManager(cacheBasePath, tileServerHost);
 
@@ -106,7 +116,7 @@ public final class JaVelo extends Application {
         //Lancement de la scène
         stage.setMinWidth(MINIMUM_WINDOW_WIDTH);
         stage.setMinHeight(MINIMUM_WINDOW_HEIGHT);
-        stage.setTitle("Javelo");
+        stage.setTitle("JaVelo");
         stage.setScene(new Scene(mainPane));
         stage.show();
     }

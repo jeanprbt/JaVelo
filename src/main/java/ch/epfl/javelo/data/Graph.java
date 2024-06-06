@@ -4,14 +4,13 @@ import ch.epfl.javelo.Functions;
 import ch.epfl.javelo.projection.PointCh;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -57,28 +56,21 @@ public final class Graph {
      */
     public static Graph loadFrom(String dirName) throws IOException {
 
-        Path basePath;
-        try {
-            basePath = Paths.get(Objects.requireNonNull(Graph.class.getResource("/" + dirName)).toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-
         //Récupération des différents chemins d'accès aux sous-répertoires de basePath
-        Path nodesPath = basePath.resolve("nodes.bin");
-        Path sectorsPath = basePath.resolve("sectors.bin");
-        Path edgesPath = basePath.resolve("edges.bin");
-        Path elevationsPath = basePath.resolve("elevations.bin");
-        Path profileIdsPath = basePath.resolve("profile_ids.bin");
-        Path attributeSetsPath = basePath.resolve("attributes.bin");
+        InputStream nodesStream = Graph.class.getResourceAsStream("/" + dirName + "/nodes.bin");
+        InputStream sectorsStream = Graph.class.getResourceAsStream("/" + dirName + "/sectors.bin");
+        InputStream edgesStream = Graph.class.getResourceAsStream("/" + dirName + "/edges.bin");
+        InputStream elevationsStream = Graph.class.getResourceAsStream("/" + dirName + "/elevations.bin");
+        InputStream profileIdsStream = Graph.class.getResourceAsStream("/" + dirName + "/profile_ids.bin");
+        InputStream attributeSetsStream = Graph.class.getResourceAsStream("/" + dirName + "/attributes.bin");
 
         //Chargement des différents buffers nécessaires à la création des différents sous-graphes
-        IntBuffer nodesBuffer = mappedBuffer(nodesPath).asIntBuffer();
-        ByteBuffer sectorsBuffer = mappedBuffer(sectorsPath);
-        ByteBuffer edgesBuffer = mappedBuffer(edgesPath);
-        IntBuffer profileIdsBuffer = mappedBuffer(profileIdsPath).asIntBuffer();
-        ShortBuffer elevationsBuffer = mappedBuffer(elevationsPath).asShortBuffer();
-        LongBuffer attributeSets = mappedBuffer(attributeSetsPath).asLongBuffer();
+        IntBuffer nodesBuffer = ByteBuffer.wrap(Objects.requireNonNull(nodesStream).readAllBytes()).asIntBuffer();
+        ByteBuffer sectorsBuffer = ByteBuffer.wrap(Objects.requireNonNull(sectorsStream).readAllBytes());
+        ByteBuffer edgesBuffer = ByteBuffer.wrap(Objects.requireNonNull(edgesStream).readAllBytes());
+        IntBuffer profileIdsBuffer = ByteBuffer.wrap(Objects.requireNonNull(profileIdsStream).readAllBytes()).asIntBuffer();
+        ShortBuffer elevationsBuffer = ByteBuffer.wrap(Objects.requireNonNull(elevationsStream).readAllBytes()).asShortBuffer();
+        LongBuffer attributeSets = ByteBuffer.wrap(Objects.requireNonNull(attributeSetsStream).readAllBytes()).asLongBuffer();
 
         //Mise dans une liste de tous les AttributeSet du buffer correspondant
         List<AttributeSet> attributeSetsList = new ArrayList<>(attributeSets.capacity());

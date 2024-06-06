@@ -1,48 +1,61 @@
 plugins {
     id 'java'
     id 'application'
+    id 'org.javamodularity.moduleplugin' version '1.8.12'
     id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'org.beryx.jlink' version '2.25.0'
 }
+
+group 'ch.epfl.javelo'
+version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
 application {
-    mainClass = "ch.epfl.javelo.gui.JaVelo"
+    mainModule = 'ch.epfl.javelo'
+    mainClass = 'ch.epfl.javelo.Launcher'
 }
 
 sourceSets {
-    sourceSets {
-        main {
-            java {
-                srcDirs = ['src/main/java']
-            }
-            resources {
-                srcDirs = ['src/main/resources']
+    main {
+        java {
+            srcDirs 'src/main/java'
+        }
+        resources {
+            srcDirs "src/main/resources"
+        }
+    }
+    test {
+        java {
+            srcDirs 'src/test/java'
+        }
 
-            }
-        }
-        test {
-            java {
-                srcDirs = ['src/test/java']
-            }
-        }
     }
 }
 
 dependencies {
     implementation 'org.openjfx:javafx-controls:22.0.1'
-    implementation 'org.openjfx:javafx-fxml:22.0.1'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.register('customFatJar', Jar) {
+    manifest {
+        attributes 'Main-Class': 'ch.epfl.javelo.Launcher'
+    }
+    archiveBaseName = 'JaVeloJAR'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 javafx {
     version = "22.0.1"
     modules = [ 'javafx.controls']
-}
-
-test {
-    useJUnitPlatform()
 }

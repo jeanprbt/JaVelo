@@ -9,6 +9,7 @@
 
 # Build files
 /build/
+*.dmg
 
 # Compiled class file
 *.class
